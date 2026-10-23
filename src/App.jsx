@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react';
 import * as db from './db.js';
-import { newId, STARTER_EXERCISES, lastTimeSets } from './utils.js';
+import { newId, STARTER_EXERCISES, guessType, typeOf, plannedSets } from './utils.js';
 import WorkoutScreen from './screens/WorkoutScreen.jsx';
 import HistoryScreen from './screens/HistoryScreen.jsx';
 import ProgressScreen from './screens/ProgressScreen.jsx';
 import SettingsScreen from './screens/SettingsScreen.jsx';
 import Icon from './components/Icon.jsx';
+
+export const DEFAULT_SETTINGS = {
+  unit: 'kg',
+  trackRpe: true, // show the RPE column when logging
+  weightStep: 2.5, // how much heavier a "try heavier" suggestion is
+};
 
 const TABS = [
   { id: 'workout', label: 'Workout' },
@@ -21,7 +27,8 @@ export default function App() {
   const [tab, setTab] = useState('workout');
   const [exercises, setExercises] = useState([]);
   const [workouts, setWorkouts] = useState([]);
-  const [unit, setUnitState] = useState('kg');
+  // App settings, with their defaults. Saved in the 'settings' store.
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   // Load everything from the database once, when the app opens.
   async function loadAll() {
@@ -29,13 +36,20 @@ export default function App() {
     if (ex.length === 0) {
       // First launch: add some common exercises so the list isn't empty.
       // Fixed ids, so if this runs twice it overwrites instead of duplicating.
-      ex = STARTER_EXERCISES.map((name, i) => ({ id: `starter-${i}`, name }));
+      ex = STARTER_EXERCISES.map((name, i) => ({ id: `starter-${i}`, name, type: guessType(name) }));
       for (const e of ex) await db.put('exercises', e);
     }
-    const settings = await db.getAll('settings');
+    // Exercises saved before types existed: guess their type once and save it.
+    for (const e of ex.filter((e) => !e.type)) {
+      e.type = guessType(e.name);
+      await db.put('exercises', e);
+    }
+    const saved = await db.getAll('settings');
+    const loadedSettings = { ...DEFAULT_SETTINGS };
+    for (const { key, value } of saved) if (key in DEFAULT_SETTINGS) loadedSettings[key] = value;
     setExercises(ex);
     setWorkouts(await db.getAll('workouts'));
-    setUnitState(settings.find((s) => s.key === 'unit')?.value || 'kg');
+    setSettings(loadedSettings);
     setLoaded(true);
   }
 
@@ -59,31 +73,29 @@ export default function App() {
   }
 
   // Start a new workout, optionally copying the exercises of an earlier one.
+  // Each exercise starts from last time's sets, with the suggestion applied.
   function startWorkout(template) {
     const startedAt = new Date().toISOString();
     const entries = (template?.entries || []).map((entry) => {
-      const last = lastTimeSets(workouts, entry.exerciseId);
-      const source = last ? last.sets : entry.sets;
-      return {
-        id: newId(),
-        exerciseId: entry.exerciseId,
-        sets: source.map((s) => ({ id: newId(), weight: s.weight, reps: s.reps, done: false })),
-      };
+      const type = typeOf(exercises.find((e) => e.id === entry.exerciseId));
+      const plan = plannedSets(workouts, entry.exerciseId, type, settings.unit, settings.weightStep, startedAt);
+      return { id: newId(), exerciseId: entry.exerciseId, sets: plan.sets, suggestion: plan.suggestion };
     });
     const workout = { id: newId(), startedAt, finishedAt: null, notes: '', entries };
     saveWorkout(workout);
     setTab('workout');
   }
 
-  function addExercise(name) {
-    const exercise = { id: newId(), name: name.trim() };
+  function addExercise(name, type = 'weight') {
+    const exercise = { id: newId(), name: name.trim(), type };
     setExercises((list) => [...list, exercise]);
     db.put('exercises', exercise);
     return exercise;
   }
 
-  function renameExercise(id, name) {
-    const exercise = { id, name: name.trim() };
+  // changes: { name } and/or { type }
+  function updateExercise(id, changes) {
+    const exercise = { ...exercises.find((e) => e.id === id), ...changes };
     setExercises((list) => list.map((e) => (e.id === id ? exercise : e)));
     db.put('exercises', exercise);
   }
@@ -93,14 +105,15 @@ export default function App() {
     db.remove('exercises', id);
   }
 
-  function setUnit(value) {
-    setUnitState(value);
-    db.put('settings', { key: 'unit', value });
+  function setSetting(key, value) {
+    setSettings((s) => ({ ...s, [key]: value }));
+    db.put('settings', { key, value });
   }
 
   if (!loaded) return <div className="loading">Loading…</div>;
 
-  const shared = { exercises, workouts, unit, saveWorkout, deleteWorkout, startWorkout, addExercise };
+  const unit = settings.unit;
+  const shared = { exercises, workouts, unit, settings, saveWorkout, deleteWorkout, startWorkout, addExercise };
   const activeWorkout = workouts.find((w) => !w.finishedAt);
 
   return (
@@ -112,8 +125,8 @@ export default function App() {
         {tab === 'settings' && (
           <SettingsScreen
             {...shared}
-            setUnit={setUnit}
-            renameExercise={renameExercise}
+            setSetting={setSetting}
+            updateExercise={updateExercise}
             deleteExercise={deleteExercise}
             reload={loadAll}
           />

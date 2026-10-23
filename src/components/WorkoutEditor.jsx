@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import ExercisePicker from './ExercisePicker.jsx';
 import Icon from './Icon.jsx';
-import { newId, lastTimeSets, formatSet, formatDate } from '../utils.js';
+import { newId, lastTimeSets, plannedSets, formatSet, formatDate, typeOf, compareSets } from '../utils.js';
 
 // Edits one workout: its exercises, their sets, and notes.
 // Used both for the workout in progress and for fixing old workouts.
 // Every change is passed up through onChange, which saves it.
-export default function WorkoutEditor({ workout, exercises, workouts, unit, onChange, addExercise }) {
+export default function WorkoutEditor({ workout, exercises, workouts, settings, onChange, addExercise }) {
   const [picking, setPicking] = useState(false);
   // When fixing an old workout, new sets count as done straight away.
   const finished = Boolean(workout.finishedAt);
 
-  const nameOf = (id) => exercises.find((e) => e.id === id)?.name || 'Deleted exercise';
+  const exerciseOf = (id) => exercises.find((e) => e.id === id);
 
   function update(changes) {
     onChange({ ...workout, ...changes });
@@ -23,13 +23,14 @@ export default function WorkoutEditor({ workout, exercises, workouts, unit, onCh
 
   function addEntry(exercise) {
     setPicking(false);
-    // Start with the same sets as last time (not ticked yet), so you
-    // only need to change what's different today.
-    const last = lastTimeSets(workouts, exercise.id, workout.startedAt);
-    const sets = last
-      ? last.sets.map((s) => ({ id: newId(), weight: s.weight, reps: s.reps, done: finished }))
-      : [{ id: newId(), weight: '', reps: '', done: finished }];
-    update({ entries: [...workout.entries, { id: newId(), exerciseId: exercise.id, sets }] });
+    // Start from last time's sets with the suggestion applied
+    // (or 3 empty sets for an exercise you haven't done before).
+    const plan = plannedSets(workouts, exercise.id, typeOf(exercise), settings.unit, settings.weightStep, workout.startedAt);
+    // Assisted exercise done for the first time: start the weight as "−" (assistance).
+    const startNegative = !plan.last && typeOf(exercise) === 'assisted' && /assist|band/i.test(exercise.name);
+    const sets = plan.sets.map((s) => ({ ...s, done: finished, ...(startNegative ? { weight: '-' } : {}) }));
+    const entry = { id: newId(), exerciseId: exercise.id, sets, suggestion: finished ? null : plan.suggestion };
+    update({ entries: [...workout.entries, entry] });
   }
 
   function removeEntry(entryId) {
@@ -43,18 +44,22 @@ export default function WorkoutEditor({ workout, exercises, workouts, unit, onCh
         <p className="empty">Add your first exercise to get going.</p>
       )}
 
-      {workout.entries.map((entry) => (
-        <ExerciseCard
-          key={entry.id}
-          name={nameOf(entry.exerciseId)}
-          entry={entry}
-          unit={unit}
-          finished={finished}
-          last={lastTimeSets(workouts, entry.exerciseId, workout.startedAt)}
-          onChange={(fn) => updateEntry(entry.id, fn)}
-          onRemove={() => removeEntry(entry.id)}
-        />
-      ))}
+      {workout.entries.map((entry) => {
+        const exercise = exerciseOf(entry.exerciseId);
+        return (
+          <ExerciseCard
+            key={entry.id}
+            name={exercise?.name || 'Deleted exercise'}
+            type={typeOf(exercise)}
+            entry={entry}
+            settings={settings}
+            finished={finished}
+            last={lastTimeSets(workouts, entry.exerciseId, workout.startedAt)}
+            onChange={(fn) => updateEntry(entry.id, fn)}
+            onRemove={() => removeEntry(entry.id)}
+          />
+        );
+      })}
 
       <button className="btn btn-secondary btn-wide" onClick={() => setPicking(true)}>
         <Icon name="plus" size={18} /> Add exercise
@@ -82,8 +87,32 @@ export default function WorkoutEditor({ workout, exercises, workouts, unit, onCh
   );
 }
 
+// Which input columns each exercise type shows.
+const COLUMNS = {
+  weight: [
+    { field: 'weight', label: (unit) => unit, mode: 'decimal' },
+    { field: 'reps', label: () => 'Reps', mode: 'numeric' },
+  ],
+  reps: [{ field: 'reps', label: () => 'Reps', mode: 'numeric' }],
+  assisted: [
+    { field: 'weight', label: (unit) => `± ${unit}`, mode: 'decimal', signed: true },
+    { field: 'reps', label: () => 'Reps', mode: 'numeric' },
+  ],
+  time: [{ field: 'time', label: () => 'Sec', mode: 'numeric' }],
+};
+
 // One exercise inside a workout, with its list of sets.
-function ExerciseCard({ name, entry, unit, finished, last, onChange, onRemove }) {
+function ExerciseCard({ name, type, entry, settings, finished, last, onChange, onRemove }) {
+  const columns = COLUMNS[type];
+  const showRpe = settings.trackRpe;
+  const gridTemplateColumns = [
+    '34px',
+    ...columns.map(() => 'minmax(0, 1fr)'),
+    ...(showRpe ? ['minmax(0, 0.8fr)'] : []),
+    '44px',
+    '28px',
+  ].join(' ');
+
   function updateSet(setId, changes) {
     onChange((e) => ({
       ...e,
@@ -97,8 +126,8 @@ function ExerciseCard({ name, entry, unit, finished, last, onChange, onRemove })
 
   function addSet() {
     onChange((e) => {
-      const prev = e.sets[e.sets.length - 1];
-      const set = { id: newId(), weight: prev?.weight ?? '', reps: prev?.reps ?? '', done: finished };
+      const prev = e.sets[e.sets.length - 1] || {};
+      const set = { id: newId(), weight: prev.weight ?? '', reps: prev.reps ?? '', time: prev.time ?? '', rpe: '', done: finished };
       return { ...e, sets: [...e.sets, set] };
     });
   }
@@ -106,6 +135,18 @@ function ExerciseCard({ name, entry, unit, finished, last, onChange, onRemove })
   function removeSet(setId) {
     onChange((e) => ({ ...e, sets: e.sets.filter((s) => s.id !== setId) }));
   }
+
+  // Go back to exactly what was done last time, ignoring the suggestion.
+  function useLastTime() {
+    onChange((e) => ({
+      ...e,
+      suggestion: null,
+      sets: last.sets.map((s) => ({ id: newId(), weight: s.weight ?? '', reps: s.reps ?? '', time: s.time ?? '', rpe: '', done: false })),
+    }));
+  }
+
+  const suggestion = entry.suggestion;
+  const anyDone = entry.sets.some((s) => s.done);
 
   return (
     <section className="card exercise-card">
@@ -118,14 +159,24 @@ function ExerciseCard({ name, entry, unit, finished, last, onChange, onRemove })
 
       {last && (
         <p className="last-time">
-          Last time ({formatDate(last.date)}): {last.sets.map(formatSet).join(' · ')}
+          Last time ({formatDate(last.date)}): {last.sets.map((s) => formatSet(s, type)).join(' · ')}
         </p>
       )}
 
-      <div className="set-grid">
+      {suggestion && !finished && (
+        <div className={`suggestion ${suggestion.kind}`}>
+          <span className="suggestion-icon" aria-hidden="true">{suggestion.kind === 'hold' ? '=' : '▲'}</span>
+          <span className="suggestion-text">{suggestion.text}</span>
+          {suggestion.kind !== 'hold' && !anyDone && last && (
+            <button className="btn-text small-link" onClick={useLastTime}>Use last time</button>
+          )}
+        </div>
+      )}
+
+      <div className="set-grid" style={{ gridTemplateColumns }}>
         <span className="set-head">Set</span>
-        <span className="set-head">{unit}</span>
-        <span className="set-head">Reps</span>
+        {columns.map((c) => <span key={c.field} className="set-head">{c.label(settings.unit)}</span>)}
+        {showRpe && <span className="set-head">RPE</span>}
         <span />
         <span />
         {entry.sets.map((set, i) => (
@@ -133,6 +184,9 @@ function ExerciseCard({ name, entry, unit, finished, last, onChange, onRemove })
             key={set.id}
             index={i + 1}
             set={set}
+            columns={columns}
+            showRpe={showRpe}
+            trend={last ? compareSets(set, last.sets[i] || last.sets[last.sets.length - 1], type) : 0}
             onChange={(changes) => updateSet(set.id, changes)}
             onToggle={() => toggleDone(set)}
             onRemove={() => removeSet(set.id)}
@@ -147,27 +201,46 @@ function ExerciseCard({ name, entry, unit, finished, last, onChange, onRemove })
   );
 }
 
-function SetRow({ index, set, onChange, onToggle, onRemove }) {
+function SetRow({ index, set, columns, showRpe, trend, onChange, onToggle, onRemove }) {
   const cls = set.done ? 'done' : '';
   return (
     <>
-      <span className={`set-num ${cls}`}>{index}</span>
-      <input
-        className={`set-input ${cls}`}
-        inputMode="decimal"
-        placeholder="0"
-        value={set.weight}
-        onChange={(e) => onChange({ weight: e.target.value })}
-        aria-label={`Set ${index} weight`}
-      />
-      <input
-        className={`set-input ${cls}`}
-        inputMode="numeric"
-        placeholder="0"
-        value={set.reps}
-        onChange={(e) => onChange({ reps: e.target.value })}
-        aria-label={`Set ${index} reps`}
-      />
+      <span className={`set-num ${cls}`}>
+        {index}
+        {trend > 0 && <span className="trend up" title="More than last time">▲</span>}
+        {trend < 0 && <span className="trend down" title="Less than last time">▼</span>}
+      </span>
+      {columns.map((c) =>
+        c.signed ? (
+          <SignedInput
+            key={c.field}
+            className={cls}
+            value={set[c.field] ?? ''}
+            onChange={(value) => onChange({ [c.field]: value })}
+            label={`Set ${index} ${c.field}`}
+          />
+        ) : (
+          <input
+            key={c.field}
+            className={`set-input ${cls}`}
+            inputMode={c.mode}
+            placeholder="0"
+            value={set[c.field] ?? ''}
+            onChange={(e) => onChange({ [c.field]: e.target.value })}
+            aria-label={`Set ${index} ${c.field}`}
+          />
+        ),
+      )}
+      {showRpe && (
+        <input
+          className={`set-input rpe ${cls}`}
+          inputMode="decimal"
+          placeholder="–"
+          value={set.rpe ?? ''}
+          onChange={(e) => onChange({ rpe: e.target.value })}
+          aria-label={`Set ${index} RPE`}
+        />
+      )}
       <button
         className={`check-btn ${cls}`}
         onClick={onToggle}
@@ -179,5 +252,34 @@ function SetRow({ index, set, onChange, onToggle, onRemove }) {
         <Icon name="close" size={16} />
       </button>
     </>
+  );
+}
+
+// A number with a − / + button in front, for assisted (−) or weighted (+) sets.
+// Phone number keypads often have no minus key, hence the button.
+// The value is saved as text like "-20", "15" or "-" (minus, no number yet).
+function SignedInput({ value, onChange, className, label }) {
+  const negative = String(value).startsWith('-');
+  const digits = String(value).replace(/^[-+]/, '');
+  const build = (neg, d) => (neg ? '-' : '') + d;
+
+  return (
+    <div className={`signed-input ${className} ${negative ? 'negative' : 'positive'}`}>
+      <button
+        type="button"
+        className="sign-btn"
+        onClick={() => onChange(build(!negative, digits))}
+        aria-label={negative ? `${label}: assistance (tap for added weight)` : `${label}: added weight (tap for assistance)`}
+      >
+        {negative ? '−' : '+'}
+      </button>
+      <input
+        inputMode="decimal"
+        placeholder="0"
+        value={digits}
+        onChange={(e) => onChange(build(negative, e.target.value.replace(/^[-+]/, '')))}
+        aria-label={label}
+      />
+    </div>
   );
 }

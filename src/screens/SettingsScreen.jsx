@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import * as db from '../db.js';
-import { formatDate } from '../utils.js';
+import { formatDate, EXERCISE_TYPES, typeOf } from '../utils.js';
 
-export default function SettingsScreen({ unit, setUnit, exercises, workouts, renameExercise, deleteExercise, reload }) {
+const STEPS = [1, 1.25, 2.5, 5];
+
+export default function SettingsScreen({ unit, settings, setSetting, exercises, workouts, updateExercise, deleteExercise, reload }) {
   const [persisted, setPersisted] = useState(null);
   const [lastBackup, setLastBackup] = useState(null);
   const [message, setMessage] = useState('');
+  const [editingId, setEditingId] = useState(null);
   const fileInput = useRef(null);
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export default function SettingsScreen({ unit, setUnit, exercises, workouts, ren
       exportedAt: new Date().toISOString(),
       exercises,
       workouts,
-      settings: [{ key: 'unit', value: unit }],
+      settings: Object.entries(settings).map(([key, value]) => ({ key, value })),
     };
     const name = `workout-backup-${new Date().toISOString().slice(0, 10)}.json`;
     const file = new File([JSON.stringify(data, null, 1)], name, { type: 'application/json' });
@@ -71,11 +74,6 @@ export default function SettingsScreen({ unit, setUnit, exercises, workouts, ren
 
   const usage = (id) => workouts.filter((w) => w.entries.some((e) => e.exerciseId === id)).length;
 
-  function rename(exercise) {
-    const name = prompt('Rename exercise', exercise.name);
-    if (name && name.trim()) renameExercise(exercise.id, name);
-  }
-
   function remove(exercise) {
     const used = usage(exercise.id);
     if (used) {
@@ -95,10 +93,37 @@ export default function SettingsScreen({ unit, setUnit, exercises, workouts, ren
         <h3>Weight unit</h3>
         <div className="chips">
           {['kg', 'lb'].map((u) => (
-            <button key={u} className={u === unit ? 'chip active' : 'chip'} onClick={() => setUnit(u)}>{u}</button>
+            <button key={u} className={u === unit ? 'chip active' : 'chip'} onClick={() => setSetting('unit', u)}>{u}</button>
           ))}
         </div>
         <p className="muted small">Only changes the label. Numbers you've logged are not converted.</p>
+      </section>
+
+      <section className="card">
+        <h3>RPE (how hard a set felt)</h3>
+        <div className="chips">
+          {[true, false].map((on) => (
+            <button key={String(on)} className={settings.trackRpe === on ? 'chip active' : 'chip'} onClick={() => setSetting('trackRpe', on)}>
+              {on ? 'Show RPE column' : 'Hide'}
+            </button>
+          ))}
+        </div>
+        <p className="muted small">
+          Rate each set from 1 to 10: 10 = couldn't do another rep, 9 = one left in the tank, 8 = two left.
+          Optional. When filled in, it makes the "try heavier" suggestions smarter.
+        </p>
+      </section>
+
+      <section className="card">
+        <h3>Suggested weight increase</h3>
+        <div className="chips">
+          {STEPS.map((step) => (
+            <button key={step} className={settings.weightStep === step ? 'chip active' : 'chip'} onClick={() => setSetting('weightStep', step)}>
+              +{step} {unit}
+            </button>
+          ))}
+        </div>
+        <p className="muted small">How much heavier the app suggests when you're ready to go up.</p>
       </section>
 
       <section className="card">
@@ -123,18 +148,40 @@ export default function SettingsScreen({ unit, setUnit, exercises, workouts, ren
 
       <section className="card">
         <h3>Exercises</h3>
-        <p className="muted small">Tap a name to rename it. New exercises can be added while logging a workout.</p>
+        <p className="muted small">Tap an exercise to rename it or change its type. New exercises can be added while logging a workout.</p>
         <ul className="exercise-list">
-          {sorted.map((e) => (
-            <li key={e.id}>
-              <button className="link" onClick={() => rename(e)}>{e.name}</button>
-              <button className="btn-text danger" onClick={() => remove(e)}>Delete</button>
-            </li>
-          ))}
+          {sorted.map((e) =>
+            editingId === e.id ? (
+              <li key={e.id} className="exercise-edit">
+                <input
+                  className="search"
+                  defaultValue={e.name}
+                  aria-label="Exercise name"
+                  onBlur={(ev) => ev.target.value.trim() && ev.target.value.trim() !== e.name && updateExercise(e.id, { name: ev.target.value.trim() })}
+                />
+                <div className="chips">
+                  {EXERCISE_TYPES.map((t) => (
+                    <button key={t.id} className={typeOf(e) === t.id ? 'chip active' : 'chip'} onClick={() => updateExercise(e.id, { type: t.id })}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="row-between">
+                  <button className="btn-text danger" onClick={() => remove(e)}>Delete exercise</button>
+                  <button className="btn btn-secondary" onClick={() => setEditingId(null)}>Done</button>
+                </div>
+              </li>
+            ) : (
+              <li key={e.id}>
+                <button className="link" onClick={() => setEditingId(e.id)}>{e.name}</button>
+                <span className="tag">{EXERCISE_TYPES.find((t) => t.id === typeOf(e)).label}</span>
+              </li>
+            ),
+          )}
         </ul>
       </section>
 
-      <p className="muted small center">Workout v0.1 · data stays on this device</p>
+      <p className="muted small center">Workout v0.2 · data stays on this device</p>
     </div>
   );
 }

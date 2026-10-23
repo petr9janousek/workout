@@ -1,21 +1,42 @@
 import { useState } from 'react';
 import LineChart from '../components/LineChart.jsx';
 import Icon from '../components/Icon.jsx';
-import { exerciseHistory, formatDate, formatSet } from '../utils.js';
+import { exerciseHistory, formatDate, formatSet, formatSeconds, formatNumber, formatSigned, typeOf, suggestNext } from '../utils.js';
 
-const METRICS = [
-  { id: 'topWeight', label: 'Heaviest set', help: 'The heaviest weight you lifted that day.' },
-  { id: 'best1RM', label: 'Est. 1-rep max', help: 'Estimated max for a single rep, calculated from your best set. Lets sets with different reps be compared.' },
-  { id: 'volume', label: 'Volume', help: 'Weight × reps, added up over all sets that day.' },
-  { id: 'totalReps', label: 'Total reps', help: 'All reps added up. Useful for bodyweight exercises.' },
-];
+// What can be charted for each type of exercise.
+const METRICS = {
+  weight: [
+    { id: 'topWeight', label: 'Heaviest set', unit: 'weight', help: 'The heaviest weight you lifted that day.' },
+    { id: 'best1RM', label: 'Est. 1-rep max', unit: 'weight', help: 'Estimated max for a single rep, calculated from your best set. Lets sets with different reps be compared.' },
+    { id: 'volume', label: 'Volume', unit: 'weight', help: 'Weight × reps, added up over all sets that day.' },
+    { id: 'totalReps', label: 'Total reps', unit: 'reps', help: 'All reps added up.' },
+  ],
+  reps: [
+    { id: 'bestReps', label: 'Best set', unit: 'reps', help: 'Most reps in a single set that day.' },
+    { id: 'totalReps', label: 'Total reps', unit: 'reps', help: 'All reps added up.' },
+  ],
+  assisted: [
+    { id: 'topWeight', label: 'Best load', unit: 'weight', help: 'Below zero = assistance, above = added weight. Going up is progress.' },
+    { id: 'bestReps', label: 'Best set', unit: 'reps', help: 'Most reps in a single set that day.' },
+    { id: 'totalReps', label: 'Total reps', unit: 'reps', help: 'All reps added up.' },
+  ],
+  time: [
+    { id: 'longestTime', label: 'Longest hold', unit: 's', help: 'Your longest set that day, in seconds.' },
+    { id: 'totalTime', label: 'Total time', unit: 's', help: 'All sets added up, in seconds.' },
+  ],
+};
 
-export default function ProgressScreen({ exercises, workouts, unit }) {
+export default function ProgressScreen({ exercises, workouts, unit, settings }) {
   const [openId, setOpenId] = useState(null);
 
   // Exercises that have been done at least once, most recent first.
   const tracked = exercises
-    .map((e) => ({ exercise: e, history: exerciseHistory(workouts, e.id) }))
+    .map((e) => {
+      const history = exerciseHistory(workouts, e.id);
+      const type = typeOf(e);
+      const next = history.length ? suggestNext(history.at(-1).sets, type, unit, settings.weightStep) : null;
+      return { exercise: e, type, history, next };
+    })
     .filter((t) => t.history.length > 0)
     .sort((a, b) => b.history.at(-1).date.localeCompare(a.history.at(-1).date));
 
@@ -26,15 +47,20 @@ export default function ProgressScreen({ exercises, workouts, unit }) {
     <div>
       <h1>Progress</h1>
       {tracked.length === 0 && <p className="empty">Finish a workout and your exercises will appear here.</p>}
-      {tracked.map(({ exercise, history }) => {
+      {tracked.map(({ exercise, history, next, type }) => {
         const latest = history.at(-1);
         return (
           <button key={exercise.id} className="card card-button row-between" onClick={() => setOpenId(exercise.id)}>
             <span>
               <strong>{exercise.name}</strong>
-              <span className="muted block">
+              <span className="muted block small">
                 {history.length} {history.length === 1 ? 'session' : 'sessions'} · last {formatDate(latest.date)}
               </span>
+              {next && (
+                <span className={`next-hint ${next.kind}`}>
+                  {next.kind === 'hold' ? '= ' : '▲ '}Next: {next.sets.map((s) => formatSet(s, type)).join(' · ')}
+                </span>
+              )}
             </span>
             <Icon name="chevron" size={18} />
           </button>
@@ -44,21 +70,25 @@ export default function ProgressScreen({ exercises, workouts, unit }) {
   );
 }
 
-function ExerciseProgress({ exercise, history, unit, onBack }) {
-  const usesWeight = history.some((h) => h.topWeight > 0);
-  const [metric, setMetric] = useState(usesWeight ? 'topWeight' : 'totalReps');
-  const m = METRICS.find((x) => x.id === metric);
-  const metricUnit = metric === 'totalReps' ? 'reps' : unit;
+function ExerciseProgress({ exercise, type, history, next, unit, onBack }) {
+  const metrics = METRICS[type];
+  const [metric, setMetric] = useState(metrics[0].id);
+  const m = metrics.find((x) => x.id === metric) || metrics[0];
+  const metricUnit = m.unit === 'weight' ? unit : m.unit;
 
   // Personal records
   const best = (key) => history.reduce((a, b) => (b[key] > a[key] ? b : a));
-  const records = usesWeight
-    ? [
-        { label: 'Heaviest', value: `${best('topWeight').topWeight} ${unit}`, date: best('topWeight').date },
-        { label: 'Est. 1RM', value: `${best('best1RM').best1RM} ${unit}`, date: best('best1RM').date },
-        { label: 'Best volume', value: `${Math.round(best('volume').volume)} ${unit}`, date: best('volume').date },
-      ]
-    : [{ label: 'Most reps in a session', value: best('totalReps').totalReps, date: best('totalReps').date }];
+  const record = (label, key, format) => ({ label, value: format(best(key)[key]), date: best(key).date });
+  const records = {
+    weight: [
+      record('Heaviest', 'topWeight', (v) => `${v} ${unit}`),
+      record('Est. 1RM', 'best1RM', (v) => `${v} ${unit}`),
+      record('Best volume', 'volume', (v) => `${formatNumber(v)} ${unit}`),
+    ],
+    reps: [record('Best set', 'bestReps', (v) => `${v} reps`), record('Most in a day', 'totalReps', (v) => `${v} reps`)],
+    assisted: [record('Best load', 'topWeight', (v) => formatSigned(v, unit)), record('Best set', 'bestReps', (v) => `${v} reps`)],
+    time: [record('Longest hold', 'longestTime', formatSeconds), record('Most in a day', 'totalTime', formatSeconds)],
+  }[type];
 
   return (
     <div>
@@ -66,6 +96,17 @@ function ExerciseProgress({ exercise, history, unit, onBack }) {
         <Icon name="back" size={18} /> Progress
       </button>
       <h1>{exercise.name}</h1>
+
+      {next && (
+        <div className={`suggestion ${next.kind}`}>
+          <span className="suggestion-icon" aria-hidden="true">{next.kind === 'hold' ? '=' : '▲'}</span>
+          <span className="suggestion-text">
+            <strong>Next time: {next.sets.map((s) => formatSet(s, type, unit)).join(' · ')}</strong>
+            <br />
+            {next.text}
+          </span>
+        </div>
+      )}
 
       <div className="records">
         {records.map((r) => (
@@ -78,8 +119,8 @@ function ExerciseProgress({ exercise, history, unit, onBack }) {
       </div>
 
       <div className="chips" role="tablist">
-        {METRICS.filter((x) => usesWeight || x.id === 'totalReps').map((x) => (
-          <button key={x.id} className={x.id === metric ? 'chip active' : 'chip'} onClick={() => setMetric(x.id)}>
+        {metrics.map((x) => (
+          <button key={x.id} className={x.id === m.id ? 'chip active' : 'chip'} onClick={() => setMetric(x.id)}>
             {x.label}
           </button>
         ))}
@@ -88,9 +129,9 @@ function ExerciseProgress({ exercise, history, unit, onBack }) {
 
       <section className="card">
         <LineChart
-          key={metric}
+          key={m.id}
           unit={metricUnit}
-          points={history.map((h) => ({ date: h.date, value: Math.round(h[metric] * 10) / 10 }))}
+          points={history.map((h) => ({ date: h.date, value: Math.round(h[m.id] * 10) / 10 }))}
         />
       </section>
 
@@ -98,7 +139,7 @@ function ExerciseProgress({ exercise, history, unit, onBack }) {
       {[...history].reverse().map((h) => (
         <div key={h.workoutId} className="session-row">
           <span className="muted">{formatDate(h.date)}</span>
-          <span>{h.sets.map(formatSet).join(' · ')}</span>
+          <span>{h.sets.map((s) => formatSet(s, type)).join(' · ')}</span>
         </div>
       ))}
     </div>

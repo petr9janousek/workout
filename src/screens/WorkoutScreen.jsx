@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import WorkoutEditor from '../components/WorkoutEditor.jsx';
+import Totals from '../components/Totals.jsx';
 import { finishedWorkouts, formatDate, formatClock, isDoneSet } from '../utils.js';
 
 export default function WorkoutScreen(props) {
@@ -35,7 +36,7 @@ function StartScreen({ workouts, exercises, startWorkout }) {
 }
 
 // Shown while a workout is in progress.
-function ActiveWorkout({ workout, exercises, workouts, unit, saveWorkout, deleteWorkout, addExercise, goTo }) {
+function ActiveWorkout({ workout, exercises, workouts, unit, settings, saveWorkout, deleteWorkout, addExercise, goTo }) {
   const now = useNow();
   const elapsed = now - new Date(workout.startedAt).getTime();
 
@@ -49,7 +50,7 @@ function ActiveWorkout({ workout, exercises, workouts, unit, saveWorkout, delete
   function finish() {
     // Keep only sets that were ticked, and drop exercises left with none.
     const entries = workout.entries
-      .map((e) => ({ ...e, sets: e.sets.filter(isDoneSet) }))
+      .map(({ suggestion, ...e }) => ({ ...e, sets: e.sets.filter(isDoneSet) }))
       .filter((e) => e.sets.length > 0);
 
     if (entries.length === 0) {
@@ -76,17 +77,22 @@ function ActiveWorkout({ workout, exercises, workouts, unit, saveWorkout, delete
           <h1>Workout</h1>
           <p className="muted">{formatDate(workout.startedAt)}</p>
         </div>
+      </header>
+
+      {/* Stays at the top while you scroll */}
+      <div className="sticky-bar">
+        <Totals workout={workout} unit={unit} live />
         <div className="timers">
           <span className="timer" aria-label="Workout duration">{formatClock(elapsed)}</span>
           {lastDone && <span className="timer rest">Rest {formatClock(now - lastDone)}</span>}
         </div>
-      </header>
+      </div>
 
       <WorkoutEditor
         workout={workout}
         exercises={exercises}
         workouts={workouts}
-        unit={unit}
+        settings={settings}
         onChange={saveWorkout}
         addExercise={addExercise}
       />

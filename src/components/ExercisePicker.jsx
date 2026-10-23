@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import Icon from './Icon.jsx';
+import { EXERCISE_TYPES, guessType, typeOf } from '../utils.js';
+
+const TYPE_TAGS = { reps: 'Bodyweight', time: 'Timed', assisted: 'Assisted ±' };
 
 // A full-screen list for choosing an exercise, with search.
-// If what you type isn't in the list, you can create it.
+// If what you type isn't in the list, you can create it and pick its type.
 export default function ExercisePicker({ exercises, onPick, onCreate, onClose }) {
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
@@ -11,6 +14,7 @@ export default function ExercisePicker({ exercises, onPick, onCreate, onClose })
     .filter((e) => e.name.toLowerCase().includes(q))
     .sort((a, b) => a.name.localeCompare(b.name));
   const exactMatch = exercises.some((e) => e.name.toLowerCase() === q);
+  const guessed = guessType(query);
 
   return (
     <div className="sheet" role="dialog" aria-label="Choose exercise">
@@ -29,16 +33,28 @@ export default function ExercisePicker({ exercises, onPick, onCreate, onClose })
 
       <ul className="pick-list">
         {q && !exactMatch && (
-          <li>
-            <button className="pick-item create" onClick={() => onPick(onCreate(query))}>
-              <Icon name="plus" size={18} /> Create “{query.trim()}”
-            </button>
+          <li className="create-box">
+            <span className="create-title">
+              <Icon name="plus" size={18} /> Create “{query.trim()}” as:
+            </span>
+            <div className="chips">
+              {EXERCISE_TYPES.map((t) => (
+                <button
+                  key={t.id}
+                  className={t.id === guessed ? 'chip active' : 'chip'}
+                  onClick={() => onPick(onCreate(query, t.id))}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
           </li>
         )}
         {matches.map((e) => (
           <li key={e.id}>
             <button className="pick-item" onClick={() => onPick(e)}>
-              {e.name}
+              <span>{e.name}</span>
+              {TYPE_TAGS[typeOf(e)] && <span className="tag">{TYPE_TAGS[typeOf(e)]}</span>}
             </button>
           </li>
         ))}

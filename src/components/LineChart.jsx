@@ -15,9 +15,11 @@ export default function LineChart({ points, unit }) {
   const values = points.map((p) => p.value);
   let min = Math.min(...values);
   let max = Math.max(...values);
+  // Don't let the axis dip below zero, unless the values do (assisted exercises).
+  const allPositive = min >= 0;
   if (min === max) { min -= 5; max += 5; }
   const span = max - min;
-  min = Math.max(0, min - span * 0.15);
+  min = allPositive ? Math.max(0, min - span * 0.15) : min - span * 0.15;
   max = max + span * 0.15;
 
   const x = (i) => pad.left + (points.length === 1 ? innerW / 2 : (i / (points.length - 1)) * innerW);

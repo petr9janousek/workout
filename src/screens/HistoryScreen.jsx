@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import WorkoutEditor from '../components/WorkoutEditor.jsx';
 import Icon from '../components/Icon.jsx';
-import { finishedWorkouts, formatDate, formatDuration, formatSet, isDoneSet } from '../utils.js';
+import Totals from '../components/Totals.jsx';
+import {
+  finishedWorkouts, formatDate, formatDuration, formatSet, isDoneSet, typeOf, workoutTotals, formatNumber,
+} from '../utils.js';
 
 export default function HistoryScreen(props) {
-  const { workouts, exercises } = props;
+  const { workouts, exercises, unit } = props;
   const [openId, setOpenId] = useState(null);
   const list = finishedWorkouts(workouts);
   const open = list.find((w) => w.id === openId);
   const nameOf = (id) => exercises.find((e) => e.id === id)?.name || 'Deleted exercise';
+  const typeOfId = (id) => typeOf(exercises.find((e) => e.id === id));
 
-  if (open) return <WorkoutDetail {...props} workout={open} nameOf={nameOf} onBack={() => setOpenId(null)} />;
+  if (open) return <WorkoutDetail {...props} workout={open} nameOf={nameOf} typeOfId={typeOfId} onBack={() => setOpenId(null)} />;
 
   return (
     <div>
@@ -22,6 +26,7 @@ export default function HistoryScreen(props) {
             <strong>{formatDate(w.startedAt)}</strong>
             <span className="muted">{formatDuration(new Date(w.finishedAt) - new Date(w.startedAt))}</span>
           </div>
+          <SummaryLine workout={w} unit={unit} />
           <ul className="summary-list">
             {w.entries.map((e) => (
               <li key={e.id}>
@@ -35,7 +40,15 @@ export default function HistoryScreen(props) {
   );
 }
 
-function WorkoutDetail({ workout, nameOf, onBack, exercises, workouts, unit, saveWorkout, deleteWorkout, startWorkout, addExercise, activeWorkout }) {
+// "9 sets · 3,420 kg" under each workout in the list.
+function SummaryLine({ workout, unit }) {
+  const t = workoutTotals(workout);
+  const parts = [`${t.sets} sets`];
+  if (t.volume > 0) parts.push(`${formatNumber(t.volume)} ${unit}`);
+  return <span className="summary-line">{parts.join(' · ')}</span>;
+}
+
+function WorkoutDetail({ workout, nameOf, typeOfId, onBack, exercises, workouts, unit, settings, saveWorkout, deleteWorkout, startWorkout, addExercise, activeWorkout }) {
   const [editing, setEditing] = useState(false);
 
   function remove() {
@@ -63,6 +76,7 @@ function WorkoutDetail({ workout, nameOf, onBack, exercises, workouts, unit, sav
         {new Date(workout.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ·{' '}
         {formatDuration(new Date(workout.finishedAt) - new Date(workout.startedAt))}
       </p>
+      <Totals workout={workout} unit={unit} />
 
       {editing ? (
         <>
@@ -70,7 +84,7 @@ function WorkoutDetail({ workout, nameOf, onBack, exercises, workouts, unit, sav
             workout={workout}
             exercises={exercises}
             workouts={workouts}
-            unit={unit}
+            settings={settings}
             onChange={saveWorkout}
             addExercise={addExercise}
           />
@@ -83,7 +97,7 @@ function WorkoutDetail({ workout, nameOf, onBack, exercises, workouts, unit, sav
               <h3>{nameOf(e.exerciseId)}</h3>
               <ol className="set-list">
                 {e.sets.filter(isDoneSet).map((s) => (
-                  <li key={s.id}>{formatSet(s, unit)}</li>
+                  <li key={s.id}>{formatSet(s, typeOfId(e.exerciseId), unit)}</li>
                 ))}
               </ol>
             </section>
