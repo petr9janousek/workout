@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS = {
   progression: 'double', // suggestion style, see PROGRESSION_MODES in progression.js
   lastBackup: null, // when a backup was last saved (ISO date text)
   activePlanId: null, // the plan shown on the start screen, see plans.js
+  weeklyGoal: null, // training days a week to aim for; null = from the plan (see calendar.js)
 };
 
 export const WEIGHT_STEPS = [1, 1.25, 2.5, 5];

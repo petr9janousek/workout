@@ -1,18 +1,17 @@
 import ChipGroup from '../../components/ui/ChipGroup.jsx';
 import BackupSettings from './BackupSettings.jsx';
-import ExerciseList from './ExerciseList.jsx';
-import ExerciseEditor from './ExerciseEditor.jsx';
+import Icon from '../../components/ui/Icon.jsx';
+import { go } from '../../hooks/useRoute.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { PROGRESSION_MODES } from '../../model/progression.js';
 import { WEIGHT_STEPS } from '../../model/settings.js';
 
-export const APP_VERSION = '0.5';
+export const APP_VERSION = '0.6';
 
 // The Settings tab.
-// Addresses: #/settings, #/settings/exercise/<exercise id>
-export default function SettingsScreen({ path }) {
-  const { settings, unit, actions } = useData();
-  if (path[0] === 'exercise' && path[1]) return <ExerciseEditor exerciseId={path[1]} />;
+// Address: #/settings
+export default function SettingsScreen() {
+  const { settings, unit, exercises, actions } = useData();
 
   const set = (key) => (value) => actions.setSetting(key, value);
   const mode = PROGRESSION_MODES.find((m) => m.id === settings.progression);
@@ -57,6 +56,20 @@ export default function SettingsScreen({ path }) {
       </section>
 
       <section className="card">
+        <h3>Weekly goal</h3>
+        <ChipGroup
+          label="Training days a week"
+          options={[{ value: null, label: 'From my plan' }, ...[2, 3, 4, 5, 6].map((n) => ({ value: n, label: `${n} days` }))]}
+          value={settings.weeklyGoal}
+          onChange={set('weeklyGoal')}
+        />
+        <p className="muted small">
+          How many days a week you aim to train. Streaks count weeks that reach it, so rest days never break them.
+          "From my plan" uses the number of days in your active plan (or 2 without a plan).
+        </p>
+      </section>
+
+      <section className="card">
         <h3>Suggested weight increase</h3>
         <ChipGroup
           label="Weight increase"
@@ -68,7 +81,14 @@ export default function SettingsScreen({ path }) {
       </section>
 
       <BackupSettings />
-      <ExerciseList />
+
+      <button className="card card-button row-between" onClick={() => go('workout', 'exercises')}>
+        <span>
+          <strong>Exercises</strong>
+          <span className="muted block small">{exercises.length} exercises: add your own, change types and muscles</span>
+        </span>
+        <Icon name="chevron" size={18} />
+      </button>
 
       <p className="muted small center">Workout v{APP_VERSION} · data stays on this device</p>
     </div>

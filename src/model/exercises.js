@@ -50,3 +50,15 @@ export const exerciseName = (exercise) => exercise?.name || 'Deleted exercise';
 // Exercises done for the first time with a name like "Assisted pull-up" or
 // "Band pull-up" start with the weight on − (assistance).
 export const startsNegative = (exercise) => typeOf(exercise) === 'assisted' && /assist|band/i.test(exercise?.name || '');
+
+// Search and filter exercises: by text in the name, and/or by a muscle they
+// work (main or helping; main ones first). Sorted by name otherwise.
+// musclesOf: pass muscles.js's musclesOf (kept as a parameter so this file
+// doesn't depend on muscles.js).
+export function findExercises(exercises, { query = '', muscle = null, musclesOf } = {}) {
+  const q = query.trim().toLowerCase();
+  const weight = (e) => (muscle ? musclesOf(e)[muscle] || 0 : 1);
+  return exercises
+    .filter((e) => e.name.toLowerCase().includes(q) && weight(e) > 0)
+    .sort((a, b) => weight(b) - weight(a) || a.name.localeCompare(b.name));
+}

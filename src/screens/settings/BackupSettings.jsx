@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useData } from '../../data/DataProvider.jsx';
-import { createBackup, readBackup, shareOrDownload } from '../../data/backup.js';
+import { readBackup } from '../../data/backup.js';
+import { useSaveBackup } from '../../hooks/useSaveBackup.js';
 import { isStoragePersisted } from '../../data/db.js';
 import { formatDate } from '../../model/format.js';
 
 // Save all data to a file, or restore from one.
 export default function BackupSettings() {
-  const { exercises, workouts, plans, settings, actions } = useData();
+  const { settings, actions } = useData();
+  const saveBackup = useSaveBackup();
   const [message, setMessage] = useState('');
   const [persisted, setPersisted] = useState(null);
   const fileInput = useRef(null);
@@ -16,16 +18,8 @@ export default function BackupSettings() {
   }, []);
 
   async function save() {
-    try {
-      // Built from what's in memory, so the share sheet opens straight after
-      // the tap (iPhones require that).
-      const shared = await shareOrDownload(createBackup({ exercises, workouts, plans, settings }));
-      if (!shared) return;
-      actions.setSetting('lastBackup', new Date().toISOString());
-      setMessage('Backup created.');
-    } catch (err) {
-      setMessage(`Backup failed: ${err.message}`);
-    }
+    const result = await saveBackup();
+    if (result) setMessage(result);
   }
 
   async function restore(event) {

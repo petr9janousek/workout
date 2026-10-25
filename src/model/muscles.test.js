@@ -1,8 +1,8 @@
 // Tests for muscles.js: which muscles an exercise works and how sets are counted.
 
 import { describe, it, expect } from 'vitest';
-import { guessMuscles, workoutMuscleSets, recentMuscleSets, level, cycleMuscle } from './muscles.js';
-import { indexById } from './exercises.js';
+import { guessMuscles, workoutMuscleSets, recentMuscleSets, level, cycleMuscle, musclesOf } from './muscles.js';
+import { indexById, findExercises } from './exercises.js';
 
 describe('Guessing muscles from the exercise name', () => {
   it('knows common exercises', () => {
@@ -65,5 +65,19 @@ describe('Editing muscles in Settings', () => {
     expect(m).toEqual({ chest: 1 });
     m = cycleMuscle(m, 'chest');
     expect(m).toEqual({});
+  });
+});
+
+describe('Finding exercises in the library', () => {
+  const list = [
+    { id: '1', name: 'Bench press' },
+    { id: '2', name: 'Triceps pushdown' },
+    { id: '3', name: 'Squat' },
+  ];
+  it('filters by a muscle, main muscle first', () => {
+    expect(findExercises(list, { muscle: 'triceps', musclesOf }).map((e) => e.name)).toEqual(['Triceps pushdown', 'Bench press']);
+  });
+  it('filters by text in the name', () => {
+    expect(findExercises(list, { query: 'pre', musclesOf }).map((e) => e.name)).toEqual(['Bench press']);
   });
 });

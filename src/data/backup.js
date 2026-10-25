@@ -31,6 +31,13 @@ export function readBackup(text) {
   return migrate(data);
 }
 
+// Time for a backup reminder? After 3+ workouts, if there's never been a
+// backup or the last one is over two weeks old.
+export function backupDue(lastBackup, finishedCount, now = Date.now()) {
+  if (finishedCount < 3) return false;
+  return !lastBackup || now - Date.parse(lastBackup) > 14 * 864e5;
+}
+
 // Hand the file to the phone: the share sheet where available (save to Files,
 // Drive…), otherwise a normal download. Resolves to false if the user cancelled.
 // Must be called straight from a tap: iPhones only allow sharing then.

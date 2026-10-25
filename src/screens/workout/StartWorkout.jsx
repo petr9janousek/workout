@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import FitHeading from '../../components/ui/FitHeading.jsx';
 import BodyMap from '../../components/charts/BodyMap.jsx';
+import WeekStrip from '../../components/charts/WeekStrip.jsx';
+import Icon from '../../components/ui/Icon.jsx';
+import { useSaveBackup } from '../../hooks/useSaveBackup.js';
+import { backupDue } from '../../data/backup.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { finishedWorkouts } from '../../model/workouts.js';
@@ -8,21 +12,37 @@ import { nextDayIndex, lastPlanWorkout, dayMuscleSets, totalSets } from '../../m
 import { exerciseName } from '../../model/exercises.js';
 import { formatDate } from '../../model/format.js';
 
-// The start screen: your plan's next day front and centre, or an invitation
-// to make a plan; then an empty workout or repeating a recent one.
+// The start screen, top to bottom: this week at a glance, your plan's next
+// day (or an invitation to make a plan), other ways to start, shortcuts,
+// a backup reminder when one is due, and recent workouts to repeat.
 export default function StartWorkout() {
-  const { workouts, activePlan, exercisesById, actions } = useData();
-  const recent = finishedWorkouts(workouts).slice(0, 3);
+  const { workouts, activePlan, exercisesById, settings, actions } = useData();
+  const finished = finishedWorkouts(workouts);
+  const recent = finished.slice(0, 3);
 
   return (
     <div className="start">
       <FitHeading>Ready to train</FitHeading>
+      <WeekStrip onOpen={() => go('progress')} />
 
       {activePlan && activePlan.days.length > 0 ? <NextDay plan={activePlan} /> : <MakeAPlan />}
 
       <button className="btn btn-secondary btn-wide" onClick={() => actions.startWorkout()}>
         Start an empty workout
       </button>
+
+      <div className="shortcuts">
+        <button className="shortcut" onClick={() => go('workout', 'exercises')}>
+          <Icon name="list" size={20} />
+          <span>Exercises</span>
+        </button>
+        <button className="shortcut" onClick={() => go('workout', 'plans')}>
+          <Icon name="plan" size={20} />
+          <span>Plans</span>
+        </button>
+      </div>
+
+      {backupDue(settings.lastBackup, finished.length) && <BackupReminder lastBackup={settings.lastBackup} />}
 
       {recent.length > 0 && (
         <section className="recent">
@@ -120,6 +140,25 @@ function NextDay({ plan }) {
           Last time: {last.name}, {formatDate(last.startedAt)}
         </p>
       )}
+    </section>
+  );
+}
+
+// A nudge to save a backup: everything lives only on this phone.
+function BackupReminder({ lastBackup }) {
+  const saveBackup = useSaveBackup();
+  const [message, setMessage] = useState('');
+  return (
+    <section className="reminder" role="status">
+      <p>
+        <strong>Save a backup.</strong>{' '}
+        {lastBackup ? `The last one was on ${formatDate(lastBackup)}.` : "You haven't saved one yet."} Your workouts are
+        only on this phone.
+      </p>
+      <button className="btn btn-secondary" onClick={async () => setMessage((await saveBackup()) || '')}>
+        Save backup
+      </button>
+      {message && <p className="message">{message}</p>}
     </section>
   );
 }

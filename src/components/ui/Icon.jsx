@@ -11,6 +11,8 @@ const PATHS = {
   back: 'M15 18l-6-6 6-6',
   chevron: 'M9 6l6 6-6 6',
   up: 'M6 15l6-6 6 6',
+  list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+  plan: 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4',
   down: 'M6 9l6 6 6-6',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
 };

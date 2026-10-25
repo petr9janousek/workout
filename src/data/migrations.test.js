@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { migrate, needsMigration, SCHEMA_VERSION } from './migrations.js';
-import { readBackup, createBackup } from './backup.js';
+import { readBackup, createBackup, backupDue } from './backup.js';
 
 // Data as v0.1 saved it: exercises without a type, numbers as typed text.
 const v01 = {
@@ -79,6 +79,14 @@ describe('Backup files', () => {
     const restored = readBackup(JSON.stringify(backup));
     expect(restored.workouts).toEqual(current.workouts);
     expect(restored.settings).toContainEqual({ key: 'unit', value: 'lb' });
+  });
+
+  it('reminds about a backup after 3 workouts, then every two weeks', () => {
+    const now = Date.parse('2026-10-25T12:00:00Z');
+    expect(backupDue(null, 2, now)).toBe(false);
+    expect(backupDue(null, 3, now)).toBe(true);
+    expect(backupDue('2026-10-20T12:00:00Z', 10, now)).toBe(false);
+    expect(backupDue('2026-10-01T12:00:00Z', 10, now)).toBe(true);
   });
 
   it('refuses files that are not backups', () => {

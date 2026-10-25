@@ -1,5 +1,6 @@
 import ExerciseProgress from './ExerciseProgress.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
+import HabitCard from '../../components/charts/HabitCard.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { SUGGESTION_ICONS } from '../../components/ui/Suggestion.jsx';
 import { useData } from '../../data/DataProvider.jsx';
@@ -27,6 +28,7 @@ export default function ProgressScreen({ path }) {
   return (
     <div>
       <h1>Progress</h1>
+      <HabitCard />
       <MuscleCard
         id="week"
         title="Muscles: last 7 days"

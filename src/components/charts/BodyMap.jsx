@@ -1,61 +1,30 @@
 import { useState } from 'react';
-import { FRONT, BACK, FRONT_LINES, BACK_LINES, HEAD } from './bodyShapes.js';
+import BodyFigure from './BodyFigure.jsx';
 import { MUSCLES, muscleLabel, level, SCALES } from '../../model/muscles.js';
 import { formatSets } from '../../model/format.js';
 
-// Front and back body, each muscle coloured by how many sets it got.
+// The muscle map: each muscle coloured by how many sets it got.
 // sets: { chest: 3, triceps: 1.5, … }
 // scale: 'workout' (one session) or 'week' (last 7 days)
 // compact: just the small picture, no tapping, legend or list (for previews)
 export default function BodyMap({ sets, scale = 'workout', compact = false }) {
   const [selected, setSelected] = useState(null);
   const steps = SCALES[scale];
-
   const trained = MUSCLES.filter((m) => sets[m.id] > 0).sort((a, b) => sets[b.id] - sets[a.id]);
+  const label = trained.length ? `Muscles worked: ${trained.map((m) => `${m.label} ${formatSets(sets[m.id])} sets`).join(', ')}` : 'No muscles worked yet';
+  const levelOf = (muscle) => level(sets[muscle], scale);
 
-  function figure(shapes, lines, offsetX, label) {
-    const drawHalf = (mirror) => (
-      <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
-        {shapes.map((s, i) => {
-          if (!s.muscle) return <path key={i} d={s.d} className="body-skin" />;
-          const lvl = level(sets[s.muscle], scale);
-          return (
-            <path
-              key={i}
-              d={s.d}
-              className={`body-muscle heat-${lvl}${selected === s.muscle ? ' selected' : ''}`}
-              onClick={compact ? undefined : () => setSelected(selected === s.muscle ? null : s.muscle)}
-            />
-          );
-        })}
-        {lines.map((d, i) => <path key={`l${i}`} d={d} className="body-line" />)}
-      </g>
-    );
+  if (compact) {
     return (
-      <g transform={`translate(${offsetX},0)`}>
-        <path d={HEAD} className="body-skin" />
-        {drawHalf(false)}
-        {drawHalf(true)}
-        {!compact && <text x="60" y="216" className="body-caption" textAnchor="middle">{label}</text>}
-      </g>
+      <div className="body-map compact">
+        <BodyFigure levelOf={levelOf} captions={false} label={label} />
+      </div>
     );
   }
 
-  const svg = (
-    <svg
-      viewBox={compact ? '0 0 250 208' : '0 0 250 220'}
-      role="img"
-      aria-label={trained.length ? `Muscles worked: ${trained.map((m) => `${m.label} ${formatSets(sets[m.id])} sets`).join(', ')}` : 'No muscles worked yet'}
-    >
-      {figure(FRONT, FRONT_LINES, 0, 'Front')}
-      {figure(BACK, BACK_LINES, 130, 'Back')}
-    </svg>
-  );
-  if (compact) return <div className="body-map compact">{svg}</div>;
-
   return (
     <div className="body-map">
-      {svg}
+      <BodyFigure levelOf={levelOf} selected={selected} onTap={(m) => setSelected(selected === m ? null : m)} label={label} />
 
       <p className="body-readout">
         {selected ? (
@@ -78,11 +47,7 @@ export default function BodyMap({ sets, scale = 'workout', compact = false }) {
         ))}
       </div>
 
-      {trained.length > 0 && (
-        <p className="muscle-list">
-          {trained.map((m) => `${m.label} ${formatSets(sets[m.id])}`).join(' · ')}
-        </p>
-      )}
+      {trained.length > 0 && <p className="muscle-list">{trained.map((m) => `${m.label} ${formatSets(sets[m.id])}`).join(' · ')}</p>}
     </div>
   );
 }
