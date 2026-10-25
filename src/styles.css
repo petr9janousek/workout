@@ -11,6 +11,8 @@
   --done: #3ecf8e;
   --danger: #ff5c5c;
   --radius: 14px;
+  --warning: #f5b14c;
+  --font-display: 'Barlow Condensed', system-ui, sans-serif;
   --tabbar-height: 64px;
 
   color-scheme: dark;
@@ -25,7 +27,15 @@
 body { margin: 0; background: var(--bg); overscroll-behavior-y: none; }
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-h1 { font-size: 1.75rem; margin: 0.5rem 0 1rem; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.1rem;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin: 0.5rem 0 1rem;
+}
 h2 { font-size: 1.1rem; }
 h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 
@@ -121,7 +131,9 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 
 /* ---- Start screen ---- */
-.start h1 { margin-top: 1.5rem; }
+.start { display: flex; flex-direction: column; gap: 14px; }
+.start .recent { margin-top: 4px; }
+.start .section-title { margin-top: 8px; }
 
 /* ---- Active workout ---- */
 .workout-header h1 { margin-bottom: 0; }
@@ -380,3 +392,129 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 
 /* ---- Exercise editor page ---- */
 .field { display: flex; flex-direction: column; gap: 6px; }
+
+/* ---- Display type ---- */
+.fit-heading { margin: 18px 0 2px; line-height: 0; }
+.fit-heading svg { width: 100%; height: auto; display: block; overflow: visible; }
+.fit-heading text {
+  fill: var(--text);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+.day-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.6rem;
+  line-height: 0.95;
+  text-transform: uppercase;
+  margin: 2px 0 4px;
+  overflow-wrap: anywhere;
+}
+.day-title.small-title { font-size: 1.35rem; font-weight: 700; margin: 0; }
+.lead { font-size: 1.02rem; margin: 0 0 14px; }
+.lead.spaced { margin-top: 18px; }
+.badge {
+  display: inline-block; margin-left: 8px; padding: 1px 8px;
+  border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent); font-size: 0.75rem; font-weight: 600; vertical-align: middle;
+}
+.badge.big { margin: 0; padding: 6px 12px; font-size: 0.85rem; }
+.warning { color: var(--warning); }
+
+/* ---- Start screen: the plan's next day ---- */
+.plan-hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: 18px;
+  padding: 14px 16px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.plan-hero.no-plan { border-top-color: var(--border); }
+.plan-hero p { margin: 0; }
+.plan-hero-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.plan-hero-plan { background: none; border: 0; padding: 0; color: var(--muted); font-weight: 600; text-align: left; }
+.plan-hero-body { display: grid; grid-template-columns: 1fr 42%; gap: 8px; align-items: center; }
+.plan-hero-text { display: flex; flex-direction: column; min-width: 0; }
+.plan-hero-map .body-map { margin: 0; }
+.plan-hero-list { list-style: none; margin: 0; padding: 0; font-size: 0.9rem; }
+.plan-hero-list li {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 6px 0; border-top: 1px solid var(--border);
+}
+.plan-hero-last { margin: 0; }
+.day-switch { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.day-switch::-webkit-scrollbar { display: none; }
+.day-chip {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 0 12px 0 6px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border); font-size: 0.88rem;
+}
+.day-chip.active { border-color: var(--accent); color: var(--text); }
+.day-chip-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg); color: var(--muted);
+  font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+}
+.day-chip.active .day-chip-num { background: var(--accent); color: var(--accent-text); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+/* ---- New plan ---- */
+.day-count-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.day-count-grid .day-count:last-child:nth-child(odd) { grid-column: span 2; }
+.day-count {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+  padding: 12px 14px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border); text-align: left;
+}
+.day-count:active { border-color: var(--accent); }
+.day-count-num { font-family: var(--font-display); font-weight: 800; font-size: 3rem; line-height: 0.9; color: var(--accent); }
+.day-count-label { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; margin-bottom: 4px; }
+.template-card { display: flex; flex-direction: column; gap: 10px; }
+.template-head { display: grid; grid-template-columns: 1fr 38%; gap: 8px; align-items: center; }
+.template-name { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1; text-transform: uppercase; margin: 0 0 4px; }
+.template-card p { margin: 0; }
+.template-days { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.template-days li { display: flex; align-items: center; gap: 8px; }
+.own-plan { border-style: dashed; }
+.day-name-field { flex-direction: row; align-items: center; gap: 10px; margin-bottom: 8px; }
+.create-plan { margin-top: 18px; }
+
+/* ---- Plan overview ---- */
+.plan-title { cursor: text; }
+.plan-rename { font-size: 1.4rem; margin: 0.5rem 0 1rem; }
+.plan-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plan-days { list-style: none; margin: 0; padding: 0; }
+.plan-day { display: grid !important; grid-template-columns: 34px 1fr 92px; align-items: center; gap: 10px; padding: 8px 12px; }
+.plan-day-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--accent); color: var(--accent);
+  font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
+}
+.plan-day-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.plan-day-map .body-map { margin: 0; }
+
+/* ---- Day editor ---- */
+.day-editor-head { display: flex; align-items: center; gap: 10px; margin: 8px 0 14px; }
+.day-name-input {
+  flex: 1; min-width: 0;
+  font-family: var(--font-display); font-weight: 800; font-size: 2rem; text-transform: uppercase;
+  background: none; border: 0; border-bottom: 2px solid var(--border); padding: 2px 0;
+}
+.day-name-input:focus { outline: none; border-bottom-color: var(--accent); }
+.plan-items { list-style: none; margin: 0 0 12px; padding: 0; }
+.plan-item {
+  display: grid; grid-template-columns: 36px 1fr auto 32px; align-items: center; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.plan-item-order { display: flex; flex-direction: column; }
+.plan-item-order .icon-btn { height: 24px; }
+.plan-item-order .icon-btn:disabled { opacity: 0.25; }
+.plan-item-name { display: flex; flex-direction: column; min-width: 0; }
+.stepper { display: inline-flex; align-items: center; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; }
+.stepper button { width: 36px; height: 38px; background: none; border: 0; font-size: 1.2rem; color: var(--accent); }
+.stepper span { min-width: 22px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }

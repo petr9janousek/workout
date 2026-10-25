@@ -6,7 +6,7 @@ import { useData } from '../../data/DataProvider.jsx';
 import { PROGRESSION_MODES } from '../../model/progression.js';
 import { WEIGHT_STEPS } from '../../model/settings.js';
 
-export const APP_VERSION = '0.4';
+export const APP_VERSION = '0.5';
 
 // The Settings tab.
 // Addresses: #/settings, #/settings/exercise/<exercise id>

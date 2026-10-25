@@ -3,14 +3,15 @@
 import { migrate, SCHEMA_VERSION } from './migrations.js';
 import { settingsToList } from '../model/settings.js';
 
-// The backup object for { exercises, workouts, settings } (settings as an object).
-export function createBackup({ exercises, workouts, settings }) {
+// The backup object for { exercises, workouts, plans, settings } (settings as an object).
+export function createBackup({ exercises, workouts, plans, settings }) {
   return {
     app: 'workout',
     version: SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     exercises,
     workouts,
+    plans,
     settings: settingsToList(settings),
   };
 }

@@ -2,8 +2,9 @@
 
 A small workout tracker for the two of us. It runs on the phone with no internet, and the data never leaves the phone.
 
-**What version 0.4 can do**
+**What version 0.5 can do**
 
+- **Plans (splits):** choose how many days a week you train, then a ready-made split (Healthy basics, Full body, Push / Pull / Legs, Upper / Lower, Lower-body focus, Upper / Lower + PPL, Body-part split, PPL ×2, Arnold split) or name the days yourself. Plan each day's exercises and sets, with a body map per day and for the whole week. The start screen shows the next day, ready to start with one tap
 - Log a workout: pick exercises, enter values, tick each set when it's done
 - Four kinds of exercise: **weight × reps** (bench press), **bodyweight reps** (push-ups), **assisted / weighted ±** (machine or band pull-ups with − assistance, or + added weight), **timed holds** (plank)
 - Optional **RPE** per set (how hard it felt, 1–10). Can be turned off in Settings
@@ -122,6 +123,8 @@ src/
     sets.js                Sets: creating, showing ("60 kg × 8 @8"), comparing with last time
     workouts.js            Workouts: finishing, totals, history of an exercise
     progression.js         "What to try next time": the three progression styles
+    plans.js               Plans (splits): days in order, which day is next, starting a plan day
+    planTemplates.js       The ready-made splits, and the research they're based on
     muscles.js             Which muscles an exercise works, sets per muscle, map colours
     settings.js            Settings and their defaults
     *.test.js              Tests (see below)
@@ -143,7 +146,8 @@ src/
     workout/               WorkoutEditor → ExerciseCard → SetRow; ExercisePicker; Totals
 
   screens/                 ── one folder per tab ──
-    workout/               WorkoutScreen → StartWorkout or ActiveWorkout
+    workout/               WorkoutScreen → StartWorkout (start screen) or ActiveWorkout
+    plans/                 PlansScreen → PlanList, NewPlan (days → split → names), PlanOverview, DayEditor
     history/               HistoryScreen (list) → WorkoutDetail
     progress/              ProgressScreen (list) → ExerciseProgress
     settings/              SettingsScreen, BackupSettings, ExerciseList → ExerciseEditor
@@ -155,6 +159,7 @@ src/
 - Wording on a screen → the matching file in `src/screens/`
 - How suggestions work → `src/model/progression.js` (and its tests)
 - Which muscles an exercise works → `RULES` in `src/model/muscles.js`
+- The ready-made splits → `PLAN_TEMPLATES` in `src/model/planTemplates.js` (the tests check every split still trains all major muscles)
 - The starting list of exercises → `STARTER_EXERCISES` in `src/model/exercises.js` (only for a fresh install)
 - A new setting → add it with its default to `src/model/settings.js`, then use `settings.yourSetting` and `actions.setSetting('yourSetting', value)`
 - App name or icon on the home screen → `vite.config.js` and the files in `public/`
@@ -188,6 +193,7 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 |---|---|
 | `model/progression.test.js` | The three progression styles, the safety rules (RPE 9.5+, dropping reps, plateaus), assisted / bodyweight / timed exercises, starting an exercise in today's workout |
 | `model/workouts.test.js` | Finishing a workout, totals, an exercise's history |
+| `model/plans.test.js` | Which plan day is next, starting a plan day, editing days, and that every ready-made split trains all major muscles in sensible amounts |
 | `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets, ▲▼ comparisons |
 | `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours |
 | `data/migrations.test.js` | Data and backups from older versions still load correctly |

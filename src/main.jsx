@@ -4,6 +4,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import { requestPersistentStorage } from './data/db.js';
+// The display typeface (headings), bundled so it works offline.
+import '@fontsource/barlow-condensed/700.css';
+import '@fontsource/barlow-condensed/800.css';
 import './styles.css';
 
 // Ask the phone not to clean up the app's data automatically.

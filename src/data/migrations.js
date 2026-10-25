@@ -7,11 +7,12 @@
 //   1 (v0.1)     exercises have no type
 //   2 (v0.2–0.3) numbers in sets are saved as typed text ("62,5", "-30", "")
 //   3 (v0.4)     numbers are numbers, empty is null; hints store only kind + text
+//   4 (v0.5)     plans; workouts started from a plan remember name, planId, dayId
 
 import { guessType } from '../model/exercises.js';
 import { parseNumber } from '../model/format.js';
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 // "62,5" → 62.5, "" / "-" / undefined → null, numbers stay as they are.
 const toNumber = (v) => (typeof v === 'number' ? v : parseNumber(v) ?? null);
@@ -30,6 +31,7 @@ function migrateSet(set) {
 
 function migrateWorkout(workout) {
   return {
+    ...(workout.planId ? { planId: workout.planId, dayId: workout.dayId, name: workout.name } : {}),
     id: workout.id,
     startedAt: workout.startedAt,
     finishedAt: workout.finishedAt ?? null,
@@ -47,13 +49,21 @@ function migrateExercise(exercise) {
   return { ...exercise, type: exercise.type || guessType(exercise.name) };
 }
 
-// data: { exercises, workouts, settings: [{ key, value }] }, as saved in the
+function migratePlan(plan) {
+  return {
+    ...plan,
+    days: (plan.days || []).map((d) => ({ ...d, items: (d.items || []).map((i) => ({ exerciseId: i.exerciseId, sets: Number(i.sets) || 3 })) })),
+  };
+}
+
+// data: { exercises, workouts, plans, settings: [{ key, value }] }, as saved in the
 // database or in a backup. Returns the same shape, up to date.
 export function migrate(data) {
   const settings = (data.settings || []).filter((s) => s.key !== 'schemaVersion');
   return {
     exercises: (data.exercises || []).map(migrateExercise),
     workouts: (data.workouts || []).map(migrateWorkout),
+    plans: (data.plans || []).map(migratePlan),
     settings: [...settings, { key: 'schemaVersion', value: SCHEMA_VERSION }],
   };
 }

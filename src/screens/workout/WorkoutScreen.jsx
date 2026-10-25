@@ -1,10 +1,12 @@
 import { useData } from '../../data/DataProvider.jsx';
 import StartWorkout from './StartWorkout.jsx';
 import ActiveWorkout from './ActiveWorkout.jsx';
+import PlansScreen from '../plans/PlansScreen.jsx';
 
-// The Workout tab: the workout in progress, or the start screen.
-// Addresses: #/workout, #/workout/add (exercise picker open)
+// The Workout tab: the workout in progress, or the start screen; plans live here too.
+// Addresses: #/workout, #/workout/add (exercise picker open), #/workout/plans/…
 export default function WorkoutScreen({ path }) {
   const { activeWorkout } = useData();
+  if (path[0] === 'plans') return <PlansScreen path={path.slice(1)} />;
   return activeWorkout ? <ActiveWorkout workout={activeWorkout} picking={path[0] === 'add'} /> : <StartWorkout />;
 }

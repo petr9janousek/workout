@@ -21,7 +21,10 @@ export default function HistoryScreen({ path }) {
       {list.map((w) => (
         <button key={w.id} className="card card-button" onClick={() => go('history', w.id)}>
           <div className="row-between">
-            <strong>{formatDate(w.startedAt)}</strong>
+            <strong>
+              {w.name ? `${w.name} · ` : ''}
+              {formatDate(w.startedAt)}
+            </strong>
             <span className="muted">{formatDuration(Date.parse(w.finishedAt) - Date.parse(w.startedAt))}</span>
           </div>
           <TotalsLine workout={w} />

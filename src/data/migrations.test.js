@@ -44,6 +44,17 @@ describe('Updating old data', () => {
     expect(data.workouts[0].entries[0].suggestion).toEqual({ kind: 'up', text: 'Try 65' });
   });
 
+  it('keeps plans, and which plan day a workout came from', () => {
+    const plan = { id: 'p', name: 'PPL', days: [{ id: 'd', name: 'Push', items: [{ exerciseId: 'starter-0', sets: 4 }] }] };
+    const data = migrate({ ...v01, plans: [plan], workouts: [{ ...v01.workouts[0], planId: 'p', dayId: 'd', name: 'Push' }] });
+    expect(data.plans).toEqual([plan]);
+    expect(data.workouts[0]).toMatchObject({ planId: 'p', dayId: 'd', name: 'Push' });
+  });
+
+  it('gives data from before plans an empty list of plans', () => {
+    expect(migrate(v01).plans).toEqual([]);
+  });
+
   it('changes nothing more when run again on up-to-date data', () => {
     const once = migrate(v01);
     expect(migrate(once)).toEqual(once);

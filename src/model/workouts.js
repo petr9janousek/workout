@@ -1,8 +1,9 @@
 // Workouts and the history built from them.
 //
 // A workout is a plain object, saved as one record in the database:
-//   { id, startedAt, finishedAt, notes, entries: [entry, …] }
+//   { id, startedAt, finishedAt, notes, entries: [entry, …], name?, planId?, dayId? }
 //   finishedAt: null while the workout is in progress
+//   name, planId, dayId: set when it was started from a plan day (see plans.js)
 // An entry is one exercise inside a workout:
 //   { id, exerciseId, sets: [set, …], suggestion? }
 //   suggestion: the "try heavier" hint shown when it was added (see progression.js)
@@ -12,8 +13,9 @@ import { isDoneSet, val, estimated1RM } from './sets.js';
 
 const round1 = (n) => Math.round(n * 10) / 10;
 
-export function createWorkout(entries = [], startedAt = new Date().toISOString()) {
-  return { id: newId(), startedAt, finishedAt: null, notes: '', entries };
+// meta: optional { name, planId, dayId } when started from a plan day.
+export function createWorkout(entries = [], startedAt = new Date().toISOString(), meta = {}) {
+  return { id: newId(), startedAt, finishedAt: null, notes: '', entries, ...meta };
 }
 
 // Only the hint's kind and text are kept; its suggested sets became `sets`.

@@ -6,7 +6,8 @@ import { formatSets } from '../../model/format.js';
 // Front and back body, each muscle coloured by how many sets it got.
 // sets: { chest: 3, triceps: 1.5, … }
 // scale: 'workout' (one session) or 'week' (last 7 days)
-export default function BodyMap({ sets, scale = 'workout' }) {
+// compact: just the small picture, no tapping, legend or list (for previews)
+export default function BodyMap({ sets, scale = 'workout', compact = false }) {
   const [selected, setSelected] = useState(null);
   const steps = SCALES[scale];
 
@@ -23,7 +24,7 @@ export default function BodyMap({ sets, scale = 'workout' }) {
               key={i}
               d={s.d}
               className={`body-muscle heat-${lvl}${selected === s.muscle ? ' selected' : ''}`}
-              onClick={() => setSelected(selected === s.muscle ? null : s.muscle)}
+              onClick={compact ? undefined : () => setSelected(selected === s.muscle ? null : s.muscle)}
             />
           );
         })}
@@ -35,21 +36,26 @@ export default function BodyMap({ sets, scale = 'workout' }) {
         <path d={HEAD} className="body-skin" />
         {drawHalf(false)}
         {drawHalf(true)}
-        <text x="60" y="216" className="body-caption" textAnchor="middle">{label}</text>
+        {!compact && <text x="60" y="216" className="body-caption" textAnchor="middle">{label}</text>}
       </g>
     );
   }
 
+  const svg = (
+    <svg
+      viewBox={compact ? '0 0 250 208' : '0 0 250 220'}
+      role="img"
+      aria-label={trained.length ? `Muscles worked: ${trained.map((m) => `${m.label} ${formatSets(sets[m.id])} sets`).join(', ')}` : 'No muscles worked yet'}
+    >
+      {figure(FRONT, FRONT_LINES, 0, 'Front')}
+      {figure(BACK, BACK_LINES, 130, 'Back')}
+    </svg>
+  );
+  if (compact) return <div className="body-map compact">{svg}</div>;
+
   return (
     <div className="body-map">
-      <svg
-        viewBox="0 0 250 220"
-        role="img"
-        aria-label={trained.length ? `Muscles worked: ${trained.map((m) => `${m.label} ${formatSets(sets[m.id])} sets`).join(', ')}` : 'No muscles worked yet'}
-      >
-        {figure(FRONT, FRONT_LINES, 0, 'Front')}
-        {figure(BACK, BACK_LINES, 130, 'Back')}
-      </svg>
+      {svg}
 
       <p className="body-readout">
         {selected ? (

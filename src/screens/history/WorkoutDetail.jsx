@@ -41,8 +41,9 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
   return (
     <div>
       <BackButton label="History" fallback={['history']} />
-      <h1>{formatDate(workout.startedAt)}</h1>
+      <h1>{workout.name || formatDate(workout.startedAt)}</h1>
       <p className="muted">
+        {workout.name && `${formatDate(workout.startedAt)} · `}
         {formatTime(workout.startedAt)} · {formatDuration(Date.parse(workout.finishedAt) - Date.parse(workout.startedAt))}
       </p>
       <Totals workout={workout} />

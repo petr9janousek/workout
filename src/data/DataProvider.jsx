@@ -13,6 +13,7 @@ import { migrate, needsMigration } from './migrations.js';
 import { createExercise, indexById, starterExercises } from '../model/exercises.js';
 import { activeWorkout } from '../model/workouts.js';
 import { planWorkout } from '../model/progression.js';
+import { createPlan, createDay, planFromTemplate, startPlanDay } from '../model/plans.js';
 import { settingsFromList } from '../model/settings.js';
 
 const DataContext = createContext(null);
@@ -35,7 +36,7 @@ async function loadFromDb() {
     data.exercises = starterExercises();
     await Promise.all(data.exercises.map((e) => db.put('exercises', e)));
   }
-  return { exercises: data.exercises, workouts: data.workouts, settings: settingsFromList(data.settings) };
+  return { exercises: data.exercises, workouts: data.workouts, plans: data.plans, settings: settingsFromList(data.settings) };
 }
 
 export function DataProvider({ children }) {
@@ -76,6 +77,12 @@ export function DataProvider({ children }) {
       save(db.put('exercises', exercise));
       return exercise;
     },
+    // Start the given day of a plan as today's workout.
+    startPlanDay(plan, day) {
+      const workout = startPlanDay(plan, day, indexById(state.exercises), state);
+      actions.saveWorkout(workout);
+      return workout;
+    },
     // changes: any of { name, type, muscles }. muscles: undefined = back to automatic.
     updateExercise(id, changes) {
       const exercise = { ...state.exercises.find((e) => e.id === id), ...changes };
@@ -86,6 +93,45 @@ export function DataProvider({ children }) {
     deleteExercise(id) {
       setState((s) => ({ ...s, exercises: s.exercises.filter((e) => e.id !== id) }));
       save(db.remove('exercises', id));
+    },
+    savePlan(plan) {
+      setState((s) => ({ ...s, plans: upsert(s.plans, plan) }));
+      save(db.put('plans', plan));
+    },
+    deletePlan(id) {
+      setState((s) => ({ ...s, plans: s.plans.filter((p) => p.id !== id) }));
+      save(db.remove('plans', id));
+      if (state.settings.activePlanId === id) actions.setSetting('activePlanId', null);
+    },
+    // A new plan with empty days, made the active plan. Returns it.
+    newPlan(name, dayNames) {
+      const plan = createPlan(name, dayNames.map((n) => createDay(n)));
+      actions.savePlan(plan);
+      actions.setSetting('activePlanId', plan.id);
+      return plan;
+    },
+    // A new plan from a template (planTemplates.js), made the active plan.
+    // Exercises the template needs are found by name, or created.
+    newPlanFromTemplate(template) {
+      const known = new Map(state.exercises.map((e) => [e.name.toLowerCase(), e]));
+      const created = [];
+      const idForName = (name) => {
+        let exercise = known.get(name.toLowerCase());
+        if (!exercise) {
+          exercise = createExercise(name);
+          known.set(name.toLowerCase(), exercise);
+          created.push(exercise);
+        }
+        return exercise.id;
+      };
+      const plan = planFromTemplate(template, idForName);
+      if (created.length) {
+        setState((s) => ({ ...s, exercises: [...s.exercises, ...created] }));
+        created.forEach((e) => save(db.put('exercises', e)));
+      }
+      actions.savePlan(plan);
+      actions.setSetting('activePlanId', plan.id);
+      return plan;
     },
     setSetting(key, value) {
       setState((s) => ({ ...s, settings: { ...s.settings, [key]: value } }));
@@ -105,6 +151,7 @@ export function DataProvider({ children }) {
 
   if (!state) return <div className="loading">Loading…</div>;
 
-  const value = { ...state, unit: state.settings.unit, exercisesById, activeWorkout: current, actions, saveError };
+  const activePlan = state.plans.find((p) => p.id === state.settings.activePlanId) || null;
+  const value = { ...state, unit: state.settings.unit, exercisesById, activeWorkout: current, activePlan, actions, saveError };
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

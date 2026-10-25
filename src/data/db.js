@@ -1,27 +1,28 @@
 // The on-phone database (IndexedDB). Nothing leaves the device.
 //
-// Three "stores" (think: tables), each holding plain objects:
+// Four "stores" (think: tables), each holding plain objects:
 //   exercises  { id, name, type, muscles? }        see model/exercises.js
 //   workouts   { id, startedAt, finishedAt, … }    see model/workouts.js
+//   plans      { id, name, days: [...] }           see model/plans.js
 //   settings   { key, value }                      see model/settings.js
 //
 // All functions return Promises (IndexedDB is asynchronous).
 
 const DB_NAME = 'workout-app';
-const DB_VERSION = 1; // the database structure; data changes are handled in migrations.js
-export const STORES = ['exercises', 'workouts', 'settings'];
+const DB_VERSION = 2; // the database structure (2: plans); data changes are handled in migrations.js
+export const STORES = ['exercises', 'workouts', 'plans', 'settings'];
 
 let dbPromise = null;
 
 function openDb() {
   dbPromise ??= new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    // Runs the first time on a phone: create the stores.
+    // Runs the first time on a phone, and when DB_VERSION goes up: create missing stores.
     request.onupgradeneeded = () => {
       const db = request.result;
-      if (!db.objectStoreNames.contains('exercises')) db.createObjectStore('exercises', { keyPath: 'id' });
-      if (!db.objectStoreNames.contains('workouts')) db.createObjectStore('workouts', { keyPath: 'id' });
-      if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings', { keyPath: 'key' });
+      for (const store of STORES) {
+        if (!db.objectStoreNames.contains(store)) db.createObjectStore(store, { keyPath: store === 'settings' ? 'key' : 'id' });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
@@ -45,10 +46,10 @@ export const getAll = (store) => transaction(store, 'readonly', (tx) => tx.objec
 export const put = (store, item) => transaction(store, 'readwrite', (tx) => tx.objectStore(store).put(item));
 export const remove = (store, id) => transaction(store, 'readwrite', (tx) => tx.objectStore(store).delete(id));
 
-// Everything at once: { exercises, workouts, settings }
+// Everything at once: { exercises, workouts, plans, settings }
 export async function loadAll() {
-  const [exercises, workouts, settings] = await Promise.all(STORES.map(getAll));
-  return { exercises, workouts, settings };
+  const lists = await Promise.all(STORES.map(getAll));
+  return Object.fromEntries(STORES.map((store, i) => [store, lists[i]]));
 }
 
 // Replace everything (restoring a backup, or saving migrated data) in one go:

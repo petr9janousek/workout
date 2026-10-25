@@ -80,27 +80,33 @@ export function cycleMuscle(muscles, muscle) {
   return next;
 }
 
-// { chest: 3, triceps: 1.5, … } — sets per muscle in one workout (done sets only).
+// Add up muscle sets: [{ exerciseId, sets: 3 }, …] → { chest: 3, triceps: 1.5, … }
 // exercisesById: a Map from indexById() in exercises.js
-export function workoutMuscleSets(workout, exercisesById) {
+export function muscleSets(items, exercisesById) {
   const load = {};
-  for (const entry of workout.entries) {
-    const muscles = musclesOf(exercisesById.get(entry.exerciseId));
-    const sets = entry.sets.filter(isDoneSet).length;
-    for (const [m, weight] of Object.entries(muscles)) load[m] = (load[m] || 0) + sets * weight;
+  for (const { exerciseId, sets } of items) {
+    for (const [m, weight] of Object.entries(musclesOf(exercisesById.get(exerciseId)))) {
+      load[m] = (load[m] || 0) + sets * weight;
+    }
   }
   return load;
 }
 
+// Sets per muscle in one workout (done sets only).
+export const workoutMuscleSets = (workout, exercisesById) =>
+  muscleSets(workout.entries.map((e) => ({ exerciseId: e.exerciseId, sets: e.sets.filter(isDoneSet).length })), exercisesById);
+
 // Sets per muscle over the last `days` days, including a workout in progress.
 export function recentMuscleSets(workouts, exercisesById, days = 7, now = Date.now()) {
   const since = new Date(now - days * 864e5).toISOString();
-  const load = {};
-  for (const w of workouts) {
-    if (w.startedAt < since) continue;
-    for (const [m, sets] of Object.entries(workoutMuscleSets(w, exercisesById))) load[m] = (load[m] || 0) + sets;
-  }
-  return load;
+  return addLoads(workouts.filter((w) => w.startedAt >= since).map((w) => workoutMuscleSets(w, exercisesById)));
+}
+
+// { chest: 3 } + { chest: 2, biceps: 1 } → { chest: 5, biceps: 1 }
+export function addLoads(loads) {
+  const total = {};
+  for (const load of loads) for (const [m, sets] of Object.entries(load)) total[m] = (total[m] || 0) + sets;
+  return total;
 }
 
 // How red a muscle gets. Levels 0–4 by number of sets.

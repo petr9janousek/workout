@@ -35,7 +35,7 @@ export default function ActiveWorkout({ workout, picking }) {
   return (
     <div>
       <header className="workout-header">
-        <h1>Workout</h1>
+        <h1>{workout.name || 'Workout'}</h1>
         <p className="muted">{formatDate(workout.startedAt)}</p>
       </header>
 

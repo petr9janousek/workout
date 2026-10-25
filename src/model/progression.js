@@ -16,7 +16,7 @@
 //   text: the explanation shown to the user
 //   sets: the suggested sets for today (new, unticked)
 
-import { copySets, emptySets, val } from './sets.js';
+import { copySets, emptySets, nextSet, val } from './sets.js';
 import { recentSessions, createEntry, createWorkout } from './workouts.js';
 import { typeOf } from './exercises.js';
 import { formatNumber, formatSigned } from './format.js';
@@ -162,14 +162,24 @@ export function suggestNext(sessions, type, settings = {}) {
 // out of "last time".
 
 // A new entry for an exercise: last time's sets with the suggestion applied,
-// or 3 empty sets for an exercise done for the first time.
+// or empty sets for an exercise done for the first time.
 // `done`: when fixing an old workout, added sets count as done straight away.
-export function planEntry(exercise, { workouts, settings, startedAt }, done = false) {
+// `setCount`: how many sets (from a plan); otherwise last time's count, or 3.
+export function planEntry(exercise, { workouts, settings, startedAt }, done = false, setCount = null) {
   const sessions = recentSessions(workouts, exercise.id, startedAt);
-  if (!sessions.length) return createEntry(exercise.id, emptySets(3, done));
+  if (!sessions.length) return createEntry(exercise.id, emptySets(setCount || 3, done));
   const suggestion = suggestNext(sessions, typeOf(exercise), settings);
-  const sets = suggestion.sets.map((s) => ({ ...s, done }));
+  const sets = resizeSets(suggestion.sets, setCount).map((s) => ({ ...s, done }));
   return createEntry(exercise.id, sets, done ? null : suggestion);
+}
+
+// Cut or extend (copying the last set) to `count` sets; null = leave as is.
+function resizeSets(sets, count) {
+  if (!count || count === sets.length) return sets;
+  if (count < sets.length) return sets.slice(0, count);
+  const more = [...sets];
+  while (more.length < count) more.push(nextSet(more));
+  return more;
 }
 
 // A new workout, optionally with the exercises of an earlier one ("repeat").

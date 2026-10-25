@@ -6,10 +6,11 @@ import { back } from '../../hooks/useRoute.js';
 import { EXERCISE_TYPES, typeOf } from '../../model/exercises.js';
 import { MUSCLES, musclesOf, cycleMuscle } from '../../model/muscles.js';
 import { countWorkoutsWith } from '../../model/workouts.js';
+import { plansUsing } from '../../model/plans.js';
 
 // Edit one exercise: name, type, muscles; or delete it.
 export default function ExerciseEditor({ exerciseId }) {
-  const { exercisesById, workouts, actions } = useData();
+  const { exercisesById, workouts, plans, actions } = useData();
   const exercise = exercisesById.get(exerciseId);
   const [name, setName] = useState(exercise?.name ?? '');
 
@@ -34,6 +35,11 @@ export default function ExerciseEditor({ exerciseId }) {
     const used = countWorkoutsWith(workouts, exercise.id);
     if (used) {
       alert(`“${exercise.name}” is used in ${used} workout(s), so it can't be deleted. You can rename it instead.`);
+      return;
+    }
+    const inPlans = plansUsing(plans, exercise.id);
+    if (inPlans.length) {
+      alert(`“${exercise.name}” is part of the plan “${inPlans[0].name}”. Remove it from the plan first.`);
       return;
     }
     if (!confirm(`Delete “${exercise.name}”?`)) return;
