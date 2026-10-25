@@ -6,7 +6,7 @@
 // A done set then counts 1 set for primary muscles and ½ set for secondary
 // ones. This "fractional" counting is how training research counts volume.
 
-import { isDoneSet } from './utils.js';
+import { isDoneSet } from './sets.js';
 
 export const MUSCLES = [
   { id: 'chest', label: 'Chest' },
@@ -71,11 +71,21 @@ export function guessMuscles(name = '') {
 // An exercise's muscles: the ones you set in Settings, or a guess from the name.
 export const musclesOf = (exercise) => exercise?.muscles || guessMuscles(exercise?.name);
 
+// Change one muscle: off → ½ (helping) → 1 (main) → off. Returns new muscles.
+export function cycleMuscle(muscles, muscle) {
+  const next = { ...muscles };
+  const weight = { 0: 0.5, 0.5: 1, 1: 0 }[next[muscle] || 0];
+  if (weight) next[muscle] = weight;
+  else delete next[muscle];
+  return next;
+}
+
 // { chest: 3, triceps: 1.5, … } — sets per muscle in one workout (done sets only).
-export function workoutMuscleSets(workout, exercises) {
+// exercisesById: a Map from indexById() in exercises.js
+export function workoutMuscleSets(workout, exercisesById) {
   const load = {};
   for (const entry of workout.entries) {
-    const muscles = musclesOf(exercises.find((e) => e.id === entry.exerciseId));
+    const muscles = musclesOf(exercisesById.get(entry.exerciseId));
     const sets = entry.sets.filter(isDoneSet).length;
     for (const [m, weight] of Object.entries(muscles)) load[m] = (load[m] || 0) + sets * weight;
   }
@@ -83,12 +93,12 @@ export function workoutMuscleSets(workout, exercises) {
 }
 
 // Sets per muscle over the last `days` days, including a workout in progress.
-export function recentMuscleSets(workouts, exercises, days = 7) {
-  const since = new Date(Date.now() - days * 864e5).toISOString();
+export function recentMuscleSets(workouts, exercisesById, days = 7, now = Date.now()) {
+  const since = new Date(now - days * 864e5).toISOString();
   const load = {};
   for (const w of workouts) {
     if (w.startedAt < since) continue;
-    for (const [m, sets] of Object.entries(workoutMuscleSets(w, exercises))) load[m] = (load[m] || 0) + sets;
+    for (const [m, sets] of Object.entries(workoutMuscleSets(w, exercisesById))) load[m] = (load[m] || 0) + sets;
   }
   return load;
 }

@@ -2,7 +2,7 @@
 
 A small workout tracker for the two of us. It runs on the phone with no internet, and the data never leaves the phone.
 
-**What version 0.3 can do**
+**What version 0.4 can do**
 
 - Log a workout: pick exercises, enter values, tick each set when it's done
 - Four kinds of exercise: **weight × reps** (bench press), **bodyweight reps** (push-ups), **assisted / weighted ±** (machine or band pull-ups with − assistance, or + added weight), **timed holds** (plank)
@@ -13,6 +13,7 @@ A small workout tracker for the two of us. It runs on the phone with no internet
 - History: totals per workout; view, edit, delete, or **repeat** a workout
 - Progress per exercise: personal records, a chart, and what to aim for next time
 - Backup to a file and restore from it
+- The phone's back button/gesture works inside the app
 
 ---
 
@@ -52,10 +53,6 @@ While this runs, every time you save a file the page updates by itself. Stop it 
 
 The phones need to load the app once from an https address. GitHub hosts it for free. Only the app's code goes there, never your workouts.
 
-0. Move the publishing script into the folder GitHub expects (once). In the VS Code terminal, in this folder:
-   ```
-   mkdir .github\workflows; move deploy.yml .github\workflows\deploy.yml
-   ```
 1. On <https://github.com>, create a new **public** repository, e.g. `workout`. Don't add a README.
 2. In this folder:
    ```
@@ -87,48 +84,112 @@ Always open it from the home-screen icon. On iPhone, the home-screen app keeps i
 
 ## How the code is organised
 
+The app is a React app, written in plain JavaScript (no classes). The code is in three layers. Each layer only uses the layers below it:
+
 ```
-index.html              The page the browser loads first. Mostly just an empty <div> React fills in
-vite.config.js          Build settings, and the PWA settings (app name, icon, colours, offline)
-public/                 Icons, copied as-is
+ screens/  components/  hooks/     what you see: React components (functions that return the screen)
+        │  read data with useData(), change it with actions.…
+        ▼
+ data/                             the store: keeps all data in memory, saves changes to the phone
+        │
+        ▼
+ model/                            the rules: plain data + pure functions, no screen, no database
+```
+
+- **model/** is the core: what a workout or a set is, how totals, progress suggestions and muscle counts are worked out. It's all *pure functions*: data in, data out, nothing else. That's what makes it easy to test, and the place to look first when the app calculates something wrong.
+- **data/** owns the data. `DataProvider.jsx` loads everything from the phone's database once, keeps it in memory, and saves every change. Any component gets it with `useData()`:
+  ```js
+  const { workouts, settings, exercisesById, actions } = useData();
+  actions.saveWorkout(workout);
+  ```
+  Data is never changed in place: changes always build a new object (`{ ...workout, notes }`). React notices changes by checking whether it's a *different object*, so this is how the screen knows to update.
+- **screens/** and **components/** are the UI. A component is a function that gets data and returns what to show; React calls it again whenever the data changes.
+- **Navigation:** every screen has its own address after `#` (e.g. `#/history/<id>/edit`), so the phone's back button works. See `src/hooks/useRoute.js`.
+
+```
+index.html                 The page the browser loads first; shows errors instead of a blank page
+vite.config.js             Build settings, and the PWA settings (app name, icon, colours, offline)
+public/                    Icons, copied as-is
 src/
-  main.jsx              Starting point: starts React
-  App.jsx               Holds all the data, saves changes, shows the tab bar and current screen
-  db.js                 Saving to and loading from the phone's database (IndexedDB), and backups
-  utils.js              Small helpers: formatting dates, "last time", progress calculations
-  muscles.js            Which muscles each exercise works, and counting sets per muscle
-  styles.css            All the look: colours at the top, then each part of the app
-  screens/
-    WorkoutScreen.jsx   Start screen and the workout in progress (timers, Finish, Discard)
-    HistoryScreen.jsx   List of past workouts and the detail view
-    ProgressScreen.jsx  Records, chart and sessions for each exercise
-    SettingsScreen.jsx  Unit, backup and restore, managing exercises
-  components/           Pieces used by several screens
-    WorkoutEditor.jsx   Exercises and sets inside a workout (also used to edit old workouts)
-    ExercisePicker.jsx  The searchable exercise list
-    LineChart.jsx       The progress chart
-    Icon.jsx            The small line icons
-    BodyMap.jsx         The muscle map drawing (shapes are in bodyShapes.js)
-    MuscleCard.jsx      Fold-away card around the muscle map
-    Totals.jsx          Sets / kg / reps totals
+  main.jsx                 Starting point: starts React
+  App.jsx                  The frame: current screen + tab bar (+ a banner if saving fails)
+  styles.css               All the look: colours at the top, then each part of the app
+
+  model/                   ── the rules (pure functions, tested) ──
+    format.js              Numbers and dates to text, typed text to numbers
+    ids.js                 Unique ids
+    exercises.js           Exercises and their 4 types, starter list, guessing the type from the name
+    sets.js                Sets: creating, showing ("60 kg × 8 @8"), comparing with last time
+    workouts.js            Workouts: finishing, totals, history of an exercise
+    progression.js         "What to try next time": the three progression styles
+    muscles.js             Which muscles an exercise works, sets per muscle, map colours
+    settings.js            Settings and their defaults
+    *.test.js              Tests (see below)
+
+  data/                    ── the data ──
+    DataProvider.jsx       The store: loads, keeps and saves all data; useData()
+    db.js                  The phone's database (IndexedDB)
+    migrations.js          Updates data saved by older versions of the app
+    backup.js              Backup files: making, reading, sharing
+
+  hooks/                   ── small reusable React helpers ──
+    useRoute.js            Navigation and the back button
+    useNow.js              The current time, ticking (timers)
+    useRemembered.js       A setting remembered on this phone (e.g. folded cards)
+
+  components/              ── pieces used by several screens ──
+    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion
+    charts/                LineChart, BodyMap (+ bodyShapes.js, the drawing), MuscleCard
+    workout/               WorkoutEditor → ExerciseCard → SetRow; ExercisePicker; Totals
+
+  screens/                 ── one folder per tab ──
+    workout/               WorkoutScreen → StartWorkout or ActiveWorkout
+    history/               HistoryScreen (list) → WorkoutDetail
+    progress/              ProgressScreen (list) → ExerciseProgress
+    settings/              SettingsScreen, BackupSettings, ExerciseList → ExerciseEditor
 ```
 
 **Where to change things**
 
-- Colours, sizes, spacing → `src/styles.css`. The main colours are at the top (`--accent` is the orange).
+- Colours, sizes, spacing → `src/styles.css`. The main colours are at the top (`--accent` is the orange, `--heat-*` the muscle map).
 - Wording on a screen → the matching file in `src/screens/`
-- The starting list of exercises → `STARTER_EXERCISES` in `src/utils.js`. This only applies to a fresh install.
+- How suggestions work → `src/model/progression.js` (and its tests)
+- Which muscles an exercise works → `RULES` in `src/model/muscles.js`
+- The starting list of exercises → `STARTER_EXERCISES` in `src/model/exercises.js` (only for a fresh install)
+- A new setting → add it with its default to `src/model/settings.js`, then use `settings.yourSetting` and `actions.setSetting('yourSetting', value)`
 - App name or icon on the home screen → `vite.config.js` and the files in `public/`
 
-**How data is stored:** a workout is saved like this:
+**How data is stored:** a workout is one record:
 
 ```js
 {
-  id: "…", startedAt: "2026-10-22T18:30:00Z", finishedAt: "…", notes: "",
+  id: "…", startedAt: "2026-10-22T18:30:00Z", finishedAt: "…",   // finishedAt: null while in progress
+  notes: "",
   entries: [
-    { exerciseId: "…", sets: [ { weight: "60", reps: "8", done: true }, … ] }
+    { id: "…", exerciseId: "…", suggestion: null,
+      sets: [ { id: "…", weight: 60, reps: 8, time: null, rpe: 8, done: true, doneAt: "…" }, … ] }
   ]
 }
 ```
 
-Only sets that are ticked ✓ count. When you finish a workout, unticked sets are left out.
+Numbers are numbers; an empty field is `null`. Only ticked ✓ sets count, and unticked ones are dropped when the workout is finished.
+
+**Changing how data is stored:** raise `SCHEMA_VERSION` in `src/data/migrations.js` and add the conversion to `migrate()`. It runs when the app starts and when a backup is restored, so the phones' existing data and old backup files keep working. Add a test for it in `migrations.test.js`.
+
+## Tests
+
+```
+npm test
+```
+
+runs all tests in a second or two and prints what passed. Each test is a short, plain-language scenario, for example *"adds a rep each session, confirms the goal once, then adds weight and goes back to the starting reps"*. The tests sit next to the code they check:
+
+| File | What it checks |
+|---|---|
+| `model/progression.test.js` | The three progression styles, the safety rules (RPE 9.5+, dropping reps, plateaus), assisted / bodyweight / timed exercises, starting an exercise in today's workout |
+| `model/workouts.test.js` | Finishing a workout, totals, an exercise's history |
+| `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets, ▲▼ comparisons |
+| `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours |
+| `data/migrations.test.js` | Data and backups from older versions still load correctly |
+
+Run them before pushing a change to the rules in `model/`. When a test fails, it shows which scenario broke and the expected and actual values. `npm run test:watch` re-runs them on every save while you work.

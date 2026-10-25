@@ -330,7 +330,8 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .exercise-list { list-style: none; margin: 0; padding: 0; }
 .exercise-list li { display: flex; align-items: center; border-bottom: 1px solid var(--border); }
 .exercise-list li:last-child { border-bottom: 0; }
-.exercise-edit { flex-direction: column; align-items: stretch !important; gap: 10px; padding: 12px 0; }
+.exercise-form { display: flex; flex-direction: column; gap: 10px; }
+.exercise-form > .small { margin-top: 6px; }
 .message { color: var(--done); }
 
 /* ---- Muscle map ---- */
@@ -367,3 +368,15 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .heat-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 .muscle-list { font-size: 0.85rem; color: var(--muted); text-align: center; margin: 8px 0 0; font-variant-numeric: tabular-nums; }
 .chip.half { border-color: var(--accent); color: var(--accent); }
+
+/* ---- Save error banner ---- */
+.error-banner {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 10px) 16px 10px;
+  background: var(--danger); color: #1a0505; font-weight: 600; font-size: 0.9rem;
+}
+.error-banner .btn-text { color: inherit; font-weight: 700; }
+
+/* ---- Exercise editor page ---- */
+.field { display: flex; flex-direction: column; gap: 6px; }

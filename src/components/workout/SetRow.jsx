@@ -1,0 +1,39 @@
+import Icon from '../ui/Icon.jsx';
+import { NumberInput, SignedInput } from '../ui/NumberInput.jsx';
+
+// One set: number (with ▲▼ vs last time), its values, RPE, ✓ and delete.
+// It renders grid cells, so it must sit inside ExerciseCard's .set-grid.
+export default function SetRow({ index, set, columns, showRpe, defaultNegative, trend, onChange, onToggle, onRemove }) {
+  const done = set.done ? 'done' : '';
+  const label = (field) => `Set ${index} ${field}`;
+
+  return (
+    <>
+      <span className={`set-num ${done}`}>
+        {index}
+        {trend > 0 && <span className="trend up" title="More than last time">▲</span>}
+        {trend < 0 && <span className="trend down" title="Less than last time">▼</span>}
+      </span>
+
+      {columns.map((c) => {
+        const props = { value: set[c.field], onChange: (v) => onChange({ [c.field]: v }), label: label(c.field), className: done };
+        return c.signed ? (
+          <SignedInput key={c.field} {...props} defaultNegative={defaultNegative} />
+        ) : (
+          <NumberInput key={c.field} {...props} decimal={c.decimal} />
+        );
+      })}
+
+      {showRpe && (
+        <NumberInput value={set.rpe} onChange={(rpe) => onChange({ rpe })} decimal placeholder="–" label={`Set ${index} RPE`} className={`rpe ${done}`} />
+      )}
+
+      <button className={`check-btn ${done}`} onClick={onToggle} aria-label={set.done ? `Undo set ${index}` : `Mark set ${index} done`}>
+        <Icon name="check" size={20} />
+      </button>
+      <button className="icon-btn subtle small" onClick={onRemove} aria-label={`Delete set ${index}`}>
+        <Icon name="close" size={16} />
+      </button>
+    </>
+  );
+}

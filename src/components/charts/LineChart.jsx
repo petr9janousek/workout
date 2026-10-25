@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { formatShortDate, formatDate } from '../utils.js';
+import { formatShortDate, formatDate, formatNumber } from '../../model/format.js';
 
 // A small line chart drawn with SVG. Tap or drag on it to see each value.
 // points: [{ date, value }] oldest first.
@@ -73,7 +73,7 @@ export default function LineChart({ points, unit }) {
       </svg>
       <p className="chart-readout">
         {a ? (
-          <><strong>{a.value} {unit}</strong> <span className="muted">· {formatDate(a.date)}</span></>
+          <><strong>{formatNumber(a.value)} {unit}</strong> <span className="muted">· {formatDate(a.date)}</span></>
         ) : (
           <span className="muted">Tap the chart to see values</span>
         )}

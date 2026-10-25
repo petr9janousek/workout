@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import Icon from './Icon.jsx';
-import { EXERCISE_TYPES, guessType, typeOf } from '../utils.js';
+import Icon from '../ui/Icon.jsx';
+import { useData } from '../../data/DataProvider.jsx';
+import { EXERCISE_TYPES, guessType, typeOf } from '../../model/exercises.js';
 
 const TYPE_TAGS = { reps: 'Bodyweight', time: 'Timed', assisted: 'Assisted ±' };
 
 // A full-screen list for choosing an exercise, with search.
 // If what you type isn't in the list, you can create it and pick its type.
-export default function ExercisePicker({ exercises, onPick, onCreate, onClose }) {
+export default function ExercisePicker({ onPick, onClose }) {
+  const { exercises, actions } = useData();
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
 
@@ -42,7 +44,7 @@ export default function ExercisePicker({ exercises, onPick, onCreate, onClose })
                 <button
                   key={t.id}
                   className={t.id === guessed ? 'chip active' : 'chip'}
-                  onClick={() => onPick(onCreate(query, t.id))}
+                  onClick={() => onPick(actions.addExercise(query, t.id))}
                 >
                   {t.label}
                 </button>
