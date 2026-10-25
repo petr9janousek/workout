@@ -8,12 +8,16 @@ import { EXERCISE_TYPES, typeOf } from '../../model/exercises.js';
 import { musclesOf } from '../../model/muscles.js';
 import { countWorkoutsWith, recentSessions } from '../../model/workouts.js';
 import { plansUsing } from '../../model/plans.js';
-import { formatDate } from '../../model/format.js';
+import { formatDate, formatNumber } from '../../model/format.js';
+import { weightStepFor } from '../../model/settings.js';
+
+// Weight jumps an exercise can have of its own (null = like in Settings).
+const OWN_STEPS = { kg: [null, 1, 1.25, 2, 2.5, 5], lb: [null, 2.5, 5, 10] };
 
 // One exercise: name, type, the muscles it works (tap the body), how often
 // you've done it, and deleting it.
 export default function ExerciseDetail({ exerciseId }) {
-  const { exercisesById, workouts, plans, actions } = useData();
+  const { exercisesById, workouts, plans, settings, unit, actions } = useData();
   const exercise = exercisesById.get(exerciseId);
   const [name, setName] = useState(exercise?.name ?? '');
 
@@ -28,6 +32,9 @@ export default function ExerciseDetail({ exerciseId }) {
 
   const update = (changes) => actions.updateExercise(exercise.id, changes);
   const sessions = recentSessions(workouts, exercise.id, null, 999);
+  const type = typeOf(exercise);
+  const lastWeight = Math.max(0, ...(sessions[0]?.sets.map((s) => Math.abs(s.weight || 0)) || [0]));
+  const generalStep = settings.weightStep === 'auto' ? `Auto${lastWeight ? ` (+${formatNumber(weightStepFor(lastWeight, settings))})` : ''}` : `+${formatNumber(settings.weightStep)}`;
   const inPlans = plansUsing(plans, exercise.id);
 
   function rename(text) {
@@ -78,9 +85,23 @@ export default function ExerciseDetail({ exerciseId }) {
         <ChipGroup
           label="Exercise type"
           options={EXERCISE_TYPES.map((t) => ({ value: t.id, label: t.label }))}
-          value={typeOf(exercise)}
+          value={type}
           onChange={(type) => update({ type })}
         />
+        {(type === 'weight' || type === 'assisted') && (
+          <>
+            <span className="small">Weight jump when you're ready to go up</span>
+            <ChipGroup
+              label="Weight jump"
+              options={(OWN_STEPS[unit] || OWN_STEPS.kg).map((step) => ({
+                value: step,
+                label: step == null ? `Like Settings: ${generalStep}` : `+${formatNumber(step)} ${unit}`,
+              }))}
+              value={exercise.weightStep ?? null}
+              onChange={(weightStep) => update({ weightStep })}
+            />
+          </>
+        )}
       </section>
 
       <section className="card">

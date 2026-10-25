@@ -59,3 +59,57 @@ export const BACK = [
 export const BACK_LINES = [];
 
 export { HEAD };
+
+// ---- The female figure ------------------------------------------------------
+// Made from the same shapes, reshaped: every point is moved towards or away
+// from the middle (x = 60) by a factor that depends on its height. Narrower
+// shoulders and waist, wider hips and upper thighs. Arms keep one factor so
+// they move in with the shoulders without bending.
+// [height y, width factor], read between the points.
+const FEMALE_WIDTH = [
+  [0, 1], [24, 0.88], [36, 0.87], [58, 0.85], [70, 0.68], [78, 0.6], [88, 0.78],
+  [96, 1.05], [106, 1.27], [116, 1.2], [128, 1.08], [140, 1.02], [150, 0.98], [216, 0.95],
+];
+const ARM_WIDTH = 0.9;
+const ARMS = [HAND, FOREARM, UPPER_ARM];
+
+function widthAt(y) {
+  const i = FEMALE_WIDTH.findIndex(([py]) => py >= y);
+  if (i <= 0) return FEMALE_WIDTH[Math.max(i, 0)][1];
+  const [y0, f0] = FEMALE_WIDTH[i - 1];
+  const [y1, f1] = FEMALE_WIDTH[i];
+  return f0 + ((f1 - f0) * (y - y0)) / (y1 - y0);
+}
+
+// Every "x,y" pair in a path, moved.
+const reshape = (d, factorAt) =>
+  d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g, (_, x, y) => {
+    const nx = 60 - (60 - Number(x)) * factorAt(Number(y));
+    return `${Math.round(nx * 10) / 10},${y}`;
+  });
+
+const FEMALE_CHEST = 'M59.5,43 L50,42 Q41.5,45 41,53.5 Q42,63 50.5,63.5 Q56.5,63 59.5,59.5 Z';
+
+const female = (shapes) =>
+  shapes.map((s) => {
+    if (s.muscle === 'chest') return { ...s, d: reshape(FEMALE_CHEST, widthAt) };
+    return { ...s, d: reshape(s.d, ARMS.includes(s.d) ? () => ARM_WIDTH : widthAt) };
+  });
+
+// Hair (left half, mirrored like the rest): behind the head from the front,
+// over it from the back.
+const HAIR_FRONT = 'M60,1.8 C53,1.8 48.3,7 48.3,15 Q48,25 47.5,31 Q50.5,34.5 54.5,32 L55,22 Q52,17 60,8 Z';
+const HAIR_BACK = 'M60,1.8 C53,1.8 48.3,7 48.3,15 Q48,25 47.5,31 Q52,34.5 60,33.5 Z';
+
+// The shapes for a body: 'female' or anything else (the original figure).
+export function figureFor(body) {
+  if (body !== 'female') return { front: FRONT, back: BACK, frontLines: FRONT_LINES, backLines: BACK_LINES, hairFront: null, hairBack: null };
+  return {
+    front: female(FRONT),
+    back: female(BACK),
+    frontLines: [], // no six-pack lines
+    backLines: BACK_LINES,
+    hairFront: HAIR_FRONT,
+    hairBack: HAIR_BACK,
+  };
+}

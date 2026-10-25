@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import WorkoutEditor from '../../components/workout/WorkoutEditor.jsx';
 import Totals from '../../components/workout/Totals.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
@@ -7,15 +8,29 @@ import { go, back, switchTab } from '../../hooks/useRoute.js';
 import { finishWorkout } from '../../model/workouts.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { formatDate, formatClock } from '../../model/format.js';
+import { restTarget } from '../../model/settings.js';
 
 // The workout in progress: totals and timers pinned on top, muscle map,
 // the exercises, and Finish / Discard.
 export default function ActiveWorkout({ workout, picking }) {
-  const { exercisesById, actions } = useData();
+  const { exercisesById, settings, actions } = useData();
   const now = useNow();
 
   // Rest timer: time since the most recently ticked set.
   const lastDone = Math.max(0, ...workout.entries.flatMap((e) => e.sets).map((s) => (s.done && s.doneAt ? Date.parse(s.doneAt) : 0)));
+  const rest = now - lastDone;
+  const restGoal = restTarget(settings) * 1000;
+  const rested = lastDone > 0 && rest >= restGoal;
+
+  // A short buzz when the rest is over (Android; iPhones don't allow it).
+  // Only right when it happens, not when reopening the workout later.
+  const buzzedFor = useRef(0);
+  useEffect(() => {
+    if (rested && buzzedFor.current !== lastDone && rest < restGoal + 5000) {
+      buzzedFor.current = lastDone;
+      navigator.vibrate?.(200);
+    }
+  }, [rested, lastDone, rest, restGoal]);
 
   function finish() {
     const result = finishWorkout(workout);
@@ -44,7 +59,11 @@ export default function ActiveWorkout({ workout, picking }) {
         <Totals workout={workout} live />
         <div className="timers">
           <span className="timer" aria-label="Workout duration">{formatClock(now - Date.parse(workout.startedAt))}</span>
-          {lastDone > 0 && <span className="timer rest">Rest {formatClock(now - lastDone)}</span>}
+          {lastDone > 0 && (
+            <span className={`timer rest${rested ? ' rested' : ''}`} aria-label={rested ? 'Rest over, time for the next set' : 'Rest timer'}>
+              {rested ? `Go · ${formatClock(rest)}` : `Rest ${formatClock(rest)} / ${formatClock(restGoal)}`}
+            </span>
+          )}
         </div>
       </div>
 

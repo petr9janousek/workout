@@ -164,3 +164,19 @@ describe('Adding an exercise to today\'s workout (planEntry)', () => {
     expect(entry.suggestion).toEqual({ kind: 'reps', text: expect.any(String) });
   });
 });
+
+describe('Weight jumps', () => {
+  // Ready to go up: 10 reps twice after starting at 8.
+  const ready = (w) => history(session(w, [8, 8, 8]), session(w, [9, 9, 9]), session(w, [10, 10, 10]), session(w, [10, 10, 10]));
+  const auto = { unit: 'kg', weightStep: 'auto', progression: 'double' };
+
+  it('automatic jumps are small for light dumbbells and bigger for heavy lifts', () => {
+    expect(weights(suggestNext(ready(4), 'weight', auto))[0]).toBe(5); // +1 kg, not 4 → 6.5
+    expect(weights(suggestNext(ready(30), 'weight', auto))[0]).toBe(32.5);
+    expect(weights(suggestNext(ready(100), 'weight', auto))[0]).toBe(105);
+  });
+
+  it('a fixed jump in Settings is used as it is', () => {
+    expect(weights(suggestNext(ready(4), 'weight', settings()))[0]).toBe(6.5);
+  });
+});

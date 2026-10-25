@@ -8,6 +8,9 @@
 //    for the lower-middle of that so they're sustainable. Add sets later.
 //  - The split matters less than weekly sets and sticking to it, so pick the
 //    one that fits your week.
+//  - The aesthetic plans (Hourglass, V-taper) only shift sets towards the
+//    muscles that shape the look; muscles can't be "toned" or slimmed one at
+//    a time, so they still train everything.
 //
 // Exercises are referred to by name; missing ones are created when the
 // plan is made (type and muscles are guessed from the name).
@@ -47,6 +50,18 @@ export const PLAN_TEMPLATES = [
     ],
   },
   {
+    id: 'hourglass-3',
+    name: 'Hourglass',
+    for: 'female',
+    level: 'Beginner – intermediate',
+    about: 'Glutes and shoulders on every day, a strong back, and only light work for the thighs (no squats or leg press). Rounder glutes and shoulders make the waist look narrower between them. Core work without heavy side bends.',
+    days: [
+      ['Glutes & back', [['Hip thrust', 4], ['Romanian deadlift', 3], ['Lat pulldown', 3], ['Seated cable row', 3], ['Lateral raise', 3]]],
+      ['Shoulders & glutes', [['Bulgarian split squat', 3], ['Glute kickback', 3], ['Dumbbell shoulder press', 3], ['Lateral raise', 3], ['Face pull', 2], ['Dead bug', 2]]],
+      ['Glutes & upper', [['Hip thrust', 3], ['Cable pull-through', 3], ['Assisted pull-up', 3], ['Incline dumbbell press', 3], ['Lateral raise', 2], ['Hip abduction', 3]]],
+    ],
+  },
+  {
     id: 'upper-lower-4',
     name: 'Upper / Lower',
     level: 'Beginner – intermediate',
@@ -68,6 +83,32 @@ export const PLAN_TEMPLATES = [
       ['Upper A', [['Lat pulldown', 3], ['Incline dumbbell press', 3], ['Seated cable row', 3], ['Lateral raise', 3], ['Triceps pushdown', 2]]],
       ['Quads & glutes', [['Squat', 3], ['Leg press', 3], ['Lunge', 3], ['Leg extension', 3], ['Calf raise', 3]]],
       ['Upper B', [['Overhead press', 3], ['Assisted pull-up', 3], ['Push-up', 3], ['Face pull', 3], ['Dumbbell curl', 2]]],
+    ],
+  },
+  {
+    id: 'v-taper-4',
+    name: 'V-taper',
+    for: 'male',
+    level: 'Intermediate',
+    about: 'Wide back and shoulders over a narrow waist: lots of lats and side shoulders, upper chest and arms, and just enough legs. Modelled on the upper-body-focused templates by Renaissance Periodization (RP), with a few leg exercises added.',
+    days: [
+      ['Back & chest', [['Pull-up', 3], ['Lat pulldown', 3], ['Incline bench press', 3], ['Incline dumbbell press', 3], ['Leg press', 3], ['Leg curl', 2]]],
+      ['Shoulders & arms', [['EZ bar skullcrusher', 3], ['Overhead triceps extension', 2], ['Lateral raise', 3], ['Cable lateral raise', 3], ['Barbell curl', 3], ['Wrist curl', 2]]],
+      ['Chest & back', [['Wide-grip incline bench press', 3], ['Incline machine chest press', 3], ['Underhand pulldown', 3], ['Straight-arm pulldown', 3], ['Romanian deadlift', 3], ['Leg extension', 2]]],
+      ['Arms & shoulders', [['EZ bar curl', 3], ['Cable curl', 2], ['Machine lateral raise', 3], ['Seated dumbbell lateral raise', 3], ['Inverted skullcrusher', 3], ['Reverse wrist curl', 2]]],
+    ],
+  },
+  {
+    id: 'hourglass-4',
+    name: 'Hourglass',
+    for: 'female',
+    level: 'Beginner – intermediate',
+    about: 'Glutes and shoulders first, a strong back, and only light work for the thighs (no squats or leg press). Rounder glutes and shoulders make the waist look narrower between them. Core work without heavy side bends.',
+    days: [
+      ['Glutes & back', [['Hip thrust', 4], ['Romanian deadlift', 3], ['Lat pulldown', 3], ['Seated cable row', 3], ['Hip abduction', 2]]],
+      ['Shoulders & arms', [['Dumbbell shoulder press', 3], ['Lateral raise', 4], ['Incline dumbbell press', 3], ['Face pull', 2], ['Dumbbell curl', 2], ['Triceps pushdown', 2]]],
+      ['Glutes & hamstrings', [['Bulgarian split squat', 3], ['Glute kickback', 3], ['Cable pull-through', 3], ['Leg curl', 3], ['Hip abduction', 2]]],
+      ['Upper & glutes', [['Assisted pull-up', 3], ['Cable lateral raise', 3], ['Push-up', 2], ['Hip thrust', 3], ['Dead bug', 2]]],
     ],
   },
   {
@@ -126,7 +167,17 @@ export const PLAN_TEMPLATES = [
   },
 ];
 
-export const templatesForDays = (count) => PLAN_TEMPLATES.filter((t) => t.days.length === count);
+// Ready-made plans for `count` days a week. With `body` ('female' | 'male'),
+// the ones made for it come first. `for` marks a plan's aesthetic goal:
+// 'female' = hourglass (glutes, shoulders, back), 'male' = V-taper (lats,
+// shoulders, arms); anyone can use any plan.
+export function templatesForDays(count, body = null) {
+  const list = PLAN_TEMPLATES.filter((t) => t.days.length === count);
+  const rank = (t) => (body && t.for === body ? 0 : t.for ? 2 : 1);
+  return [...list].sort((a, b) => rank(a) - rank(b));
+}
+
+export const isRecommended = (template, body) => Boolean(body && template.for === body);
 
 // Ideas for naming days in a plan of your own.
 export const DAY_NAME_IDEAS = [

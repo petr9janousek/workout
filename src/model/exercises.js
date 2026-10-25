@@ -29,7 +29,7 @@ export function guessType(name = '') {
   const n = name.toLowerCase();
   if (/plank|hold|hang|wall sit|l-sit|hollow|isometric/.test(n)) return 'time';
   if (/assist|band|weighted (pull|chin|dip|push)/.test(n)) return 'assisted';
-  if (/pull-?up|chin-?up|push-?up|\bdips?\b|sit-?up|crunch|burpee|pistol|inverted row|leg raise/.test(n)) return 'reps';
+  if (/pull-?up|chin-?up|push-?up|\bdips?\b|sit-?up|crunch|burpee|pistol|inverted row|leg raise|dead ?bug|bird ?dog/.test(n)) return 'reps';
   return 'weight';
 }
 

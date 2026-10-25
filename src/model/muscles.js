@@ -33,6 +33,10 @@ export const muscleLabel = (id) => MUSCLES.find((m) => m.id === id)?.label || id
 // matches wins, so the more specific names come first ("leg curl" before "curl").
 const RULES = [
   [/leg curl|hamstring curl|nordic/, { hamstrings: 1 }],
+  [/wrist|reverse curl/, { forearms: 1 }],
+  [/triceps kickback/, { triceps: 1 }],
+  [/straight-?arm/, { lats: 1 }],
+  [/pull-?through/, { glutes: 1, hamstrings: 0.5 }],
   [/leg extension/, { quads: 1 }],
   [/side plank|russian twist|wood ?chop|oblique|pallof/, { obliques: 1, abs: 0.5 }],
   [/plank|crunch|sit-?up|leg raise|hollow|ab wheel|\babs?\b|dead bug/, { abs: 1, obliques: 0.5 }],

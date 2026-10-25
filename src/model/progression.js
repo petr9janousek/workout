@@ -20,6 +20,7 @@ import { copySets, emptySets, nextSet, val } from './sets.js';
 import { recentSessions, createEntry, createWorkout } from './workouts.js';
 import { typeOf } from './exercises.js';
 import { formatNumber, formatSigned } from './format.js';
+import { settingsFor, weightStepFor } from './settings.js';
 
 export const PROGRESSION_MODES = [
   {
@@ -43,11 +44,11 @@ const round1 = (n) => Math.round(n * 10) / 10;
 const lowest = (list) => Math.min(...list);
 const total = (list) => list.reduce((a, b) => a + b, 0);
 
-// settings: { unit, weightStep, progression }
+// settings: { unit, weightStep, progression } (weightStep: a number or 'auto',
+// see weightStepFor() in settings.js; use settingsFor() for an exercise's own step)
 export function suggestNext(sessions, type, settings = {}) {
   if (!sessions?.length) return null;
   const unit = settings.unit || 'kg';
-  const step = settings.weightStep || (unit === 'lb' ? 5 : 2.5);
   const mode = settings.progression || 'double';
 
   const last = sessions[0].sets;
@@ -71,6 +72,7 @@ export function suggestNext(sessions, type, settings = {}) {
   // Weight × reps, and assisted/weighted (where the weight can be negative).
   const topOf = (sets) => Math.max(...sets.map((s) => val(s.weight)));
   const top = topOf(last);
+  const step = weightStepFor(top, settings);
   const isTop = (s) => val(s.weight) === top;
   const repsAtTop = (sets) => sets.filter(isTop).map((s) => val(s.reps));
 
@@ -168,7 +170,7 @@ export function suggestNext(sessions, type, settings = {}) {
 export function planEntry(exercise, { workouts, settings, startedAt }, done = false, setCount = null) {
   const sessions = recentSessions(workouts, exercise.id, startedAt);
   if (!sessions.length) return createEntry(exercise.id, emptySets(setCount || 3, done));
-  const suggestion = suggestNext(sessions, typeOf(exercise), settings);
+  const suggestion = suggestNext(sessions, typeOf(exercise), settingsFor(settings, exercise));
   const sets = resizeSets(suggestion.sets, setCount).map((s) => ({ ...s, done }));
   return createEntry(exercise.id, sets, done ? null : suggestion);
 }

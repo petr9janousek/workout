@@ -30,7 +30,11 @@ function Shell() {
   // New page → start at the top. (Opening/closing the exercise picker
   // isn't a new page, so the workout keeps its scroll position.)
   const page = [tab, ...path.filter((p) => p !== 'add')].join('/');
-  useEffect(() => window.scrollTo(0, 0), [page]);
+  // Braces matter: an effect may only return a cleanup function. Newer browsers
+  // make scrollTo() return a Promise, and React would try to call it.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
 
   return (
     <div className="app">

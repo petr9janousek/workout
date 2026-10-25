@@ -194,6 +194,8 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
   background: var(--surface-2); color: var(--done);
   padding: 2px 10px; border-radius: 999px; font-size: 0.9rem;
 }
+.timer.rest { color: var(--muted); }
+.timer.rest.rested { background: var(--done); color: #08130c; }
 
 .last-time { color: var(--muted); font-size: 0.85rem; margin: 4px 0 10px; }
 
@@ -354,6 +356,7 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
   --heat-3: #d63d22;
   --heat-4: #ff4130;
   --skin: #3a4046;
+  --hair: #4d555c;
 }
 .muscle-card-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -365,6 +368,7 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .body-map { margin-top: 8px; }
 .body-map svg { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; }
 .body-skin { fill: var(--skin); }
+.body-hair { fill: var(--hair); stroke: var(--surface); stroke-width: 0.8; }
 .body-muscle { stroke: var(--surface); stroke-width: 0.8; cursor: pointer; transition: fill 0.4s; }
 .body-line { stroke: var(--surface); stroke-width: 0.8; fill: none; pointer-events: none; }
 .heat-0 { fill: var(--heat-0); background: var(--heat-0); }
@@ -474,6 +478,10 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .day-count-num { font-family: var(--font-display); font-weight: 800; font-size: 3rem; line-height: 0.9; color: var(--accent); }
 .day-count-label { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; margin-bottom: 4px; }
 .template-card { display: flex; flex-direction: column; gap: 10px; }
+.template-card.recommended { border-color: var(--accent); }
+.template-card .badge { display: inline-block; margin: 0 0 6px; }
+.for-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.for-row .chips { margin: 0; }
 .template-head { display: grid; grid-template-columns: 1fr 38%; gap: 8px; align-items: center; }
 .template-name { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1; text-transform: uppercase; margin: 0 0 4px; }
 .template-card p { margin: 0; }

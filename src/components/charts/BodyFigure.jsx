@@ -1,4 +1,5 @@
-import { FRONT, BACK, FRONT_LINES, BACK_LINES, HEAD } from './bodyShapes.js';
+import { HEAD, figureFor } from './bodyShapes.js';
+import { useData } from '../../data/DataProvider.jsx';
 
 // The front + back body drawing. Used by the muscle map (colours by sets)
 // and the muscle picker (colours by main / helping).
@@ -7,7 +8,11 @@ import { FRONT, BACK, FRONT_LINES, BACK_LINES, HEAD } from './bodyShapes.js';
 //   selected:          a muscle to outline
 //   captions:          show "Front" / "Back" under the figures
 //   label:             what a screen reader says for the picture
+// The figure is female or male following Settings → About you.
 export default function BodyFigure({ levelOf, onTap, selected, captions = true, label }) {
+  const { settings } = useData();
+  const shapes = figureFor(settings.body);
+
   function half(shapes, lines, mirror) {
     return (
       <g transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined}>
@@ -28,19 +33,25 @@ export default function BodyFigure({ levelOf, onTap, selected, captions = true, 
     );
   }
 
-  const figure = (shapes, lines, offsetX, caption) => (
+  const hair = (d) => d && [false, true].map((mirror) => (
+    <path key={String(mirror)} d={d} className="body-hair" transform={mirror ? 'translate(120,0) scale(-1,1)' : undefined} />
+  ));
+
+  const figure = (parts, lines, offsetX, caption, hairBehind, hairOver) => (
     <g transform={`translate(${offsetX},0)`}>
+      {hair(hairBehind)}
       <path d={HEAD} className="body-skin" />
-      {half(shapes, lines, false)}
-      {half(shapes, lines, true)}
+      {half(parts, lines, false)}
+      {half(parts, lines, true)}
+      {hair(hairOver)}
       {captions && <text x="60" y="216" className="body-caption" textAnchor="middle">{caption}</text>}
     </g>
   );
 
   return (
     <svg viewBox={captions ? '0 0 250 220' : '0 0 250 208'} role="img" aria-label={label}>
-      {figure(FRONT, FRONT_LINES, 0, 'Front')}
-      {figure(BACK, BACK_LINES, 130, 'Back')}
+      {figure(shapes.front, shapes.frontLines, 0, 'Front', shapes.hairFront, null)}
+      {figure(shapes.back, shapes.backLines, 130, 'Back', null, shapes.hairBack)}
     </svg>
   );
 }

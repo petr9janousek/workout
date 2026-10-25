@@ -6,6 +6,7 @@ import Suggestion from '../../components/ui/Suggestion.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { exerciseHistory, recentSessions } from '../../model/workouts.js';
 import { suggestNext } from '../../model/progression.js';
+import { settingsFor } from '../../model/settings.js';
 import { typeOf } from '../../model/exercises.js';
 import { formatSet } from '../../model/sets.js';
 import { formatDate, formatNumber, formatTotal, formatSigned, formatSeconds } from '../../model/format.js';
@@ -72,7 +73,7 @@ export default function ExerciseProgress({ exerciseId }) {
     );
   }
 
-  const next = suggestNext(recentSessions(workouts, exerciseId), type, settings);
+  const next = suggestNext(recentSessions(workouts, exerciseId), type, settingsFor(settings, exercise));
   const metric = metrics.find((m) => m.id === metricId) || metrics[0];
   const best = (field) => history.reduce((a, b) => (b[field] > a[field] ? b : a));
 

@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { createPlan, createDay, nextDayIndex, startPlanDay, planFromTemplate, planMuscleSets, moveItem, setItemSets, plansUsing } from './plans.js';
-import { PLAN_TEMPLATES, templatesForDays, defaultDayNames } from './planTemplates.js';
+import { PLAN_TEMPLATES, templatesForDays, defaultDayNames, isRecommended } from './planTemplates.js';
 import { createExercise, indexById, typeOf } from './exercises.js';
 import { guessMuscles } from './muscles.js';
 
@@ -111,6 +111,36 @@ describe('Ready-made plans', () => {
 
   it('there is a ready-made plan for 2 to 6 days a week', () => {
     for (const days of [2, 3, 4, 5, 6]) expect(templatesForDays(days).length, `${days} days`).toBeGreaterThan(0);
+  });
+
+  it('Hourglass: glutes and shoulders get the most work, thighs only a little, no heavy oblique work', () => {
+    for (const t of PLAN_TEMPLATES.filter((t) => t.for === 'female')) {
+      const { weekly } = build(t);
+      const ranked = Object.keys(weekly).sort((a, b) => weekly[b] - weekly[a]);
+      expect(ranked[0], t.id).toBe('glutes');
+      expect(weekly.shoulders, t.id).toBeGreaterThanOrEqual(10);
+      expect(weekly.quads, t.id).toBeLessThanOrEqual(4);
+      expect(weekly.obliques || 0, t.id).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('V-taper: lats and shoulders get far more work than legs', () => {
+    for (const t of PLAN_TEMPLATES.filter((t) => t.for === 'male')) {
+      const { weekly } = build(t);
+      expect(weekly.lats, t.id).toBeGreaterThanOrEqual(10);
+      expect(weekly.shoulders, t.id).toBeGreaterThanOrEqual(15);
+      expect(weekly.quads, t.id).toBeLessThan(weekly.lats);
+    }
+  });
+
+  it('plans made for your body come first; the others are still shown', () => {
+    const forHer = templatesForDays(3, 'female');
+    expect(forHer[0].id).toBe('hourglass-3');
+    expect(isRecommended(forHer[0], 'female')).toBe(true);
+    expect(forHer.length).toBe(templatesForDays(3).length);
+    expect(templatesForDays(4, 'male')[0].id).toBe('v-taper-4');
+    // Without a body chosen, the general plans come first.
+    expect(templatesForDays(3)[0].for).toBeUndefined();
   });
 
   it('suggests day names for a plan of your own', () => {

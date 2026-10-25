@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import BackButton from '../../components/ui/BackButton.jsx';
 import BodyMap from '../../components/charts/BodyMap.jsx';
+import ChipGroup from '../../components/ui/ChipGroup.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go, switchTab } from '../../hooks/useRoute.js';
-import { templatesForDays, defaultDayNames, DAY_NAME_IDEAS } from '../../model/planTemplates.js';
+import { templatesForDays, defaultDayNames, DAY_NAME_IDEAS, isRecommended } from '../../model/planTemplates.js';
 import { guessMuscles } from '../../model/muscles.js';
 
 const DAY_OPTIONS = [
@@ -46,8 +47,8 @@ function ChooseDays() {
 }
 
 function ChooseSplit({ days }) {
-  const { actions } = useData();
-  const templates = templatesForDays(days);
+  const { settings, actions } = useData();
+  const templates = templatesForDays(days, settings.body);
 
   function use(template) {
     const plan = actions.newPlanFromTemplate(template);
@@ -61,8 +62,18 @@ function ChooseSplit({ days }) {
       <h1>{days} days a week</h1>
       <p className="lead">Pick a split to start from. You can change every exercise afterwards.</p>
 
+      <div className="for-row">
+        <span className="small muted">Recommend plans for</span>
+        <ChipGroup
+          label="Recommend plans for"
+          options={[{ value: 'female', label: 'Woman' }, { value: 'male', label: 'Man' }]}
+          value={settings.body}
+          onChange={(body) => actions.setSetting('body', body)}
+        />
+      </div>
+
       {templates.map((t) => (
-        <TemplateCard key={t.id} template={t} onUse={() => use(t)} />
+        <TemplateCard key={t.id} template={t} recommended={isRecommended(t, settings.body)} onUse={() => use(t)} />
       ))}
 
       <button className="card card-button own-plan" onClick={() => go('workout', 'plans', 'new', days, 'own')}>
@@ -74,7 +85,7 @@ function ChooseSplit({ days }) {
 }
 
 // One ready-made split: what it's for, its days, and the muscles it trains in a week.
-function TemplateCard({ template, onUse }) {
+function TemplateCard({ template, recommended, onUse }) {
   // Weekly sets per muscle, guessed from the exercise names (nothing is created yet).
   const weekly = useMemo(() => {
     const load = {};
@@ -87,9 +98,10 @@ function TemplateCard({ template, onUse }) {
   }, [template]);
 
   return (
-    <section className="card template-card">
+    <section className={`card template-card${recommended ? ' recommended' : ''}`}>
       <div className="template-head">
         <div>
+          {recommended && <span className="badge">Recommended for you</span>}
           <h2 className="template-name">{template.name}</h2>
           <span className="muted small">{template.level}</span>
         </div>

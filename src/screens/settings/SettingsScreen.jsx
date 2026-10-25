@@ -4,9 +4,10 @@ import Icon from '../../components/ui/Icon.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { PROGRESSION_MODES } from '../../model/progression.js';
-import { WEIGHT_STEPS } from '../../model/settings.js';
+import { WEIGHT_STEPS, REST_OPTIONS, restTarget } from '../../model/settings.js';
+import { formatClock } from '../../model/format.js';
 
-export const APP_VERSION = '0.6';
+export const APP_VERSION = '0.7';
 
 // The Settings tab.
 // Address: #/settings
@@ -19,6 +20,20 @@ export default function SettingsScreen() {
   return (
     <div>
       <h1>Settings</h1>
+
+      <section className="card">
+        <h3>About you</h3>
+        <ChipGroup
+          label="Body"
+          options={[{ value: 'female', label: 'Woman' }, { value: 'male', label: 'Man' }]}
+          value={settings.body}
+          onChange={set('body')}
+        />
+        <p className="muted small">
+          Changes the body drawing, which ready-made plans are recommended for you, and the automatic rest time.
+          Everything else works the same: research finds women and men gain muscle and strength at similar rates.
+        </p>
+      </section>
 
       <section className="card">
         <h3>Weight unit</h3>
@@ -73,11 +88,29 @@ export default function SettingsScreen() {
         <h3>Suggested weight increase</h3>
         <ChipGroup
           label="Weight increase"
-          options={WEIGHT_STEPS.map((step) => ({ value: step, label: `+${step} ${unit}` }))}
+          options={WEIGHT_STEPS.map((step) => ({ value: step, label: step === 'auto' ? 'Auto' : `+${step} ${unit}` }))}
           value={settings.weightStep}
           onChange={set('weightStep')}
         />
-        <p className="muted small">How much heavier the app suggests when you're ready to go up.</p>
+        <p className="muted small">
+          How much heavier the app suggests when you're ready to go up. Auto suits the weight:{' '}
+          {unit === 'lb' ? '+2.5 lb under 25 lb, +5 lb under 150 lb, then +10 lb' : '+1 kg under 10 kg, +2 kg under 25 kg, +2.5 kg under 80 kg, then +5 kg'}
+          . An exercise can have its own jump: open it in Exercises.
+        </p>
+      </section>
+
+      <section className="card">
+        <h3>Rest between sets</h3>
+        <ChipGroup
+          label="Rest between sets"
+          options={REST_OPTIONS.map((sec) => ({ value: sec, label: sec == null ? `Auto (${formatClock(restTarget({ ...settings, restSeconds: null }) * 1000)})` : formatClock(sec * 1000) }))}
+          value={settings.restSeconds}
+          onChange={set('restSeconds')}
+        />
+        <p className="muted small">
+          The rest timer turns green when it's time for the next set. Auto is 1:30 for women and 2:00 for men: women
+          recover faster between sets. For big lifts like squats, resting longer is fine.
+        </p>
       </section>
 
       <BackupSettings />

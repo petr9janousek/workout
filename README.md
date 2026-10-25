@@ -2,8 +2,12 @@
 
 A small workout tracker for the two of us. It runs on the phone with no internet, and the data never leaves the phone.
 
-**What version 0.6 can do**
+**What version 0.7 can do**
 
+- **About you** (Settings): Woman or Man. Changes the body drawing (a female figure), which ready-made plans are recommended, and the automatic rest time. Training works the same for both
+- **Hourglass** plans (3 or 4 days) for women: glutes and shoulders first, a strong back, light thigh work, no heavy oblique work. **V-taper** (4 days) for men: lats, side shoulders, upper chest and arms, modelled on Renaissance Periodization's upper-body templates
+- **Smaller weight jumps:** "Auto" picks a jump that suits the weight (+1 kg for light dumbbells up to +5 kg for heavy lifts), and each exercise can have its own jump
+- **Rest target:** the rest timer counts towards 1:30 (women) or 2:00 (men), or your own choice, turns green and buzzes (Android) when it's time for the next set
 - **Start screen:** a big READY TO TRAIN heading, this week at a glance (Mon–Sun, days trained vs. your weekly goal, streak), the next day of your plan with one-tap start, shortcuts to Exercises and Plans, a backup reminder, and recent workouts to repeat
 - **Exercise library** (start screen → Exercises): search, filter by muscle, add your own, rename, change the type, see stats and which plans use it. Pick the **main and helping muscles by tapping the body** (tap once = helping, twice = main, three times = off), or from a list
 - **Training habit** (Progress): a month calendar of training days (tap a day to open the workout), the last 12 weeks against your weekly goal, streak in weeks, best streak, days since the last workout. The weekly goal is the number of days in your plan, or set it in Settings
@@ -130,7 +134,7 @@ src/
     planTemplates.js       The ready-made splits, and the research they're based on
     muscles.js             Which muscles an exercise works, sets per muscle, map colours
     calendar.js            Days, weeks and months: training days, weekly counts, streaks, weekly goal
-    settings.js            Settings and their defaults
+    settings.js            Settings and their defaults, weight jumps (weightStepFor), rest time
     *.test.js              Tests (see below)
 
   data/                    ── the data ──
@@ -147,7 +151,7 @@ src/
 
   components/              ── pieces used by several screens ──
     ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading
-    charts/                BodyFigure (the drawing, + bodyShapes.js) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
+    charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit)
     workout/               WorkoutEditor → ExerciseCard → SetRow; ExercisePicker; CreateExercise; Totals
 
@@ -166,6 +170,8 @@ src/
 - Wording on a screen → the matching file in `src/screens/`
 - How suggestions work → `src/model/progression.js` (and its tests)
 - Which muscles an exercise works → `RULES` in `src/model/muscles.js`
+- Automatic weight jumps → `AUTO_STEPS` in `src/model/settings.js`; automatic rest → `restTarget` in the same file
+- The shape of the female figure → `FEMALE_WIDTH` in `src/components/charts/bodyShapes.js` (how much narrower or wider the body is at each height)
 - The ready-made splits → `PLAN_TEMPLATES` in `src/model/planTemplates.js` (the tests check every split still trains all major muscles)
 - The starting list of exercises → `STARTER_EXERCISES` in `src/model/exercises.js` (only for a fresh install)
 - A new setting → add it with its default to `src/model/settings.js`, then use `settings.yourSetting` and `actions.setSetting('yourSetting', value)`
@@ -200,9 +206,10 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 |---|---|
 | `model/progression.test.js` | The three progression styles, the safety rules (RPE 9.5+, dropping reps, plateaus), assisted / bodyweight / timed exercises, starting an exercise in today's workout |
 | `model/workouts.test.js` | Finishing a workout, totals, an exercise's history |
-| `model/plans.test.js` | Which plan day is next, starting a plan day, editing days, and that every ready-made split trains all major muscles in sensible amounts |
+| `model/plans.test.js` | Which plan day is next, starting a plan day, editing days, that every ready-made split trains all major muscles in sensible amounts, that Hourglass and V-taper put the work where they promise, and that plans for your body come first |
 | `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets, ▲▼ comparisons |
 | `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours, searching the exercise library |
+| `model/settings.test.js` | Automatic weight jumps (kg and lb), an exercise's own jump, automatic rest for women and men |
 | `model/calendar.test.js` | Weeks start on Monday, training days per week, streaks (rest days don't break them, a missed week does), the weekly goal |
 | `data/migrations.test.js` | Data and backups from older versions still load correctly; when to remind about a backup |
 

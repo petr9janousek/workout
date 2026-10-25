@@ -7,6 +7,7 @@ import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { exerciseHistory, recentSessions } from '../../model/workouts.js';
 import { suggestNext } from '../../model/progression.js';
+import { settingsFor } from '../../model/settings.js';
 import { recentMuscleSets } from '../../model/muscles.js';
 import { typeOf } from '../../model/exercises.js';
 import { formatSet } from '../../model/sets.js';
@@ -22,7 +23,7 @@ export default function ProgressScreen({ path }) {
   const tracked = exercises
     .map((exercise) => ({ exercise, history: exerciseHistory(workouts, exercise.id) }))
     .filter((t) => t.history.length > 0)
-    .map((t) => ({ ...t, next: suggestNext(recentSessions(workouts, t.exercise.id), typeOf(t.exercise), settings) }))
+    .map((t) => ({ ...t, next: suggestNext(recentSessions(workouts, t.exercise.id), typeOf(t.exercise), settingsFor(settings, t.exercise)) }))
     .sort((a, b) => b.history.at(-1).date.localeCompare(a.history.at(-1).date));
 
   return (
