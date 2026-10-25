@@ -2,6 +2,8 @@ import { useState } from 'react';
 import WorkoutEditor from '../components/WorkoutEditor.jsx';
 import Icon from '../components/Icon.jsx';
 import Totals from '../components/Totals.jsx';
+import MuscleCard from '../components/MuscleCard.jsx';
+import { workoutMuscleSets } from '../muscles.js';
 import {
   finishedWorkouts, formatDate, formatDuration, formatSet, isDoneSet, typeOf, workoutTotals, formatNumber,
 } from '../utils.js';
@@ -77,6 +79,7 @@ function WorkoutDetail({ workout, nameOf, typeOfId, onBack, exercises, workouts,
         {formatDuration(new Date(workout.finishedAt) - new Date(workout.startedAt))}
       </p>
       <Totals workout={workout} unit={unit} />
+      <MuscleCard id="history" title="Muscles worked" sets={workoutMuscleSets(workout, exercises)} scale="workout" />
 
       {editing ? (
         <>

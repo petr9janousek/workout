@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as db from '../db.js';
 import { formatDate, EXERCISE_TYPES, typeOf, PROGRESSION_MODES } from '../utils.js';
+import { MUSCLES, musclesOf } from '../muscles.js';
 
 const STEPS = [1, 1.25, 2.5, 5];
 
@@ -83,6 +84,15 @@ export default function SettingsScreen({ unit, settings, setSetting, exercises, 
     if (confirm(`Delete “${exercise.name}”?`)) deleteExercise(exercise.id);
   }
 
+  // off → ½ (helping) → 1 (main) → off
+  function cycleMuscle(exercise, muscle) {
+    const muscles = { ...musclesOf(exercise) };
+    const next = { 0: 0.5, 0.5: 1, 1: 0 }[muscles[muscle] || 0];
+    if (next) muscles[muscle] = next;
+    else delete muscles[muscle];
+    updateExercise(exercise.id, { muscles });
+  }
+
   const sorted = [...exercises].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
@@ -161,7 +171,7 @@ export default function SettingsScreen({ unit, settings, setSetting, exercises, 
 
       <section className="card">
         <h3>Exercises</h3>
-        <p className="muted small">Tap an exercise to rename it or change its type. New exercises can be added while logging a workout.</p>
+        <p className="muted small">Tap an exercise to rename it, or change its type or muscles. New exercises can be added while logging a workout.</p>
         <ul className="exercise-list">
           {sorted.map((e) =>
             editingId === e.id ? (
@@ -179,6 +189,25 @@ export default function SettingsScreen({ unit, settings, setSetting, exercises, 
                     </button>
                   ))}
                 </div>
+                <span className="small">
+                  Muscles worked <span className="muted">(tap: off → helping ½ → main)</span>
+                </span>
+                <div className="chips">
+                  {MUSCLES.map((m) => {
+                    const weight = musclesOf(e)[m.id] || 0;
+                    return (
+                      <button key={m.id} className={`chip ${weight === 1 ? 'active' : weight ? 'half' : ''}`} onClick={() => cycleMuscle(e, m.id)}>
+                        {m.label}
+                        {weight === 0.5 && ' ½'}
+                      </button>
+                    );
+                  })}
+                </div>
+                {e.muscles && (
+                  <button className="btn-text small-link" onClick={() => updateExercise(e.id, { muscles: undefined })}>
+                    Reset muscles to automatic
+                  </button>
+                )}
                 <div className="row-between">
                   <button className="btn-text danger" onClick={() => remove(e)}>Delete exercise</button>
                   <button className="btn btn-secondary" onClick={() => setEditingId(null)}>Done</button>
@@ -194,7 +223,7 @@ export default function SettingsScreen({ unit, settings, setSetting, exercises, 
         </ul>
       </section>
 
-      <p className="muted small center">Workout v0.2 · data stays on this device</p>
+      <p className="muted small center">Workout v0.3 · data stays on this device</p>
     </div>
   );
 }

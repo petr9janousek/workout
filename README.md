@@ -2,13 +2,14 @@
 
 A small workout tracker for the two of us. It runs on the phone with no internet, and the data never leaves the phone.
 
-**What version 0.2 can do**
+**What version 0.3 can do**
 
 - Log a workout: pick exercises, enter values, tick each set when it's done
 - Four kinds of exercise: **weight × reps** (bench press), **bodyweight reps** (push-ups), **assisted / weighted ±** (machine or band pull-ups with − assistance, or + added weight), **timed holds** (plank)
 - Optional **RPE** per set (how hard it felt, 1–10). Can be turned off in Settings
 - New exercises start with 3 sets. Ones you've done before start from **last time, with a suggestion applied**, in one of three styles (Settings → Progression style): **Reps, then weight** (default: add a rep each session; 2 sessions in a row at +2 reps → add weight and go back to the starting reps), **Weight only**, or **By RPE**. It also suggests repeating after a near-max set and going lighter when you stall. ▲▼ next to each set compares it with last time
 - Totals at the top of the workout (sets, weight lifted, reps, time), plus a workout timer and rest timer
+- **Muscle map**: a front/back body that turns redder as each muscle gets more sets, live during the workout, per workout in History, and for the last 7 days in Progress. Main muscles count 1 set, helping muscles ½. Muscles are guessed from the exercise name and can be changed in Settings → Exercises
 - History: totals per workout; view, edit, delete, or **repeat** a workout
 - Progress per exercise: personal records, a chart, and what to aim for next time
 - Backup to a file and restore from it
@@ -95,6 +96,7 @@ src/
   App.jsx               Holds all the data, saves changes, shows the tab bar and current screen
   db.js                 Saving to and loading from the phone's database (IndexedDB), and backups
   utils.js              Small helpers: formatting dates, "last time", progress calculations
+  muscles.js            Which muscles each exercise works, and counting sets per muscle
   styles.css            All the look: colours at the top, then each part of the app
   screens/
     WorkoutScreen.jsx   Start screen and the workout in progress (timers, Finish, Discard)
@@ -106,6 +108,9 @@ src/
     ExercisePicker.jsx  The searchable exercise list
     LineChart.jsx       The progress chart
     Icon.jsx            The small line icons
+    BodyMap.jsx         The muscle map drawing (shapes are in bodyShapes.js)
+    MuscleCard.jsx      Fold-away card around the muscle map
+    Totals.jsx          Sets / kg / reps totals
 ```
 
 **Where to change things**

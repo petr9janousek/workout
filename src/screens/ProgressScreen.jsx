@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import LineChart from '../components/LineChart.jsx';
 import Icon from '../components/Icon.jsx';
+import MuscleCard from '../components/MuscleCard.jsx';
+import { recentMuscleSets } from '../muscles.js';
 import { exerciseHistory, formatDate, formatSet, formatSeconds, formatNumber, formatSigned, typeOf, suggestNext, recentSessions, SUGGESTION_ICONS } from '../utils.js';
 
 // What can be charted for each type of exercise.
@@ -46,6 +48,13 @@ export default function ProgressScreen({ exercises, workouts, unit, settings }) 
   return (
     <div>
       <h1>Progress</h1>
+      <MuscleCard
+        id="week"
+        title="Muscles: last 7 days"
+        sets={recentMuscleSets(workouts, exercises, 7)}
+        scale="week"
+        note="Sets per muscle. Helping muscles count as ½ a set. Research suggests roughly 10–20 sets per muscle a week for growth."
+      />
       {tracked.length === 0 && <p className="empty">Finish a workout and your exercises will appear here.</p>}
       {tracked.map(({ exercise, history, next, type }) => {
         const latest = history.at(-1);

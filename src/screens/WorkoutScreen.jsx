@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import WorkoutEditor from '../components/WorkoutEditor.jsx';
 import Totals from '../components/Totals.jsx';
+import MuscleCard from '../components/MuscleCard.jsx';
+import { workoutMuscleSets } from '../muscles.js';
 import { finishedWorkouts, formatDate, formatClock, isDoneSet } from '../utils.js';
 
 export default function WorkoutScreen(props) {
@@ -87,6 +89,8 @@ function ActiveWorkout({ workout, exercises, workouts, unit, settings, saveWorko
           {lastDone && <span className="timer rest">Rest {formatClock(now - lastDone)}</span>}
         </div>
       </div>
+
+      <MuscleCard id="workout" title="Muscles worked" sets={workoutMuscleSets(workout, exercises)} scale="workout" />
 
       <WorkoutEditor
         workout={workout}
