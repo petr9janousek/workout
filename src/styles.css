@@ -170,10 +170,13 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .suggestion.hold { background: var(--surface-2); border-color: var(--border); }
 .suggestion-icon { color: var(--done); font-weight: 700; line-height: 1.35; }
 .suggestion.hold .suggestion-icon { color: var(--muted); }
+.suggestion.down { background: color-mix(in srgb, var(--danger) 10%, transparent); border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
+.suggestion.down .suggestion-icon { color: var(--danger); }
 .suggestion-text { flex: 1; line-height: 1.35; }
 .small-link { color: var(--accent); font-size: 0.82rem; padding: 0 0 0 4px; white-space: nowrap; }
 .next-hint { display: block; margin-top: 4px; font-size: 0.82rem; color: var(--done); font-variant-numeric: tabular-nums; }
 .next-hint.hold { color: var(--muted); }
+.next-hint.down { color: var(--danger); }
 .timer { font-variant-numeric: tabular-nums; font-weight: 600; }
 .timer.rest {
   background: var(--surface-2); color: var(--done);

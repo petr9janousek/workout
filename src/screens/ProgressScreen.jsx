@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import LineChart from '../components/LineChart.jsx';
 import Icon from '../components/Icon.jsx';
-import { exerciseHistory, formatDate, formatSet, formatSeconds, formatNumber, formatSigned, typeOf, suggestNext } from '../utils.js';
+import { exerciseHistory, formatDate, formatSet, formatSeconds, formatNumber, formatSigned, typeOf, suggestNext, recentSessions, SUGGESTION_ICONS } from '../utils.js';
 
 // What can be charted for each type of exercise.
 const METRICS = {
@@ -34,7 +34,7 @@ export default function ProgressScreen({ exercises, workouts, unit, settings }) 
     .map((e) => {
       const history = exerciseHistory(workouts, e.id);
       const type = typeOf(e);
-      const next = history.length ? suggestNext(history.at(-1).sets, type, unit, settings.weightStep) : null;
+      const next = history.length ? suggestNext(recentSessions(workouts, e.id), type, settings) : null;
       return { exercise: e, type, history, next };
     })
     .filter((t) => t.history.length > 0)
@@ -58,7 +58,7 @@ export default function ProgressScreen({ exercises, workouts, unit, settings }) 
               </span>
               {next && (
                 <span className={`next-hint ${next.kind}`}>
-                  {next.kind === 'hold' ? '= ' : '▲ '}Next: {next.sets.map((s) => formatSet(s, type)).join(' · ')}
+                  {SUGGESTION_ICONS[next.kind]} Next: {next.sets.map((s) => formatSet(s, type)).join(' · ')}
                 </span>
               )}
             </span>
@@ -99,7 +99,7 @@ function ExerciseProgress({ exercise, type, history, next, unit, onBack }) {
 
       {next && (
         <div className={`suggestion ${next.kind}`}>
-          <span className="suggestion-icon" aria-hidden="true">{next.kind === 'hold' ? '=' : '▲'}</span>
+          <span className="suggestion-icon" aria-hidden="true">{SUGGESTION_ICONS[next.kind]}</span>
           <span className="suggestion-text">
             <strong>Next time: {next.sets.map((s) => formatSet(s, type, unit)).join(' · ')}</strong>
             <br />

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ExercisePicker from './ExercisePicker.jsx';
 import Icon from './Icon.jsx';
-import { newId, lastTimeSets, plannedSets, formatSet, formatDate, typeOf, compareSets } from '../utils.js';
+import { newId, lastTimeSets, plannedSets, formatSet, formatDate, typeOf, compareSets, SUGGESTION_ICONS } from '../utils.js';
 
 // Edits one workout: its exercises, their sets, and notes.
 // Used both for the workout in progress and for fixing old workouts.
@@ -25,7 +25,7 @@ export default function WorkoutEditor({ workout, exercises, workouts, settings, 
     setPicking(false);
     // Start from last time's sets with the suggestion applied
     // (or 3 empty sets for an exercise you haven't done before).
-    const plan = plannedSets(workouts, exercise.id, typeOf(exercise), settings.unit, settings.weightStep, workout.startedAt);
+    const plan = plannedSets(workouts, exercise.id, typeOf(exercise), settings, workout.startedAt);
     // Assisted exercise done for the first time: start the weight as "−" (assistance).
     const startNegative = !plan.last && typeOf(exercise) === 'assisted' && /assist|band/i.test(exercise.name);
     const sets = plan.sets.map((s) => ({ ...s, done: finished, ...(startNegative ? { weight: '-' } : {}) }));
@@ -165,9 +165,9 @@ function ExerciseCard({ name, type, entry, settings, finished, last, onChange, o
 
       {suggestion && !finished && (
         <div className={`suggestion ${suggestion.kind}`}>
-          <span className="suggestion-icon" aria-hidden="true">{suggestion.kind === 'hold' ? '=' : '▲'}</span>
+          <span className="suggestion-icon" aria-hidden="true">{SUGGESTION_ICONS[suggestion.kind]}</span>
           <span className="suggestion-text">{suggestion.text}</span>
-          {suggestion.kind !== 'hold' && !anyDone && last && (
+          {!['hold', 'confirm'].includes(suggestion.kind) && !anyDone && last && (
             <button className="btn-text small-link" onClick={useLastTime}>Use last time</button>
           )}
         </div>

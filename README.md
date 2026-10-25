@@ -7,7 +7,7 @@ A small workout tracker for the two of us. It runs on the phone with no internet
 - Log a workout: pick exercises, enter values, tick each set when it's done
 - Four kinds of exercise: **weight × reps** (bench press), **bodyweight reps** (push-ups), **assisted / weighted ±** (machine or band pull-ups with − assistance, or + added weight), **timed holds** (plank)
 - Optional **RPE** per set (how hard it felt, 1–10). Can be turned off in Settings
-- New exercises start with 3 sets. Ones you've done before start from **last time, with a suggestion applied** (▲ try heavier, +1 rep, hold longer, or = repeat if it was near max). ▲▼ next to each set compares it with last time
+- New exercises start with 3 sets. Ones you've done before start from **last time, with a suggestion applied**, in one of three styles (Settings → Progression style): **Reps, then weight** (default: add a rep each session; 2 sessions in a row at +2 reps → add weight and go back to the starting reps), **Weight only**, or **By RPE**. It also suggests repeating after a near-max set and going lighter when you stall. ▲▼ next to each set compares it with last time
 - Totals at the top of the workout (sets, weight lifted, reps, time), plus a workout timer and rest timer
 - History: totals per workout; view, edit, delete, or **repeat** a workout
 - Progress per exercise: personal records, a chart, and what to aim for next time

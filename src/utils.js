@@ -177,77 +177,178 @@ export function exerciseHistory(workouts, exerciseId) {
 
 // ---- Progression ----------------------------------------------------------
 //
-// Looks at the sets from last time and suggests what to try today.
-// With RPE (how hard it felt, 10 = nothing left):
-//   all sets RPE 8 or easier  -> go up
-//   any set RPE 9.5 or harder -> stay the same
-//   in between                -> same weight, one more rep
-// Without RPE: if every set hit the same reps, go up; otherwise add a rep.
+// Suggests what to try today, from your recent sessions of an exercise.
+// There are three styles to choose from in Settings (see PROGRESSION_MODES).
 //
-// Returns { kind: 'up' | 'reps' | 'hold', text, sets } where `sets` are the
-// suggested values for today.
+// "Starting reps" = the reps you did the first time at your current weight.
+// The app uses that instead of asking you to set a rep range, so with
+// "Reps, then weight" a cycle looks like:
+//   60×8 → 60×9 → 60×10 → 60×10 (2nd time, confirmed) → 62.5×8 → …
+//
+// In every style:
+//   - any set at RPE 9.5+ last time → repeat it (you were at your limit)
+//   - reps dropped 2+ below the starting reps, twice in a row → go lighter
+//   - no more reps than 3 sessions ago at the same weight (a plateau) → go lighter
+//
+// Returns { kind, text, sets }: kind is 'up' | 'reps' | 'confirm' | 'hold' | 'down',
+// `sets` are the suggested values for today.
+
+export const PROGRESSION_MODES = [
+  {
+    id: 'double',
+    label: 'Reps, then weight',
+    help: 'Add a rep each session. Once you do 2 more reps than you started that weight with, two sessions in a row, add weight and go back to the starting reps. What most coaches recommend ("double progression", the 2-for-2 rule).',
+  },
+  {
+    id: 'linear',
+    label: 'Weight only',
+    help: 'Keep the reps the same. Once you get all your reps two sessions in a row, add weight. Simple, good when starting out.',
+  },
+  {
+    id: 'rpe',
+    label: 'By RPE',
+    help: 'Uses how hard the sets felt. Easy (RPE 7 or less): add weight. Moderate: add a rep, or weight once you are 2 reps up. 9.5+: repeat. Without RPE it works like "Reps, then weight".',
+  },
+];
+
+export const SUGGESTION_ICONS = { up: '▲', reps: '▲', confirm: '↻', hold: '=', down: '▼' };
 
 const blank = (s) => ({ id: newId(), weight: s.weight ?? '', reps: s.reps ?? '', time: s.time ?? '', rpe: '', done: false });
 
-export function suggestNext(lastSets, type, unit = 'kg', step) {
-  if (!lastSets?.length) return null;
-  const inc = step || (unit === 'lb' ? 5 : 2.5);
-  const rpes = lastSets.map((s) => num(s.rpe)).filter(Boolean);
+// Recent sessions of one exercise, newest first: [{ date, sets }]
+export function recentSessions(workouts, exerciseId, beforeIso, limit = 12) {
+  const out = [];
+  for (const w of finishedWorkouts(workouts)) {
+    if (beforeIso && w.startedAt >= beforeIso) continue;
+    const sets = w.entries.filter((e) => e.exerciseId === exerciseId).flatMap((e) => e.sets.filter(isDoneSet));
+    if (sets.length) out.push({ date: w.startedAt, sets });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+export function suggestNext(sessions, type, settings = {}) {
+  if (!sessions?.length) return null;
+  const unit = settings.unit || 'kg';
+  const step = settings.weightStep || (unit === 'lb' ? 5 : 2.5);
+  const mode = settings.progression || 'double';
+
+  const last = sessions[0].sets;
+  const copy = last.map(blank);
+  const rpes = last.map((s) => num(s.rpe)).filter(Boolean);
   const maxRpe = rpes.length ? Math.max(...rpes) : null;
-  const copy = lastSets.map(blank);
 
   if (maxRpe != null && maxRpe >= 9.5) {
-    return { kind: 'hold', text: `Last time was close to max (RPE ${maxRpe}), so repeat it`, sets: copy };
+    return { kind: 'hold', text: `Last time was close to your max (RPE ${maxRpe}), so repeat it`, sets: copy };
   }
 
+  // Timed holds and plain bodyweight reps: small steady steps.
   if (type === 'time') {
-    const add = Math.max(...lastSets.map((s) => num(s.time))) >= 60 ? 10 : 5;
-    return {
-      kind: 'up',
-      text: `Try holding ${add} s longer`,
-      sets: copy.map((s) => ({ ...s, time: String(num(s.time) + add) })),
-    };
+    const add = Math.max(...last.map((s) => num(s.time))) >= 60 ? 10 : 5;
+    return { kind: 'up', text: `Try holding ${add} s longer`, sets: copy.map((s) => ({ ...s, time: String(num(s.time) + add) })) };
+  }
+  if (type === 'reps') {
+    return { kind: 'reps', text: 'Try one more rep per set', sets: copy.map((s) => ({ ...s, reps: String(num(s.reps) + 1) })) };
   }
 
-  const moreReps = (why) => ({
-    kind: 'reps',
-    text: why,
-    sets: copy.map((s) => ({ ...s, reps: String(num(s.reps) + 1) })),
-  });
+  // Weight × reps, and assisted/weighted (where the weight can be negative).
+  const topOf = (sets) => Math.max(...sets.map((s) => num(s.weight)));
+  const top = topOf(last);
+  const repsAtTop = (sets) => sets.filter((s) => num(s.weight) === top).map((s) => num(s.reps));
 
-  if (type === 'reps') return moreReps('Try one more rep per set');
+  // Sessions in a row at the current weight, newest first.
+  const run = [];
+  for (const session of sessions) {
+    if (topOf(session.sets) !== top) break;
+    run.push(session);
+  }
+  const startReps = Math.min(...repsAtTop(run[run.length - 1].sets));
+  const lastReps = repsAtTop(last);
+  const prevReps = run[1] ? repsAtTop(run[1].sets) : null;
+  const lowest = (reps) => Math.min(...reps);
 
-  const top = Math.max(...lastSets.map((s) => num(s.weight)));
-  const topSets = lastSets.filter((s) => num(s.weight) === top);
-  const steady = topSets.every((s) => num(s.reps) >= num(topSets[0].reps));
-  const easy = maxRpe != null ? maxRpe <= 8 : steady && (top > 0 || type === 'assisted');
+  const describe = (w) => {
+    if (type !== 'assisted') return `${w} ${unit}`;
+    if (w < 0) return `less assistance (${formatSigned(w, unit)})`;
+    if (w === 0) return 'it with no assistance';
+    return formatSigned(w, unit);
+  };
+  // Change the weight of the top sets, optionally resetting their reps.
+  const withWeight = (w, reps) =>
+    copy.map((s) => (num(s.weight) === top ? { ...s, weight: String(w), ...(reps != null ? { reps: String(reps) } : {}) } : s));
 
-  if (easy) {
-    const next = round1(top + inc);
-    let target = `${next} ${unit}`;
-    if (type === 'assisted') {
-      if (next < 0) target = `less assistance (${formatSigned(next, unit)})`;
-      else if (next === 0) target = 'it with no assistance';
-      else target = formatSigned(next, unit);
+  const up = (why, reps) => {
+    const next = round1(top + step);
+    const repsText = reps != null ? ` × ${reps}` : '';
+    return { kind: 'up', text: `${why}, so try ${describe(next)}${repsText}`, sets: withWeight(next, reps) };
+  };
+  const confirm = (why) => ({ kind: 'confirm', text: `${why}, so repeat it once more, then add weight`, sets: copy });
+
+  // Struggling at this weight two sessions in a row → go a bit lighter.
+  if (prevReps && lowest(lastReps) <= startReps - 2 && lowest(prevReps) <= startReps - 2) {
+    const next = round1(top - step);
+    return { kind: 'down', text: `Reps dropped two sessions in a row, so try ${describe(next)} × ${startReps}`, sets: withWeight(next, startReps) };
+  }
+
+  // Stuck: 4+ sessions at this weight, and neither of the last two beat the
+  // reps from 3 sessions ago → drop a step and build back up.
+  // (Two sessions, so one bad day doesn't count as a plateau.)
+  const total = (reps) => reps.reduce((a, b) => a + b, 0);
+  if (run.length >= 4 && Math.max(total(lastReps), total(prevReps)) <= total(repsAtTop(run[3].sets))) {
+    const next = round1(top - step);
+    const reps = Math.max(...lastReps);
+    return { kind: 'down', text: `No progress in 4 sessions at this weight, so drop to ${describe(next)} × ${reps} and build back up`, sets: withWeight(next, reps) };
+  }
+
+  // "Reps, then weight": the goal is 2 reps above where you started this weight.
+  const double = () => {
+    const goal = startReps + 2;
+    const lastHit = lowest(lastReps) >= goal;
+    const prevHit = prevReps && lowest(prevReps) >= goal;
+    if (lastHit && prevHit) return up(`${goal}+ reps two sessions in a row`, startReps);
+    if (lastHit) return confirm(`Reached ${goal} reps`);
+    return {
+      kind: 'reps',
+      text: `Add a rep. At ${goal} reps for two sessions, add weight`,
+      sets: copy.map((s) => (num(s.weight) === top ? { ...s, reps: String(num(s.reps) >= goal ? num(s.reps) : num(s.reps) + 1) } : s)),
+    };
+  };
+
+  if (mode === 'linear') {
+    const target = Math.max(...lastReps);
+    const steady = (reps) => reps.every((r) => r >= reps[0]);
+    const tooHard = maxRpe != null && maxRpe > 8.5;
+    if (steady(lastReps) && !tooHard) {
+      if (prevReps && steady(prevReps) && lowest(prevReps) >= lowest(lastReps)) return up('All reps done two sessions in a row');
+      return confirm('All reps done');
     }
     return {
-      kind: 'up',
-      text: maxRpe != null ? `Felt manageable (RPE ${maxRpe}), so try ${target}` : `All sets done, so try ${target}`,
-      sets: copy.map((s) => (num(s.weight) === top ? { ...s, weight: String(next) } : s)),
+      kind: 'hold',
+      text: tooHard ? `Hard work (RPE ${maxRpe}), so stay at this weight` : `Stay at this weight and try to get ${target} reps on every set`,
+      sets: copy.map((s) => (num(s.weight) === top ? { ...s, reps: String(target) } : s)),
     };
   }
-  return moreReps(
-    maxRpe != null ? `Tough but doable (RPE ${maxRpe}), so same weight, aim for +1 rep` : 'Reps dropped last time, so same weight, aim for +1 rep',
-  );
+
+  if (mode === 'rpe') {
+    if (maxRpe == null) {
+      const fallback = double();
+      return { ...fallback, text: `${fallback.text} (no RPE logged)` };
+    }
+    if (maxRpe <= 7) return up(`Felt easy (RPE ${maxRpe})`);
+    if (lowest(lastReps) >= startReps + 2) return up(`${startReps + 2} reps at RPE ${maxRpe}`, startReps);
+    return { kind: 'reps', text: `Moderate effort (RPE ${maxRpe}), so add a rep`, sets: copy.map((s) => (num(s.weight) === top ? { ...s, reps: String(num(s.reps) + 1) } : s)) };
+  }
+
+  return double();
 }
 
 // The sets to start an exercise with today: last time's sets with the
-// suggestion applied, or 3 empty sets for a new exercise.
-export function plannedSets(workouts, exerciseId, type, unit, step, beforeIso) {
-  const last = lastTimeSets(workouts, exerciseId, beforeIso);
-  if (!last) return { sets: [0, 1, 2].map(() => blank({})), suggestion: null, last: null };
-  const suggestion = suggestNext(last.sets, type, unit, step);
-  return { sets: suggestion.sets, suggestion, last };
+// suggestion applied, or 3 empty sets for an exercise you haven't done before.
+export function plannedSets(workouts, exerciseId, type, settings, beforeIso) {
+  const sessions = recentSessions(workouts, exerciseId, beforeIso);
+  if (!sessions.length) return { sets: [0, 1, 2].map(() => blank({})), suggestion: null, last: null };
+  const suggestion = suggestNext(sessions, type, settings);
+  return { sets: suggestion.sets, suggestion, last: sessions[0] };
 }
 
 // Is this set better (+1), worse (-1) or the same (0) as a set from last time?

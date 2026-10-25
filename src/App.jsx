@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS = {
   unit: 'kg',
   trackRpe: true, // show the RPE column when logging
   weightStep: 2.5, // how much heavier a "try heavier" suggestion is
+  progression: 'double', // which suggestion style: see PROGRESSION_MODES in utils.js
 };
 
 const TABS = [
@@ -78,7 +79,7 @@ export default function App() {
     const startedAt = new Date().toISOString();
     const entries = (template?.entries || []).map((entry) => {
       const type = typeOf(exercises.find((e) => e.id === entry.exerciseId));
-      const plan = plannedSets(workouts, entry.exerciseId, type, settings.unit, settings.weightStep, startedAt);
+      const plan = plannedSets(workouts, entry.exerciseId, type, settings, startedAt);
       return { id: newId(), exerciseId: entry.exerciseId, sets: plan.sets, suggestion: plan.suggestion };
     });
     const workout = { id: newId(), startedAt, finishedAt: null, notes: '', entries };

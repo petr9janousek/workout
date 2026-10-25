@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as db from '../db.js';
-import { formatDate, EXERCISE_TYPES, typeOf } from '../utils.js';
+import { formatDate, EXERCISE_TYPES, typeOf, PROGRESSION_MODES } from '../utils.js';
 
 const STEPS = [1, 1.25, 2.5, 5];
 
@@ -112,6 +112,19 @@ export default function SettingsScreen({ unit, settings, setSetting, exercises, 
           Rate each set from 1 to 10: 10 = couldn't do another rep, 9 = one left in the tank, 8 = two left.
           Optional. When filled in, it makes the "try heavier" suggestions smarter.
         </p>
+      </section>
+
+      <section className="card">
+        <h3>Progression style</h3>
+        <div className="chips">
+          {PROGRESSION_MODES.map((m) => (
+            <button key={m.id} className={settings.progression === m.id ? 'chip active' : 'chip'} onClick={() => setSetting('progression', m.id)}>
+              {m.label}
+            </button>
+          ))}
+        </div>
+        <p className="muted small">{PROGRESSION_MODES.find((m) => m.id === settings.progression)?.help}</p>
+        <p className="muted small">In every style: after a set at RPE 9.5+ it suggests repeating, and if your reps drop twice in a row, or stop improving for 4 sessions, it suggests going a step lighter.</p>
       </section>
 
       <section className="card">
