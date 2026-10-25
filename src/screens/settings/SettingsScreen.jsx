@@ -7,7 +7,7 @@ import { PROGRESSION_MODES } from '../../model/progression.js';
 import { WEIGHT_STEPS, REST_OPTIONS, restTarget } from '../../model/settings.js';
 import { formatClock } from '../../model/format.js';
 
-export const APP_VERSION = '0.7';
+export const APP_VERSION = '0.8';
 
 // The Settings tab.
 // Address: #/settings
@@ -32,6 +32,31 @@ export default function SettingsScreen() {
         <p className="muted small">
           Changes the body drawing, which ready-made plans are recommended for you, and the automatic rest time.
           Everything else works the same: research finds women and men gain muscle and strength at similar rates.
+        </p>
+      </section>
+
+      <section className="card">
+        <h3>Body weight</h3>
+        <ChipGroup
+          label="Body weight"
+          options={[{ value: true, label: 'Track in Progress' }, { value: false, label: 'Off' }]}
+          value={settings.trackBodyWeight}
+          onChange={set('trackBodyWeight')}
+        />
+        <p className="muted small">Optional. Adds a card to Progress where you can note your weight and see it as a chart.</p>
+      </section>
+
+      <section className="card">
+        <h3>Screen during a workout</h3>
+        <ChipGroup
+          label="Screen during a workout"
+          options={[{ value: true, label: 'Keep it on' }, { value: false, label: 'Normal' }]}
+          value={settings.keepAwake}
+          onChange={set('keepAwake')}
+        />
+        <p className="muted small">
+          Keeps the phone from locking while a workout is open, so the timers and your sets stay in view. The phone
+          goes back to normal when you finish.
         </p>
       </section>
 

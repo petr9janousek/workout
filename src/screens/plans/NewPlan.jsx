@@ -23,21 +23,28 @@ export default function NewPlan({ days, own }) {
   return <ChooseSplit days={days} />;
 }
 
+// The 2–6 days buttons; also used by the welcome screen.
+export function DayCountGrid() {
+  return (
+    <div className="day-count-grid">
+      {DAY_OPTIONS.map((o) => (
+        <button key={o.days} className="day-count" onClick={() => go('workout', 'plans', 'new', o.days)}>
+          <span className="day-count-num">{o.days}</span>
+          <span className="day-count-label">days</span>
+          <span className="muted small">{o.note}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ChooseDays() {
   return (
     <div>
       <BackButton label="Plans" fallback={['workout', 'plans']} />
       <h1>New plan</h1>
       <p className="lead">How many days a week do you want to train?</p>
-      <div className="day-count-grid">
-        {DAY_OPTIONS.map((o) => (
-          <button key={o.days} className="day-count" onClick={() => go('workout', 'plans', 'new', o.days)}>
-            <span className="day-count-num">{o.days}</span>
-            <span className="day-count-label">days</span>
-            <span className="muted small">{o.note}</span>
-          </button>
-        ))}
-      </div>
+      <DayCountGrid />
       <p className="muted small">
         The WHO recommends strength training for all major muscles at least 2 days a week. More days lets you spread the
         work out, but the best plan is the one you keep doing.

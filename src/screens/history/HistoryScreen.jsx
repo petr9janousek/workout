@@ -1,4 +1,6 @@
 import WorkoutDetail from './WorkoutDetail.jsx';
+import Icon from '../../components/ui/Icon.jsx';
+import { countRecords } from '../../model/records.js';
 import { TotalsLine } from '../../components/workout/Totals.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
@@ -28,6 +30,7 @@ export default function HistoryScreen({ path }) {
             <span className="muted">{formatDuration(Date.parse(w.finishedAt) - Date.parse(w.startedAt))}</span>
           </div>
           <TotalsLine workout={w} />
+          <RecordBadge count={countRecords(w, workouts, exercisesById)} />
           <ul className="summary-list">
             {w.entries.map((e) => (
               <li key={e.id}>
@@ -38,5 +41,14 @@ export default function HistoryScreen({ path }) {
         </button>
       ))}
     </div>
+  );
+}
+
+function RecordBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span className="record-count small" aria-label={`${count} personal records`}>
+      {' · '}<Icon name="trophy" size={13} /> {count}
+    </span>
   );
 }

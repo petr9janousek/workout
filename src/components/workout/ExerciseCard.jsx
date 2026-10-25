@@ -5,6 +5,7 @@ import { useData } from '../../data/DataProvider.jsx';
 import { typeOf, exerciseName, startsNegative } from '../../model/exercises.js';
 import { copySets, nextSet, formatSet, compareSets } from '../../model/sets.js';
 import { formatDate } from '../../model/format.js';
+import { recordSetIds } from '../../model/records.js';
 
 // The input columns for each exercise type (besides set number, RPE and ✓).
 const COLUMNS = {
@@ -22,7 +23,8 @@ const COLUMNS = {
 
 // One exercise inside a workout: last time, the suggestion, and its sets.
 // onChange(fn): fn gets the entry and returns the changed entry.
-export default function ExerciseCard({ entry, exercise, last, finished, onChange, onRemove }) {
+// earlier: every set of this exercise before this workout (for records).
+export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove }) {
   const { settings } = useData();
   const type = typeOf(exercise);
   const name = exerciseName(exercise);
@@ -48,6 +50,7 @@ export default function ExerciseCard({ entry, exercise, last, finished, onChange
   const canUndoSuggestion = suggestion && !['hold', 'confirm'].includes(suggestion.kind) && last && !entry.sets.some((s) => s.done);
   // The set from last time to compare with (same position, or the last one).
   const previousSet = (i) => last && (last.sets[i] || last.sets[last.sets.length - 1]);
+  const records = recordSetIds(entry.sets, earlier, type);
 
   return (
     <section className="card exercise-card">
@@ -91,6 +94,7 @@ export default function ExerciseCard({ entry, exercise, last, finished, onChange
             showRpe={settings.trackRpe}
             defaultNegative={startsNegative(exercise)}
             trend={compareSets(set, previousSet(i), type)}
+            record={records.has(set.id)}
             onChange={(changes) => updateSet(set.id, changes)}
             onToggle={() => toggleDone(set)}
             onRemove={() => removeSet(set.id)}

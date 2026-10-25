@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import FitHeading from '../../components/ui/FitHeading.jsx';
+import Welcome from './Welcome.jsx';
 import BodyMap from '../../components/charts/BodyMap.jsx';
 import WeekStrip from '../../components/charts/WeekStrip.jsx';
 import Icon from '../../components/ui/Icon.jsx';
@@ -16,9 +17,12 @@ import { formatDate } from '../../model/format.js';
 // day (or an invitation to make a plan), other ways to start, shortcuts,
 // a backup reminder when one is due, and recent workouts to repeat.
 export default function StartWorkout() {
-  const { workouts, activePlan, exercisesById, settings, actions } = useData();
+  const { workouts, plans, activePlan, exercisesById, settings, actions } = useData();
   const finished = finishedWorkouts(workouts);
   const recent = finished.slice(0, 3);
+
+  // A brand-new install: the welcome steps instead.
+  if (!settings.setupDone && workouts.length === 0 && plans.length === 0) return <Welcome />;
 
   return (
     <div className="start">

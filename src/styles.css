@@ -613,3 +613,35 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .week-bar-hit { cursor: pointer; }
 .goal-line { stroke: var(--muted); stroke-dasharray: 4 3; }
 .weeks-chart .axis { fill: var(--muted); font-size: 9px; }
+
+/* ---- Personal records: trophy and a tiny firework ---- */
+.set-num .trophy { position: relative; display: inline-flex; color: #f7c948; margin-left: 2px; }
+.trophy.fresh svg { animation: trophy-pop 0.6s ease-out; }
+@keyframes trophy-pop {
+  0% { transform: scale(0.2) rotate(-20deg); }
+  60% { transform: scale(1.5) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.firework { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; z-index: 5; }
+.firework i {
+  position: absolute; left: -2.5px; top: -2.5px; width: 5px; height: 5px; border-radius: 50%;
+  background: #f7c948; opacity: 0;
+  animation: spark 0.9s ease-out forwards;
+}
+.firework i:nth-child(3n + 1) { background: var(--accent); }
+.firework i:nth-child(3n + 2) { background: var(--done); }
+@keyframes spark {
+  0% { transform: rotate(var(--angle)) translateX(0) scale(1); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: rotate(var(--angle)) translateX(var(--distance)) scale(0.3); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .firework { display: none; }
+  .trophy.fresh svg { animation: none; }
+}
+.record-count { color: #f7c948; display: inline-flex; align-items: center; gap: 4px; }
+
+/* ---- Welcome (first run) ---- */
+.welcome-step h3 { display: flex; align-items: center; gap: 10px; }
+.welcome-step .day-count-grid { margin-bottom: 8px; }
+.welcome-skip { display: block; margin: 8px auto 0; color: var(--muted); padding: 12px; }

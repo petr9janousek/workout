@@ -4,6 +4,7 @@ import Totals from '../../components/workout/Totals.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { useNow } from '../../hooks/useNow.js';
+import { useWakeLock } from '../../hooks/useWakeLock.js';
 import { go, back, switchTab } from '../../hooks/useRoute.js';
 import { finishWorkout } from '../../model/workouts.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
@@ -15,6 +16,7 @@ import { restTarget } from '../../model/settings.js';
 export default function ActiveWorkout({ workout, picking }) {
   const { exercisesById, settings, actions } = useData();
   const now = useNow();
+  useWakeLock(settings.keepAwake);
 
   // Rest timer: time since the most recently ticked set.
   const lastDone = Math.max(0, ...workout.entries.flatMap((e) => e.sets).map((s) => (s.done && s.doneAt ? Date.parse(s.doneAt) : 0)));

@@ -2,8 +2,13 @@
 
 A small workout tracker for the two of us. It runs on the phone with no internet, and the data never leaves the phone.
 
-**What version 0.7 can do**
+**What version 0.8 can do**
 
+- **Personal records:** a set that beats everything you've done before (heavier, more reps at a weight, a longer hold) gets a 🏆 and a tiny firework. History shows how many records each workout had
+- **First-run setup** on a new phone: woman or man, days a week, then a recommended plan (or skip)
+- **Keep the screen on** during a workout (Settings, on by default)
+- **Body weight** (optional, Settings): note it in Progress and see the trend
+- Deploys run the tests first: if one fails, the phones keep the last good version
 - **About you** (Settings): Woman or Man. Changes the body drawing (a female figure), which ready-made plans are recommended, and the automatic rest time. Training works the same for both
 - **Hourglass** plans (3 or 4 days) for women: glutes and shoulders first, a strong back, light thigh work, no heavy oblique work. **V-taper** (4 days) for men: lats, side shoulders, upper chest and arms, modelled on Renaissance Periodization's upper-body templates
 - **Smaller weight jumps:** "Auto" picks a jump that suits the weight (+1 kg for light dumbbells up to +5 kg for heavy lifts), and each exercise can have its own jump
@@ -135,6 +140,8 @@ src/
     muscles.js             Which muscles an exercise works, sets per muscle, map colours
     calendar.js            Days, weeks and months: training days, weekly counts, streaks, weekly goal
     settings.js            Settings and their defaults, weight jumps (weightStepFor), rest time
+    records.js             Personal records: which sets beat everything before
+    bodyWeight.js          Body weight log (optional)
     *.test.js              Tests (see below)
 
   data/                    ── the data ──
@@ -148,15 +155,16 @@ src/
     useNow.js              The current time, ticking (timers)
     useRemembered.js       A setting remembered on this phone (e.g. folded cards)
     useSaveBackup.js       Save a backup file (used by Settings and the start-screen reminder)
+    useWakeLock.js         Keep the screen on during a workout
 
   components/              ── pieces used by several screens ──
-    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading
+    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
-                           MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit)
+                           MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
     workout/               WorkoutEditor → ExerciseCard → SetRow; ExercisePicker; CreateExercise; Totals
 
   screens/                 ── one folder per tab ──
-    workout/               WorkoutScreen → StartWorkout (start screen) or ActiveWorkout
+    workout/               WorkoutScreen → StartWorkout (start screen; Welcome on a new phone) or ActiveWorkout
     exercises/             ExerciseLibrary (search, filter, add) → ExerciseDetail (edit, muscles, delete)
     plans/                 PlansScreen → PlanList, NewPlan (days → split → names), PlanOverview, DayEditor
     history/               HistoryScreen (list) → WorkoutDetail
@@ -209,6 +217,8 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | `model/plans.test.js` | Which plan day is next, starting a plan day, editing days, that every ready-made split trains all major muscles in sensible amounts, that Hourglass and V-taper put the work where they promise, and that plans for your body come first |
 | `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets, ▲▼ comparisons |
 | `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours, searching the exercise library |
+| `model/records.test.js` | Which sets are personal records: heavier, more reps, longer holds, assisted; only one trophy for repeating a record; none the first time |
+| `model/bodyWeight.test.js` | One body weight per day, removing a day, the change over 30 days |
 | `model/settings.test.js` | Automatic weight jumps (kg and lb), an exercise's own jump, automatic rest for women and men |
 | `model/calendar.test.js` | Weeks start on Monday, training days per week, streaks (rest days don't break them, a missed week does), the weekly goal |
 | `data/migrations.test.js` | Data and backups from older versions still load correctly; when to remind about a backup |

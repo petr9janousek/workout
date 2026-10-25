@@ -8,6 +8,8 @@ import { workoutMuscleSets } from '../../model/muscles.js';
 import { typeOf, exerciseName } from '../../model/exercises.js';
 import { isDoneSet, formatSet } from '../../model/sets.js';
 import { formatDate, formatDuration, formatTime } from '../../model/format.js';
+import { recordSetIds, setsBefore, countRecords } from '../../model/records.js';
+import Icon from '../../components/ui/Icon.jsx';
 
 // One finished workout: totals, muscles, sets. Repeat, edit or delete it.
 export default function WorkoutDetail({ workoutId, editing, picking }) {
@@ -47,6 +49,7 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
         {formatTime(workout.startedAt)} · {formatDuration(Date.parse(workout.finishedAt) - Date.parse(workout.startedAt))}
       </p>
       <Totals workout={workout} />
+      <RecordLine count={countRecords(workout, workouts, exercisesById)} />
       <MuscleCard id="history" title="Muscles worked" sets={workoutMuscleSets(workout, exercisesById)} scale="workout" />
 
       {editing ? (
@@ -64,12 +67,18 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
         <>
           {workout.entries.map((e) => {
             const exercise = exercisesById.get(e.exerciseId);
+            const records = recordSetIds(e.sets, setsBefore(workouts, e.exerciseId, workout.startedAt), typeOf(exercise));
             return (
               <section key={e.id} className="card">
                 <h3>{exerciseName(exercise)}</h3>
                 <ol className="set-list">
                   {e.sets.filter(isDoneSet).map((s) => (
-                    <li key={s.id}>{formatSet(s, typeOf(exercise), unit)}</li>
+                    <li key={s.id}>
+                      {formatSet(s, typeOf(exercise), unit)}
+                      {records.has(s.id) && (
+                        <span className="record-count" role="img" aria-label="Personal record"> <Icon name="trophy" size={14} /></span>
+                      )}
+                    </li>
                   ))}
                 </ol>
               </section>
@@ -85,5 +94,15 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
         </>
       )}
     </div>
+  );
+}
+
+// "🏆 2 personal records", shown only when there are some.
+export function RecordLine({ count }) {
+  if (!count) return null;
+  return (
+    <p className="record-count">
+      <Icon name="trophy" size={16} /> {count} personal {count === 1 ? 'record' : 'records'}
+    </p>
   );
 }

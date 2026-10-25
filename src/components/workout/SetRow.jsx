@@ -1,18 +1,33 @@
 import Icon from '../ui/Icon.jsx';
+import Firework from '../ui/Firework.jsx';
 import { NumberInput, SignedInput } from '../ui/NumberInput.jsx';
 
-// One set: number (with ▲▼ vs last time), its values, RPE, ✓ and delete.
+// A record set ticked in the last few seconds gets the firework.
+const FRESH_MS = 4000;
+
+// One set: number (with ▲▼ vs last time, or a trophy for a personal record),
+// its values, RPE, ✓ and delete.
 // It renders grid cells, so it must sit inside ExerciseCard's .set-grid.
-export default function SetRow({ index, set, columns, showRpe, defaultNegative, trend, onChange, onToggle, onRemove }) {
+export default function SetRow({ index, set, columns, showRpe, defaultNegative, trend, record, onChange, onToggle, onRemove }) {
   const done = set.done ? 'done' : '';
   const label = (field) => `Set ${index} ${field}`;
+  const fresh = record && set.doneAt && Date.now() - Date.parse(set.doneAt) < FRESH_MS;
 
   return (
     <>
       <span className={`set-num ${done}`}>
         {index}
-        {trend > 0 && <span className="trend up" title="More than last time">▲</span>}
-        {trend < 0 && <span className="trend down" title="Less than last time">▼</span>}
+        {record ? (
+          <span className={`trophy${fresh ? ' fresh' : ''}`} title="Personal record" role="img" aria-label="Personal record">
+            <Icon name="trophy" size={15} />
+            {fresh && <Firework />}
+          </span>
+        ) : (
+          <>
+            {trend > 0 && <span className="trend up" title="More than last time">▲</span>}
+            {trend < 0 && <span className="trend down" title="Less than last time">▼</span>}
+          </>
+        )}
       </span>
 
       {columns.map((c) => {
