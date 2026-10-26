@@ -40,16 +40,18 @@ export default function BackupSettings() {
     <section className="card">
       <h3>Backup</h3>
       <p className="muted small">
-        Your workouts are stored only on this phone. Save a backup now and then (to Files, Google Drive…) so you can
-        restore it if the app is removed or you get a new phone.
+        Your workouts are stored only on this phone. Updates never touch them, but deleting the app from the home
+        screen or getting a new phone does. Save a backup now and then: to Files, iCloud Drive or Google Drive, or
+        send it to yourself.
       </p>
       <p className="small">Last backup: {settings.lastBackup ? formatDate(settings.lastBackup) : 'never'}</p>
       <div className="actions">
         <button className="btn btn-primary btn-wide" onClick={save}>Save backup</button>
         <button className="btn btn-secondary btn-wide" onClick={() => fileInput.current.click()}>Restore from backup</button>
       </div>
-      <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={restore} />
+      <input ref={fileInput} type="file" accept="application/json,.json,text/plain,.txt" hidden onChange={restore} />
       {message && <p className="message">{message}</p>}
+
       {persisted != null && (
         <p className="muted small">
           Storage: {persisted ? 'protected from automatic clean-up ✓' : 'not protected yet (install the app to the home screen)'}

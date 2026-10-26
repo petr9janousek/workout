@@ -3,7 +3,7 @@ import Totals from '../../components/workout/Totals.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import BackButton from '../../components/ui/BackButton.jsx';
 import { useData } from '../../data/DataProvider.jsx';
-import { go, back, switchTab } from '../../hooks/useRoute.js';
+import { go, back, openTab } from '../../hooks/useRoute.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { typeOf, exerciseName } from '../../model/exercises.js';
 import { isDoneSet, formatSet } from '../../model/sets.js';
@@ -37,7 +37,7 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
       return;
     }
     actions.startWorkout(workout);
-    switchTab('workout');
+    openTab('workout');
   }
 
   return (

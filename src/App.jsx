@@ -23,7 +23,7 @@ export default function App() {
 }
 
 function Shell() {
-  const { tab, path, switchTab } = useRoute();
+  const { tab, path, openTab } = useRoute();
   const { activeWorkout, saveError, actions } = useData();
   const Screen = SCREENS[tab];
 
@@ -51,7 +51,7 @@ function Shell() {
 
       <nav className="tabbar">
         {TABS.map((t) => (
-          <button key={t} className={tab === t ? 'tab active' : 'tab'} onClick={() => switchTab(t)} aria-current={tab === t ? 'page' : undefined}>
+          <button key={t} className={tab === t ? 'tab active' : 'tab'} onClick={() => openTab(t)} aria-current={tab === t ? 'page' : undefined}>
             <Icon name={t} />
             <span>{LABELS[t]}</span>
             {t === 'workout' && activeWorkout && tab !== 'workout' && <span className="tab-dot" aria-label="Workout in progress" />}

@@ -4,7 +4,7 @@ import BodyMap from '../../components/charts/BodyMap.jsx';
 import ExercisePicker from '../../components/workout/ExercisePicker.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
-import { go, back, switchTab } from '../../hooks/useRoute.js';
+import { go, back, openTab } from '../../hooks/useRoute.js';
 import { updateDay, addItem, setItemSets, removeItem, moveItem, dayMuscleSets, totalSets } from '../../model/plans.js';
 import { exerciseName, typeOf, EXERCISE_TYPES } from '../../model/exercises.js';
 
@@ -45,7 +45,7 @@ export default function DayEditor({ planId, dayId, picking }) {
       return;
     }
     actions.startPlanDay(plan, day);
-    switchTab('workout');
+    openTab('workout');
   }
 
   return (

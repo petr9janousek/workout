@@ -645,3 +645,4 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .welcome-step h3 { display: flex; align-items: center; gap: 10px; }
 .welcome-step .day-count-grid { margin-bottom: 8px; }
 .welcome-skip { display: block; margin: 8px auto 0; color: var(--muted); padding: 12px; }
+

@@ -14,7 +14,9 @@ export default defineConfig({
     // This plugin turns the app into a PWA: it writes the manifest
     // (name, icon, colours) and the service worker (offline support).
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': we decide when to switch to a new version (src/updates.js).
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Workout',

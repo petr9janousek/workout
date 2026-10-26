@@ -94,3 +94,4 @@ describe('Backup files', () => {
     expect(() => readBackup('{"hello": 1}')).toThrow(/not a Workout backup/);
   });
 });
+

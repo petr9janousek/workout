@@ -15,6 +15,7 @@ import { activeWorkout } from '../model/workouts.js';
 import { planWorkout } from '../model/progression.js';
 import { createPlan, createDay, planFromTemplate, startPlanDay } from '../model/plans.js';
 import { settingsFromList } from '../model/settings.js';
+import { countEvent } from '../analytics.js';
 
 const DataContext = createContext(null);
 
@@ -23,6 +24,10 @@ export function useData() {
   if (!data) throw new Error('useData() must be used inside <DataProvider>');
   return data;
 }
+
+// Count a first launch only once, even if loading runs twice (React's
+// development mode does that on purpose).
+let countedFirstOpen = false;
 
 // Read from the database, bring old data up to date, add the starter exercises
 // on first launch.
@@ -33,10 +38,18 @@ async function loadFromDb() {
     await db.replaceAll(data);
   }
   if (data.exercises.length === 0) {
+    // First launch on this phone.
     data.exercises = starterExercises();
     await Promise.all(data.exercises.map((e) => db.put('exercises', e)));
+    if (!countedFirstOpen) countEvent('first-open', 'New user (first launch)');
+    countedFirstOpen = true;
   }
-  return { exercises: data.exercises, workouts: data.workouts, plans: data.plans, settings: settingsFromList(data.settings) };
+  return {
+    exercises: data.exercises,
+    workouts: data.workouts,
+    plans: data.plans,
+    settings: settingsFromList(data.settings),
+  };
 }
 
 export function DataProvider({ children }) {

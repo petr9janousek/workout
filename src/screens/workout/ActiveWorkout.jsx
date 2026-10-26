@@ -5,11 +5,12 @@ import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { useNow } from '../../hooks/useNow.js';
 import { useWakeLock } from '../../hooks/useWakeLock.js';
-import { go, back, switchTab } from '../../hooks/useRoute.js';
+import { go, back, openTab } from '../../hooks/useRoute.js';
 import { finishWorkout } from '../../model/workouts.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { formatDate, formatClock } from '../../model/format.js';
 import { restTarget } from '../../model/settings.js';
+import { countEvent } from '../../analytics.js';
 
 // The workout in progress: totals and timers pinned on top, muscle map,
 // the exercises, and Finish / Discard.
@@ -42,7 +43,8 @@ export default function ActiveWorkout({ workout, picking }) {
     }
     if (result.skipped && !confirm(`${result.skipped} set(s) not ticked as done will be left out. Finish workout?`)) return;
     actions.saveWorkout(result.workout);
-    switchTab('history');
+    countEvent('workout-finished', 'Workout finished');
+    openTab('history');
   }
 
   function discard() {

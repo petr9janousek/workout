@@ -39,25 +39,35 @@ export function backupDue(lastBackup, finishedCount, now = Date.now()) {
 }
 
 // Hand the file to the phone: the share sheet where available (save to Files,
-// Drive…), otherwise a normal download. Resolves to false if the user cancelled.
-// Must be called straight from a tap: iPhones only allow sharing then.
+// Drive, send to yourself…), otherwise a normal download. Resolves to false if
+// the user closed the share sheet. Call it straight from a tap: phones only
+// allow sharing then.
+//
+// Shared as .txt: Chrome on Android refuses to share .json files
+// ("Permission denied"), but text files are allowed everywhere. The content
+// is the same JSON, and restoring accepts both.
 export async function shareOrDownload(backup) {
-  const name = `workout-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  const file = new File([JSON.stringify(backup, null, 1)], name, { type: 'application/json' });
-  try {
-    if (navigator.canShare?.({ files: [file] })) {
+  const date = new Date().toISOString().slice(0, 10);
+  const text = JSON.stringify(backup, null, 1);
+  const file = new File([text], `workout-backup-${date}.txt`, { type: 'text/plain' });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
       await navigator.share({ files: [file], title: 'Workout backup' });
-    } else {
-      const url = URL.createObjectURL(file);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = name;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return true;
+    } catch (err) {
+      if (err.name === 'AbortError') return false; // closed the share sheet
+      // Sharing refused: fall back to a download below.
     }
-    return true;
-  } catch (err) {
-    if (err.name === 'AbortError') return false; // closed the share sheet
-    throw err;
   }
+  download(new File([text], `workout-backup-${date}.json`, { type: 'application/json' }));
+  return true;
+}
+
+function download(file) {
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = file.name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

@@ -1,5 +1,6 @@
 import ChipGroup from '../../components/ui/ChipGroup.jsx';
 import BackupSettings from './BackupSettings.jsx';
+import { APP_VERSION } from '../../version.js';
 import Icon from '../../components/ui/Icon.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { useData } from '../../data/DataProvider.jsx';
@@ -7,7 +8,6 @@ import { PROGRESSION_MODES } from '../../model/progression.js';
 import { WEIGHT_STEPS, REST_OPTIONS, restTarget } from '../../model/settings.js';
 import { formatClock } from '../../model/format.js';
 
-export const APP_VERSION = '0.8';
 
 // The Settings tab.
 // Address: #/settings
@@ -148,7 +148,11 @@ export default function SettingsScreen() {
         <Icon name="chevron" size={18} />
       </button>
 
-      <p className="muted small center">Workout v{APP_VERSION} · data stays on this device</p>
+      <p className="muted small center">
+        Workout v{APP_VERSION} · your workouts stay on this phone
+        <br />
+        The app counts visits anonymously (no cookies, no workout data).
+      </p>
     </div>
   );
 }

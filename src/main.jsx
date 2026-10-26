@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import { requestPersistentStorage } from './data/db.js';
+import { startUpdates } from './updates.js';
 // The display typeface (headings), bundled so it works offline.
 import '@fontsource/barlow-condensed/700.css';
 import '@fontsource/barlow-condensed/800.css';
@@ -11,6 +12,9 @@ import './styles.css';
 
 // Ask the phone not to clean up the app's data automatically.
 requestPersistentStorage();
+
+// Install new versions quietly (see updates.js).
+startUpdates();
 
 // If a screen crashes, show the error (see index.html) instead of a blank page.
 const root = createRoot(document.getElementById('root'), {

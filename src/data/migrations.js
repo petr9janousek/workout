@@ -71,3 +71,4 @@ export function migrate(data) {
 export const schemaVersionOf = (data) => (data.settings || []).find((s) => s.key === 'schemaVersion')?.value || 1;
 
 export const needsMigration = (data) => schemaVersionOf(data) < SCHEMA_VERSION;
+
