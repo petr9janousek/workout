@@ -46,6 +46,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
           finished={finished}
           onChange={(change) => updateEntry(entry.id, change)}
           onRemove={() => removeEntry(entry.id)}
+          onSkip={() => update({ entries: workout.entries.filter((e) => e.id !== entry.id) })}
         />
       ))}
 

@@ -24,7 +24,8 @@ const COLUMNS = {
 // One exercise inside a workout: last time, the suggestion, and its sets.
 // onChange(fn): fn gets the entry and returns the changed entry.
 // earlier: every set of this exercise before this workout (for records).
-export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove }) {
+// onSkip: for a healthy extra, drop it from today's workout without asking.
+export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSkip }) {
   const { settings } = useData();
   const type = typeOf(exercise);
   const name = exerciseName(exercise);
@@ -55,10 +56,17 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
   return (
     <section className="card exercise-card">
       <header className="card-header">
-        <h3>{name}</h3>
-        <button className="icon-btn subtle" onClick={onRemove} aria-label={`Remove ${name}`}>
-          <Icon name="trash" size={18} />
-        </button>
+        <h3>
+          {name}
+          {entry.extra && <span className="badge extra-badge">Healthy extra</span>}
+        </h3>
+        {entry.extra && !finished && !entry.sets.some((s) => s.done) ? (
+          <button className="btn-text small-link" onClick={onSkip}>Skip</button>
+        ) : (
+          <button className="icon-btn subtle" onClick={onRemove} aria-label={`Remove ${name}`}>
+            <Icon name="trash" size={18} />
+          </button>
+        )}
       </header>
 
       {last && (

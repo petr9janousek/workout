@@ -6,8 +6,10 @@ import { formatShortDate } from '../../model/format.js';
 // weeks: [{ start: Date, days }] oldest first (calendar.js weeklyCounts)
 export default function WeeksChart({ weeks, goal }) {
   const [active, setActive] = useState(weeks.length - 1);
-  const W = 320, H = 110, pad = { top: 10, bottom: 18, left: 4, right: 4 };
-  const max = Math.max(7, goal);
+  const W = 320, H = 100, pad = { top: 14, bottom: 18, left: 4, right: 4 };
+  // Scaled to what's there (the goal or the best week, plus a little room
+  // for the goal label), so the bars fill the chart instead of empty space.
+  const max = Math.max(goal, ...weeks.map((w) => w.days)) * 1.1;
   const slot = (W - pad.left - pad.right) / weeks.length;
   const barW = slot - 6;
   const y = (v) => pad.top + (H - pad.top - pad.bottom) * (1 - v / max);
@@ -35,7 +37,7 @@ export default function WeeksChart({ weeks, goal }) {
           );
         })}
         <line x1={pad.left} x2={W - pad.right} y1={y(goal)} y2={y(goal)} className="goal-line" />
-        <text x={W - pad.right} y={y(goal) - 3} textAnchor="end" className="axis">goal {goal}</text>
+        <text x={W - pad.right} y={y(goal) - 5} textAnchor="end" className="axis">goal {goal}</text>
         <text x={pad.left} y={H - 4} className="axis">{formatShortDate(weeks[0].start)}</text>
         <text x={W - pad.right} y={H - 4} textAnchor="end" className="axis">this week</text>
       </svg>

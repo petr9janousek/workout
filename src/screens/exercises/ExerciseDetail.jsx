@@ -14,12 +14,16 @@ import { weightStepFor } from '../../model/settings.js';
 // Weight jumps an exercise can have of its own (null = like in Settings).
 const OWN_STEPS = { kg: [null, 1, 1.25, 2, 2.5, 5], lb: [null, 2.5, 5, 10] };
 
+// The fields you can edit. `muscles` undefined = guessed from the name.
+const editable = (e) => ({ name: e.name, type: typeOf(e), weightStep: e.weightStep ?? null, muscles: e.muscles });
+
 // One exercise: name, type, the muscles it works (tap the body), how often
-// you've done it, and deleting it.
+// you've done it, and deleting it. Changes are a draft until you tap Save,
+// so nothing changes by accident.
 export default function ExerciseDetail({ exerciseId }) {
   const { exercisesById, workouts, plans, settings, unit, actions } = useData();
   const exercise = exercisesById.get(exerciseId);
-  const [name, setName] = useState(exercise?.name ?? '');
+  const [draft, setDraft] = useState(() => (exercise ? editable(exercise) : null));
 
   if (!exercise) {
     return (
@@ -30,16 +34,17 @@ export default function ExerciseDetail({ exerciseId }) {
     );
   }
 
-  const update = (changes) => actions.updateExercise(exercise.id, changes);
+  const update = (changes) => setDraft((d) => ({ ...d, ...changes }));
+  const changed = JSON.stringify(draft) !== JSON.stringify(editable(exercise));
+  const valid = draft.name.trim() !== '';
   const sessions = recentSessions(workouts, exercise.id, null, 999);
-  const type = typeOf(exercise);
+  const type = draft.type;
   const lastWeight = Math.max(0, ...(sessions[0]?.sets.map((s) => Math.abs(s.weight || 0)) || [0]));
   const generalStep = settings.weightStep === 'auto' ? `Auto${lastWeight ? ` (+${formatNumber(weightStepFor(lastWeight, settings))})` : ''}` : `+${formatNumber(settings.weightStep)}`;
   const inPlans = plansUsing(plans, exercise.id);
 
-  function rename(text) {
-    setName(text);
-    if (text.trim()) update({ name: text.trim() });
+  function save() {
+    actions.updateExercise(exercise.id, { ...draft, name: draft.name.trim() });
   }
 
   function remove() {
@@ -79,7 +84,7 @@ export default function ExerciseDetail({ exerciseId }) {
       <section className="card exercise-form">
         <label className="field">
           <span className="small">Name</span>
-          <input className="search" value={name} onChange={(e) => rename(e.target.value)} aria-label="Exercise name" />
+          <input className="search" value={draft.name} onChange={(e) => update({ name: e.target.value })} aria-label="Exercise name" />
         </label>
         <span className="small">How it's logged</span>
         <ChipGroup
@@ -97,7 +102,7 @@ export default function ExerciseDetail({ exerciseId }) {
                 value: step,
                 label: step == null ? `Like Settings: ${generalStep}` : `+${formatNumber(step)} ${unit}`,
               }))}
-              value={exercise.weightStep ?? null}
+              value={draft.weightStep}
               onChange={(weightStep) => update({ weightStep })}
             />
           </>
@@ -106,8 +111,8 @@ export default function ExerciseDetail({ exerciseId }) {
 
       <section className="card">
         <h3>Muscles worked</h3>
-        <MusclePicker muscles={musclesOf(exercise)} onChange={(muscles) => update({ muscles })} />
-        {exercise.muscles ? (
+        <MusclePicker muscles={musclesOf({ ...exercise, ...draft })} onChange={(muscles) => update({ muscles })} />
+        {draft.muscles ? (
           <button className="btn-text small-link" onClick={() => update({ muscles: undefined })}>
             Reset to automatic (from the name)
           </button>
@@ -119,6 +124,13 @@ export default function ExerciseDetail({ exerciseId }) {
       <div className="actions">
         <button className="btn btn-danger-ghost btn-wide" onClick={remove}>Delete exercise</button>
       </div>
+
+      {changed && (
+        <div className="save-bar">
+          <button className="btn btn-secondary" onClick={() => setDraft(editable(exercise))}>Cancel</button>
+          <button className="btn btn-primary" onClick={save} disabled={!valid}>Save changes</button>
+        </div>
+      )}
     </div>
   );
 }

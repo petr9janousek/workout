@@ -25,6 +25,9 @@ export function readBackup(text) {
   } catch {
     throw new Error('This file is not a Workout backup.');
   }
+  if (data?.app === 'workout' && data.kind === 'plan') {
+    throw new Error('This is a plan, not a backup. Import it in Workout → Plans.');
+  }
   if (!data || data.app !== 'workout' || !Array.isArray(data.workouts) || !Array.isArray(data.exercises)) {
     throw new Error('This file is not a Workout backup.');
   }
@@ -46,20 +49,25 @@ export function backupDue(lastBackup, finishedCount, now = Date.now()) {
 // Shared as .txt: Chrome on Android refuses to share .json files
 // ("Permission denied"), but text files are allowed everywhere. The content
 // is the same JSON, and restoring accepts both.
-export async function shareOrDownload(backup) {
+export function shareOrDownload(backup) {
   const date = new Date().toISOString().slice(0, 10);
-  const text = JSON.stringify(backup, null, 1);
-  const file = new File([text], `workout-backup-${date}.txt`, { type: 'text/plain' });
+  return shareFile(backup, `workout-backup-${date}`, 'Workout backup');
+}
+
+// Any of our files (backups, plans): `name` without the extension.
+export async function shareFile(data, name, title) {
+  const text = JSON.stringify(data, null, 1);
+  const file = new File([text], `${name}.txt`, { type: 'text/plain' });
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: 'Workout backup' });
+      await navigator.share({ files: [file], title });
       return true;
     } catch (err) {
       if (err.name === 'AbortError') return false; // closed the share sheet
       // Sharing refused: fall back to a download below.
     }
   }
-  download(new File([text], `workout-backup-${date}.json`, { type: 'application/json' }));
+  download(new File([text], `${name}.json`, { type: 'application/json' }));
   return true;
 }
 

@@ -2,8 +2,9 @@
 // a plan day, and checking that every ready-made plan is sensible.
 
 import { describe, it, expect } from 'vitest';
-import { createPlan, createDay, nextDayIndex, startPlanDay, planFromTemplate, planMuscleSets, moveItem, setItemSets, plansUsing } from './plans.js';
-import { PLAN_TEMPLATES, templatesForDays, defaultDayNames, isRecommended } from './planTemplates.js';
+import { createPlan, createDay, nextDayIndex, startPlanDay, planFromTemplate, planMuscleSets, moveItem, setItemSets, plansUsing, sessionMinutes, templateDays, addItem } from './plans.js';
+import { withExtras, EXTRAS } from './extras.js';
+import { PLAN_TEMPLATES, templatesForDays, defaultDayNames, isRecommended, MAIN_MUSCLES, targetRange } from './planTemplates.js';
 import { createExercise, indexById, typeOf } from './exercises.js';
 import { guessMuscles } from './muscles.js';
 
@@ -50,6 +51,10 @@ describe('Starting a plan day', () => {
     expect(w.entries[0].sets).toHaveLength(3);
     expect(w.entries[0].sets[0].weight).toBeNull();
   });
+  it('healthy extras stay marked in the workout, so they can be skipped', () => {
+    const p = createPlan('x', [createDay('A', [{ exerciseId: 'row', sets: 3 }, { exerciseId: 'bench', sets: 2, extra: true }])]);
+    expect(startPlanDay(p, p.days[0], exercises, ctx).entries.map((e) => Boolean(e.extra))).toEqual([false, true]);
+  });
   it('skips exercises that were deleted', () => {
     const p = createPlan('x', [createDay('A', [{ exerciseId: 'gone', sets: 3 }, { exerciseId: 'row', sets: 3 }])]);
     expect(startPlanDay(p, p.days[0], exercises, ctx).entries).toHaveLength(1);
@@ -92,21 +97,50 @@ describe('Ready-made plans', () => {
     }
   });
 
-  it('every plan trains all major muscles every week (WHO: all major muscle groups)', () => {
+  it('every plan gives each main muscle about 10 sets a week (or what its focus says)', () => {
     for (const t of PLAN_TEMPLATES) {
       const { weekly } = build(t);
-      for (const muscle of ['chest', 'lats', 'shoulders', 'quads', 'glutes', 'hamstrings']) {
-        expect(weekly[muscle] || 0, `${t.name}: ${muscle}`).toBeGreaterThanOrEqual(3);
+      for (const muscle of MAIN_MUSCLES) {
+        const [lo, hi] = targetRange(t, muscle);
+        expect(weekly[muscle] || 0, `${t.name} (${t.days.length} days): ${muscle}`).toBeGreaterThanOrEqual(lo);
+        expect(weekly[muscle] || 0, `${t.name} (${t.days.length} days): ${muscle}`).toBeLessThanOrEqual(hi);
       }
     }
   });
 
-  it('no plan asks for an unreasonable amount (over 25 sets a week for one muscle)', () => {
+  it('more days means shorter sessions, for the same weekly work', () => {
+    const minutes = (id) => Math.max(...templateDays(PLAN_TEMPLATES.find((t) => t.id === id)).map((d) => sessionMinutes(d.items)));
+    expect(minutes('full-body-2')).toBeGreaterThan(minutes('full-body-3'));
+    expect(minutes('full-body-3')).toBeGreaterThan(minutes('ppl-6'));
+    expect(minutes('ppl-6')).toBeLessThanOrEqual(40);
+  });
+
+  it('healthy extras add a core exercise and one of grip / upper back / balance to every day', () => {
     for (const t of PLAN_TEMPLATES) {
-      for (const [muscle, sets] of Object.entries(build(t).weekly)) {
-        expect(sets, `${t.name}: ${muscle}`).toBeLessThanOrEqual(25);
+      for (const [, items] of withExtras(t).days) {
+        const extras = items.filter((i) => i[2]);
+        expect(extras, t.name).toHaveLength(2);
+        expect(EXTRAS.core.map(([n]) => n)).toContain(extras[0][0]);
+        expect(new Set(items.map(([n]) => n)).size, `${t.name}: no exercise twice in a day`).toBe(items.length);
       }
     }
+  });
+
+  it('extras rotate: a 3-day plan covers grip, upper back and balance', () => {
+    const extraNames = withExtras(PLAN_TEMPLATES.find((t) => t.id === 'full-body-3')).days.map(([, items]) => items.at(-1)[0]);
+    expect(extraNames).toEqual([EXTRAS.grip[0][0], EXTRAS.upperBack[0][0], EXTRAS.balance[0][0]]);
+  });
+
+  it('an exercise added to a day goes before its healthy extras', () => {
+    const day = createDay('A', [{ exerciseId: 'squat', sets: 3 }, { exerciseId: 'plank', sets: 2, extra: true }]);
+    expect(addItem(day, 'bench').items.map((i) => i.exerciseId)).toEqual(['squat', 'bench', 'plank']);
+    expect(addItem(createDay('B'), 'bench').items).toEqual([{ exerciseId: 'bench', sets: 3 }]);
+  });
+
+  it('extras are marked in the plan made from the template', () => {
+    const { plan } = build(withExtras(PLAN_TEMPLATES[0]));
+    expect(plan.days[0].items.filter((i) => i.extra)).toHaveLength(2);
+    expect(plan.days[0].items[0].extra).toBeUndefined();
   });
 
   it('there is a ready-made plan for 2 to 6 days a week', () => {

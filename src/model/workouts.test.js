@@ -70,3 +70,18 @@ describe('History of one exercise', () => {
     expect(countWorkoutsWith(workouts, 'deadlift')).toBe(0);
   });
 });
+
+describe('Healthy extras in a workout', () => {
+  it("finishing doesn't count unticked extras as skipped sets", () => {
+    const w = {
+      id: 'w', startedAt: '2026-10-26T10:00:00Z', finishedAt: null, notes: '',
+      entries: [
+        { id: 'a', exerciseId: 'squat', suggestion: null, sets: [{ id: '1', weight: 60, reps: 8, done: true }, { id: '2', weight: 60, reps: 8, done: false }] },
+        { id: 'b', exerciseId: 'plank', suggestion: null, extra: true, sets: [{ id: '3', time: 30, done: false }] },
+      ],
+    };
+    const result = finishWorkout(w);
+    expect(result.skipped).toBe(1); // only the squat set
+    expect(result.workout.entries.map((e) => e.exerciseId)).toEqual(['squat']);
+  });
+});

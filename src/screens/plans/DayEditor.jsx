@@ -5,16 +5,19 @@ import ExercisePicker from '../../components/workout/ExercisePicker.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go, back, openTab } from '../../hooks/useRoute.js';
-import { updateDay, addItem, setItemSets, removeItem, moveItem, dayMuscleSets, totalSets } from '../../model/plans.js';
-import { exerciseName, typeOf, EXERCISE_TYPES } from '../../model/exercises.js';
+import { updateDay, addItem, setItemSets, removeItem, moveItem, dayMuscleSets, totalSets, sessionMinutes } from '../../model/plans.js';
+import { exerciseName, typeOf, EXERCISE_TYPES, findExercises } from '../../model/exercises.js';
+import { musclesOf, muscleLabel } from '../../model/muscles.js';
+import { restTarget } from '../../model/settings.js';
 
 // Planning one day of a plan: which exercises, in which order, how many sets.
 // No weights or reps here: those come from your history when you start the day.
 export default function DayEditor({ planId, dayId, picking }) {
-  const { plans, exercisesById, activeWorkout, actions } = useData();
+  const { plans, exercises, exercisesById, activeWorkout, settings, actions } = useData();
   const plan = plans.find((p) => p.id === planId);
   const day = plan?.days.find((d) => d.id === dayId);
   const [name, setName] = useState(day?.name ?? '');
+  const [muscle, setMuscle] = useState(null); // tapped on the body: show ideas for it
 
   if (!day) {
     return (
@@ -58,11 +61,16 @@ export default function DayEditor({ planId, dayId, picking }) {
       </div>
 
       <section className="card day-summary">
-        <BodyMap sets={dayMuscleSets(day, exercisesById)} />
+        <BodyMap sets={dayMuscleSets(day, exercisesById)} onSelect={setMuscle}>
+          {muscle && <Ideas muscle={muscle} exercises={exercises} day={day} onAdd={(e) => change((d) => addItem(d, e.id))} />}
+        </BodyMap>
       </section>
 
       <h2 className="section-title">
-        Exercises <span className="muted small">· {totalSets(day)} sets</span>
+        Exercises{' '}
+        <span className="muted small">
+          · {totalSets(day)} sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))} min`}
+        </span>
       </h2>
       {day.items.length === 0 && <p className="empty">Add the exercises for this day. Weights and reps come later, at the gym.</p>}
       <ul className="plan-items">
@@ -81,7 +89,10 @@ export default function DayEditor({ planId, dayId, picking }) {
               </div>
               <div className="plan-item-name">
                 <strong>{exerciseName(exercise)}</strong>
-                <span className="muted small">{type}</span>
+                <span className="muted small">
+                  {type}
+                  {item.extra && <span className="badge extra-badge">Healthy extra</span>}
+                </span>
               </div>
               <div className="stepper" aria-label={`${exerciseName(exercise)} sets`}>
                 <button onClick={() => change((d) => setItemSets(d, i, item.sets - 1))} aria-label="One set less">−</button>
@@ -116,6 +127,28 @@ export default function DayEditor({ planId, dayId, picking }) {
           onClose={() => back('workout', 'plans', plan.id, day.id)}
         />
       )}
+    </div>
+  );
+}
+
+// A few exercises for the muscle tapped on the body, main movers first,
+// leaving out the ones the day already has. Tap one to add it (3 sets).
+function Ideas({ muscle, exercises, day, onAdd }) {
+  const inDay = new Set(day.items.map((i) => i.exerciseId));
+  const ideas = findExercises(exercises, { muscle, musclesOf })
+    .filter((e) => !inDay.has(e.id))
+    .slice(0, 4);
+  if (!ideas.length) return <p className="muted small center">Every exercise for {muscleLabel(muscle).toLowerCase()} is already in this day.</p>;
+  return (
+    <div className="muscle-ideas">
+      <span className="small muted">Ideas for {muscleLabel(muscle).toLowerCase()}:</span>
+      <div className="chips">
+        {ideas.map((e) => (
+          <button key={e.id} className="chip" onClick={() => onAdd(e)}>
+            + {e.name}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -112,8 +112,11 @@ src/
     sets.js                Sets: creating, showing ("60 kg × 8 @8"), comparing with last time
     workouts.js            Workouts: finishing, totals, history of an exercise
     progression.js         "What to try next time": the three progression styles
-    plans.js               Plans (splits): days in order, which day is next, starting a plan day
-    planTemplates.js       The ready-made splits, and the research they're based on
+    plans.js               Plans: days in order, which day is next, starting a plan day, minutes per session
+    planTemplates.js       The ready-made plans, and the research they're based on (~10 sets per muscle a week)
+    extras.js              Healthy extras: the core / grip / upper back / balance finisher
+    planFile.js            Plan files: sharing a plan with someone, importing one
+    bodyWeight.js          Body weight log: one entry per day, the 30-day change
     muscles.js             Which muscles an exercise works, sets per muscle, map colours
     calendar.js            Days, weeks and months: training days, weekly counts, streaks, weekly goal
     settings.js            Settings and their defaults, weight jumps (weightStepFor), rest time
@@ -126,6 +129,7 @@ src/
     db.js                  The phone's database (IndexedDB)
     migrations.js          Updates data saved by older versions of the app
     backup.js              Backup files: making, reading, sharing
+    sampleData.js          Sample data for testing (Settings → For testing)
 
   hooks/                   ── small reusable React helpers ──
     useRoute.js            Navigation and the back button
@@ -135,7 +139,7 @@ src/
     useWakeLock.js         Keep the screen on during a workout
 
   components/              ── pieces used by several screens ──
-    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework
+    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework, DaysPicker
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
     workout/               WorkoutEditor → ExerciseCard → SetRow; ExercisePicker; CreateExercise; Totals
@@ -143,7 +147,7 @@ src/
   screens/                 ── one folder per tab ──
     workout/               WorkoutScreen → StartWorkout (start screen; Welcome on a new phone) or ActiveWorkout
     exercises/             ExerciseLibrary (search, filter, add) → ExerciseDetail (edit, muscles, delete)
-    plans/                 PlansScreen → PlanList, NewPlan (days → split → names), PlanOverview, DayEditor
+    plans/                 PlansScreen → PlanList (my plans), PlanLibrary (ready-made), NewPlan (my own), PlanOverview, DayEditor
     history/               HistoryScreen (list) → WorkoutDetail
     progress/              ProgressScreen (list) → ExerciseProgress
     settings/              SettingsScreen, BackupSettings
@@ -157,7 +161,9 @@ src/
 - Which muscles an exercise works → `RULES` in `src/model/muscles.js`
 - Automatic weight jumps → `AUTO_STEPS` in `src/model/settings.js`; automatic rest → `restTarget` in the same file
 - The shape of the female figure → `FEMALE_WIDTH` in `src/components/charts/bodyShapes.js` (how much narrower or wider the body is at each height)
-- The ready-made splits → `PLAN_TEMPLATES` in `src/model/planTemplates.js` (the tests check every split still trains all major muscles)
+- The ready-made plans → `PLAN_TEMPLATES` in `src/model/planTemplates.js`. The tests check every plan gives each main muscle about 10 sets a week (8–13), or what its `focus` says. Run `npm test` after changing one
+- The healthy extras → `EXTRAS` in `src/model/extras.js`
+- How long a session is estimated to take → `sessionMinutes` in `src/model/plans.js`
 - The starting list of exercises → `STARTER_EXERCISES` in `src/model/exercises.js` (only for a fresh install)
 - A new setting → add it with its default to `src/model/settings.js`, then use `settings.yourSetting` and `actions.setSetting('yourSetting', value)`
 - App name or icon on the home screen → `vite.config.js` and the files in `public/`
@@ -193,7 +199,9 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 |---|---|
 | `model/progression.test.js` | The three progression styles, the safety rules (RPE 9.5+, dropping reps, plateaus), assisted / bodyweight / timed exercises, starting an exercise in today's workout |
 | `model/workouts.test.js` | Finishing a workout, totals, an exercise's history |
-| `model/plans.test.js` | Which plan day is next, starting a plan day, editing days, that every ready-made split trains all major muscles in sensible amounts, that Hourglass and V-taper put the work where they promise, and that plans for your body come first |
+| `model/plans.test.js` | Which plan day is next, starting a plan day, editing days; every ready-made plan gives each main muscle ~10 sets a week (or what its focus says); more days = shorter sessions; healthy extras rotate and are marked; plans for your body come first |
+| `data/sampleData.test.js` | The sample data looks like real data: current format, exercises exist, ~8 weeks of workouts, a streak, body weight |
+| `model/planFile.test.js` | Sharing a plan: names, sets, extras and muscles survive; the other phone reuses its exercises and creates missing ones; clear messages for wrong files |
 | `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets, ▲▼ comparisons |
 | `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours, searching the exercise library |
 | `model/records.test.js` | Which sets are personal records: heavier, more reps, longer holds, assisted; only one trophy for repeating a record; none the first time |
@@ -208,8 +216,17 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 
 ## Features in detail
 
-Everything the app does, roughly newest first.
+Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
 
+- **For testing** (Settings, folded): fill the app with ~8 weeks of sample data, or reset it to a fresh install. Both replace everything and ask first
+- **Body weight** is on by default: type it, tap Save, and see a chart (points spaced by date) and the last entries, each removable
+- **Healthy extras can be skipped** during a workout (Skip button), and unticked extras don't trigger the "sets not ticked" question
+- **V-taper and Hourglass** both come in 3 and 4 days a week. Woman / Man is asked once (first start, or Settings), not in the plan library
+- **Plans menu:** My plans, ready-made plans (a library you pick from; only the one you choose is copied to your plans) and Make my own. Ready-made plans give each main muscle about 10 hard sets a week; more days a week just means shorter sessions, and every plan and day shows about how long it takes. New: Full body 2× and Push / Pull 2×
+- **Healthy extras:** an optional short finisher on every day (core, plus grip, upper back or balance in turn), marked in the plan
+- **Share a plan** as a file; the other person imports it in Plans (exercises are matched by name, missing ones created)
+- **Exercise ideas:** tap a muscle on the body in the day editor to get exercises for it
+- **Exercise editor** has Save / Cancel, so nothing changes by accident
 - **Quiet updates:** a new version installs by itself while the app is in the background (or right after opening it), never in the middle of using it. Updates never touch your workouts
 - **Back button / gesture** works like in other Android apps: back from History, Progress or Settings goes to Workout; back from Workout closes the app
 - **Backups work on Android** (shared as a .txt file, which Chrome allows; restore accepts .txt and .json)
@@ -221,7 +238,7 @@ Everything the app does, roughly newest first.
 - **Body weight** (optional, Settings): note it in Progress and see the trend
 - Deploys run the tests first: if one fails, the phones keep the last good version
 - **About you** (Settings): Woman or Man. Changes the body drawing (a female figure), which ready-made plans are recommended, and the automatic rest time. Training works the same for both
-- **Hourglass** plans (3 or 4 days) for women: glutes and shoulders first, a strong back, light thigh work, no heavy oblique work. **V-taper** (4 days) for men: lats, side shoulders, upper chest and arms, modelled on Renaissance Periodization's upper-body templates
+- **Hourglass** plans (3 or 4 days) for women: glutes and shoulders first, a strong back, light thigh work, no heavy oblique work. **V-taper** (4 days) for men: lats, side shoulders, upper chest and arms
 - **Smaller weight jumps:** "Auto" picks a jump that suits the weight (+1 kg for light dumbbells up to +5 kg for heavy lifts), and each exercise can have its own jump
 - **Rest target:** the rest timer counts towards 1:30 (women) or 2:00 (men), or your own choice, turns green and buzzes (Android) when it's time for the next set
 - **Start screen:** a big READY TO TRAIN heading, this week at a glance (Mon–Sun, days trained vs. your weekly goal, streak), the next day of your plan with one-tap start, shortcuts to Exercises and Plans, a backup reminder, and recent workouts to repeat

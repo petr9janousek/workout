@@ -1,4 +1,5 @@
 import MonthCalendar from './MonthCalendar.jsx';
+import CardTitle from '../ui/CardTitle.jsx';
 import WeeksChart from './WeeksChart.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { weeklyGoal, weekStreak, bestWeekStreak, weeklyCounts, daysSinceLast } from '../../model/calendar.js';
@@ -21,7 +22,10 @@ export default function HabitCard() {
 
   return (
     <section className="card habit-card">
-      <h3>Training habit</h3>
+      <CardTitle
+        title="Training habit"
+        hint="Habits take a few months to form, and a missed day doesn't undo them; long gaps do. So a streak counts weeks that reach your weekly goal, and rest days never break it. The goal follows your plan, or set it in Settings."
+      />
       <div className="totals habit-stats">
         {stats.map((s) => (
           <div key={s.label} className="total">
@@ -33,12 +37,13 @@ export default function HabitCard() {
 
       <MonthCalendar workouts={workouts} />
 
-      <h4 className="habit-subtitle">Last 12 weeks</h4>
-      <WeeksChart weeks={weeks} goal={goal} />
-      <p className="muted small">
-        {reached} of 12 weeks reached your goal of {goal} days. Habits take a few months to form, and a missed day doesn't
-        undo them; long gaps do. A streak counts weeks that reach your goal, so rest days never break it.
-      </p>
+      <div className="habit-weeks">
+        <div className="row-between">
+          <h4 className="habit-subtitle">Last 12 weeks</h4>
+          <span className="muted small">{reached} of 12 reached {goal} days</span>
+        </div>
+        <WeeksChart weeks={weeks} goal={goal} />
+      </div>
     </section>
   );
 }

@@ -11,10 +11,11 @@ export const DEFAULT_SETTINGS = {
   weeklyGoal: null, // training days a week to aim for; null = from the plan (see calendar.js)
   body: null, // 'female' | 'male' | null: the body drawing, recommended plans, default rest
   restSeconds: null, // rest between sets to aim for; null = automatic, see restTarget()
-  trackBodyWeight: false, // show the body weight card in Progress
+  trackBodyWeight: true, // show the body weight card in Progress
   bodyWeights: [], // [{ date: 'YYYY-MM-DD', weight }], see bodyWeight.js
   keepAwake: true, // keep the screen on during a workout
   setupDone: false, // the welcome steps were finished or skipped
+  planExtras: true, // add the healthy extras when choosing a ready-made plan (extras.js)
 };
 
 export const WEIGHT_STEPS = ['auto', 1, 1.25, 2.5, 5];

@@ -15,6 +15,9 @@ import { activeWorkout } from '../model/workouts.js';
 import { planWorkout } from '../model/progression.js';
 import { createPlan, createDay, planFromTemplate, startPlanDay } from '../model/plans.js';
 import { settingsFromList } from '../model/settings.js';
+import { withExtras } from '../model/extras.js';
+import { planFromFile } from '../model/planFile.js';
+import { sampleData } from './sampleData.js';
 import { countEvent } from '../analytics.js';
 
 const DataContext = createContext(null);
@@ -125,7 +128,9 @@ export function DataProvider({ children }) {
     },
     // A new plan from a template (planTemplates.js), made the active plan.
     // Exercises the template needs are found by name, or created.
-    newPlanFromTemplate(template) {
+    // With extras: the healthy extras (extras.js) are added to every day.
+    newPlanFromTemplate(template, { extras = false } = {}) {
+      if (extras) template = withExtras(template);
       const known = new Map(state.exercises.map((e) => [e.name.toLowerCase(), e]));
       const created = [];
       const idForName = (name) => {
@@ -146,6 +151,16 @@ export function DataProvider({ children }) {
       actions.setSetting('activePlanId', plan.id);
       return plan;
     },
+    // A plan from a plan file (planFile.js). Not made active. Returns it.
+    importPlan(filePlan) {
+      const { plan, created } = planFromFile(filePlan, state.exercises, state.plans);
+      if (created.length) {
+        setState((s) => ({ ...s, exercises: [...s.exercises, ...created] }));
+        created.forEach((e) => save(db.put('exercises', e)));
+      }
+      actions.savePlan(plan);
+      return plan;
+    },
     setSetting(key, value) {
       setState((s) => ({ ...s, settings: { ...s.settings, [key]: value } }));
       save(db.put('settings', { key, value }));
@@ -153,6 +168,17 @@ export function DataProvider({ children }) {
     // Replace everything with a backup (already checked by readBackup()).
     async restore(data) {
       await db.replaceAll(data);
+      await reload();
+    },
+    // For testing (Settings → For testing): replace everything with sample
+    // data, or delete everything and start like a new install.
+    async loadSampleData() {
+      await db.replaceAll(sampleData({ body: state.settings.body, unit: state.settings.unit }));
+      await reload();
+    },
+    async resetApp() {
+      countedFirstOpen = true; // a reset is not a new user for the visit counts
+      await db.replaceAll({});
       await reload();
     },
     dismissSaveError: () => setSaveError(null),

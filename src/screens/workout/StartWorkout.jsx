@@ -9,7 +9,8 @@ import { backupDue } from '../../data/backup.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { finishedWorkouts } from '../../model/workouts.js';
-import { nextDayIndex, lastPlanWorkout, dayMuscleSets, totalSets } from '../../model/plans.js';
+import { nextDayIndex, lastPlanWorkout, dayMuscleSets, totalSets, sessionMinutes } from '../../model/plans.js';
+import { restTarget } from '../../model/settings.js';
 import { exerciseName } from '../../model/exercises.js';
 import { formatDate } from '../../model/format.js';
 
@@ -68,7 +69,7 @@ export default function StartWorkout() {
 
 // The plan's next day, with a picker for any other day.
 function NextDay({ plan }) {
-  const { workouts, exercisesById, actions } = useData();
+  const { workouts, exercisesById, settings, actions } = useData();
   const next = nextDayIndex(plan, workouts);
   const [chosen, setChosen] = useState(null); // null = the next day
   const index = chosen ?? next;
@@ -91,7 +92,7 @@ function NextDay({ plan }) {
           </span>
           <h2 className="day-title">{day.name}</h2>
           <span className="muted small">
-            {day.items.length} exercises · {totalSets(day)} sets
+            {day.items.length} exercises · {totalSets(day)} sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))} min`}
           </span>
         </div>
         <div className="plan-hero-map">
@@ -173,11 +174,11 @@ function MakeAPlan() {
     <section className="plan-hero no-plan">
       <h2 className="day-title">Plan your week</h2>
       <p className="muted">
-        Choose how many days a week you train and a split like Push / Pull / Legs or Upper / Lower, or name the days
-        yourself. Then starting a workout is one tap.
+        Pick a ready-made plan like Full body or Push / Pull / Legs, or make your own. Then starting a workout is one
+        tap.
       </p>
-      <button className="btn btn-primary btn-big" onClick={() => go('workout', 'plans', 'new')}>
-        Make a plan
+      <button className="btn btn-primary btn-big" onClick={() => go('workout', 'plans', 'library')}>
+        Choose a plan
       </button>
     </section>
   );

@@ -7,7 +7,9 @@ import { formatSets } from '../../model/format.js';
 // sets: { chest: 3, triceps: 1.5, … }
 // scale: 'workout' (one session) or 'week' (last 7 days)
 // compact: just the small picture, no tapping, legend or list (for previews)
-export default function BodyMap({ sets, scale = 'workout', compact = false }) {
+// onSelect(muscleId | null): called when a muscle is tapped (or tapped off)
+// children: shown under the readout (e.g. ideas for the tapped muscle)
+export default function BodyMap({ sets, scale = 'workout', compact = false, onSelect, children }) {
   const [selected, setSelected] = useState(null);
   const steps = SCALES[scale];
   const trained = MUSCLES.filter((m) => sets[m.id] > 0).sort((a, b) => sets[b.id] - sets[a.id]);
@@ -24,7 +26,16 @@ export default function BodyMap({ sets, scale = 'workout', compact = false }) {
 
   return (
     <div className="body-map">
-      <BodyFigure levelOf={levelOf} selected={selected} onTap={(m) => setSelected(selected === m ? null : m)} label={label} />
+      <BodyFigure
+        levelOf={levelOf}
+        selected={selected}
+        onTap={(m) => {
+          const next = selected === m ? null : m;
+          setSelected(next);
+          onSelect?.(next);
+        }}
+        label={label}
+      />
 
       <p className="body-readout">
         {selected ? (
@@ -36,6 +47,7 @@ export default function BodyMap({ sets, scale = 'workout', compact = false }) {
           <span className="muted">Tap a muscle to see its sets</span>
         )}
       </p>
+      {children}
 
       <div className="heat-legend" aria-hidden="true">
         <span className="muted">Sets:</span>

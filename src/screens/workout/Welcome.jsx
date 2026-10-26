@@ -1,6 +1,7 @@
 import FitHeading from '../../components/ui/FitHeading.jsx';
 import ChipGroup from '../../components/ui/ChipGroup.jsx';
-import { DayCountGrid } from '../plans/NewPlan.jsx';
+import DaysPicker from '../../components/ui/DaysPicker.jsx';
+import { go } from '../../hooks/useRoute.js';
 import { useData } from '../../data/DataProvider.jsx';
 
 // First run: shown on the start screen until there's a workout or a plan,
@@ -27,8 +28,11 @@ export default function Welcome() {
 
       <section className="card welcome-step">
         <h3><span className="day-chip-num">2</span> How many days a week?</h3>
-        <DayCountGrid />
-        <p className="muted small">Then pick a ready-made plan. You can change every exercise later.</p>
+        <DaysPicker from={2} to={6} value={null} onChange={(n) => go('workout', 'plans', 'library', n)} />
+        <p className="muted small">
+          A rough idea is enough: more days just means shorter sessions. Then pick a ready-made plan; you can change
+          everything later.
+        </p>
       </section>
 
       <button className="btn-text welcome-skip" onClick={() => actions.setSetting('setupDone', true)}>

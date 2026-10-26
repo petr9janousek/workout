@@ -2,7 +2,8 @@ import { useRef, useState } from 'react';
 import { formatShortDate, formatDate, formatNumber } from '../../model/format.js';
 
 // A small line chart drawn with SVG. Tap or drag on it to see each value.
-// points: [{ date, value }] oldest first.
+// points: [{ date, value }] oldest first. Points are spaced by date, so a
+// two-week gap looks like one.
 export default function LineChart({ points, unit }) {
   const svgRef = useRef(null);
   const [active, setActive] = useState(null);
@@ -22,7 +23,9 @@ export default function LineChart({ points, unit }) {
   min = allPositive ? Math.max(0, min - span * 0.15) : min - span * 0.15;
   max = max + span * 0.15;
 
-  const x = (i) => pad.left + (points.length === 1 ? innerW / 2 : (i / (points.length - 1)) * innerW);
+  const times = points.map((p) => Date.parse(p.date));
+  const t0 = times[0], timeSpan = times[times.length - 1] - t0;
+  const x = (i) => pad.left + (timeSpan > 0 ? ((times[i] - t0) / timeSpan) * innerW : innerW / 2);
   const y = (v) => pad.top + innerH - ((v - min) / (max - min)) * innerH;
   const ticks = niceTicks(min, max, 4);
   const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.value)}`).join(' ');

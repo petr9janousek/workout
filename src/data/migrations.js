@@ -41,6 +41,7 @@ function migrateWorkout(workout) {
       exerciseId: entry.exerciseId,
       sets: (entry.sets || []).map(migrateSet),
       suggestion: entry.suggestion ? { kind: entry.suggestion.kind, text: entry.suggestion.text } : null,
+      ...(entry.extra ? { extra: true } : {}),
     })),
   };
 }
@@ -52,7 +53,7 @@ function migrateExercise(exercise) {
 function migratePlan(plan) {
   return {
     ...plan,
-    days: (plan.days || []).map((d) => ({ ...d, items: (d.items || []).map((i) => ({ exerciseId: i.exerciseId, sets: Number(i.sets) || 3 })) })),
+    days: (plan.days || []).map((d) => ({ ...d, items: (d.items || []).map((i) => ({ exerciseId: i.exerciseId, sets: Number(i.sets) || 3, ...(i.extra ? { extra: true } : {}) })) })),
   };
 }
 

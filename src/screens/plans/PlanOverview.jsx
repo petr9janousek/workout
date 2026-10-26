@@ -5,7 +5,10 @@ import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go, switchTab } from '../../hooks/useRoute.js';
-import { dayMuscleSets, planMuscleSets, totalSets, createDay, nextDayIndex } from '../../model/plans.js';
+import { dayMuscleSets, planMuscleSets, totalSets, createDay, nextDayIndex, sessionMinutes } from '../../model/plans.js';
+import { restTarget } from '../../model/settings.js';
+import { planToFile } from '../../model/planFile.js';
+import { shareFile } from '../../data/backup.js';
 import { MUSCLES } from '../../model/muscles.js';
 import { formatSets } from '../../model/format.js';
 
@@ -36,6 +39,12 @@ export default function PlanOverview({ planId }) {
     const day = createDay(`Day ${plan.days.length + 1}`);
     actions.savePlan({ ...plan, days: [...plan.days, day] });
     go('workout', 'plans', plan.id, day.id);
+  }
+
+  // Send the plan to someone (they import it in Plans). No workouts or weights.
+  function share() {
+    const slug = plan.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'plan';
+    shareFile(planToFile(plan, exercisesById), `workout-plan-${slug}`, plan.name);
   }
 
   function remove() {
@@ -89,7 +98,9 @@ export default function PlanOverview({ planId }) {
                   {active && i === next && <span className="badge">Next</span>}
                 </span>
                 <span className="muted small">
-                  {day.items.length ? `${day.items.length} exercises · ${totalSets(day)} sets` : 'Not planned yet'}
+                  {day.items.length
+                    ? `${day.items.length} exercises · ${totalSets(day)} sets · ~${sessionMinutes(day.items, restTarget(settings))} min`
+                    : 'Not planned yet'}
                 </span>
               </span>
               <span className="plan-day-map">
@@ -118,6 +129,11 @@ export default function PlanOverview({ planId }) {
       )}
 
       <div className="actions">
+        <button className="btn btn-secondary btn-wide" onClick={share}>Share plan</button>
+        <p className="muted small">
+          Sends the plan as a file (to a partner, a trainee…). They import it in Plans. Your workouts and weights stay
+          here.
+        </p>
         <button className="btn btn-danger-ghost btn-wide" onClick={remove}>Delete plan</button>
       </div>
     </div>

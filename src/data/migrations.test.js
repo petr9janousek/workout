@@ -95,3 +95,10 @@ describe('Backup files', () => {
   });
 });
 
+
+describe('Plans keep their healthy-extra marks', () => {
+  it('an extra stays marked through migrate()', () => {
+    const data = { exercises: [], workouts: [], settings: [], plans: [{ id: 'p', name: 'P', days: [{ id: 'd', name: 'A', items: [{ exerciseId: 'x', sets: 2, extra: true }, { exerciseId: 'y', sets: 3 }] }] }] };
+    expect(migrate(data).plans[0].days[0].items).toEqual([{ exerciseId: 'x', sets: 2, extra: true }, { exerciseId: 'y', sets: 3 }]);
+  });
+});

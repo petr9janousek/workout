@@ -32,9 +32,10 @@ export const activeWorkout = (workouts) => workouts.find((w) => !w.finishedAt) |
 // Finish a workout: keep only ticked sets, drop exercises left with none.
 // Returns { workout, skipped }: workout is null if nothing was done at all;
 // skipped is how many unticked sets were left out.
+// `skipped` counts unticked sets, except those of healthy extras (skipping
+// those is fine, so finishing doesn't ask about them).
 export function finishWorkout(workout, finishedAt = new Date().toISOString()) {
-  const allSets = workout.entries.flatMap((e) => e.sets);
-  const skipped = allSets.filter((s) => !isDoneSet(s)).length;
+  const skipped = workout.entries.filter((e) => !e.extra).flatMap((e) => e.sets).filter((s) => !isDoneSet(s)).length;
   const entries = workout.entries
     .map(({ suggestion, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet) }))
     .filter((e) => e.sets.length > 0);
