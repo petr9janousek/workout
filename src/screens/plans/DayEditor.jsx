@@ -69,7 +69,7 @@ export default function DayEditor({ planId, dayId, picking }) {
       <h2 className="section-title">
         Exercises{' '}
         <span className="muted small">
-          · {totalSets(day)} sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))} min`}
+          · {totalSets(day)}&nbsp;sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))}\u00a0min`}
         </span>
       </h2>
       {day.items.length === 0 && <p className="empty">Add the exercises for this day. Weights and reps come later, at the gym.</p>}

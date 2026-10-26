@@ -61,7 +61,7 @@ export function minutesLabel(days, restSeconds) {
   const all = days.filter((d) => d.items.length).map((d) => sessionMinutes(d.items, restSeconds));
   if (!all.length) return '';
   const lo = Math.min(...all), hi = Math.max(...all);
-  return lo === hi ? `~${lo} min` : `~${lo}–${hi} min`;
+  return lo === hi ? `~${lo}\u00a0min` : `~${lo}–${hi}\u00a0min`; // \u00a0: "min" never wraps alone
 }
 
 // Template days ([name, [[exercise, sets, extra?]]]) in the shape above.

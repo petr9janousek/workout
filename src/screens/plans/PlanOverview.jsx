@@ -10,7 +10,7 @@ import { restTarget } from '../../model/settings.js';
 import { planToFile } from '../../model/planFile.js';
 import { shareFile } from '../../data/backup.js';
 import { MUSCLES } from '../../model/muscles.js';
-import { formatSets } from '../../model/format.js';
+import { formatSets, keepLastWord } from '../../model/format.js';
 
 // Major muscles that should get some work every week (WHO: all major muscle groups).
 const MAJOR = ['chest', 'lats', 'shoulders', 'quads', 'glutes', 'hamstrings'];
@@ -94,12 +94,12 @@ export default function PlanOverview({ planId }) {
               <span className="plan-day-num">{i + 1}</span>
               <span className="plan-day-text">
                 <span className="day-title small-title">
-                  {day.name}
+                  {keepLastWord(day.name)}
                   {active && i === next && <span className="badge">Next</span>}
                 </span>
                 <span className="muted small">
                   {day.items.length
-                    ? `${day.items.length} exercises · ${totalSets(day)} sets · ~${sessionMinutes(day.items, restTarget(settings))} min`
+                    ? `${day.items.length}\u00a0exercises · ${totalSets(day)}\u00a0sets · ~${sessionMinutes(day.items, restTarget(settings))}\u00a0min`
                     : 'Not planned yet'}
                 </span>
               </span>

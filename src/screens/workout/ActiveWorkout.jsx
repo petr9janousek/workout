@@ -8,7 +8,7 @@ import { useWakeLock } from '../../hooks/useWakeLock.js';
 import { go, back, openTab } from '../../hooks/useRoute.js';
 import { finishWorkout } from '../../model/workouts.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
-import { formatDate, formatClock } from '../../model/format.js';
+import { formatDate, formatClock, keepLastWord } from '../../model/format.js';
 import { restTarget } from '../../model/settings.js';
 import { countEvent } from '../../analytics.js';
 
@@ -54,7 +54,7 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
   return (
     <div>
       <header className="workout-header">
-        <h1>{workout.name || 'Workout'}</h1>
+        <h1>{keepLastWord(workout.name || 'Workout')}</h1>
         <p className="muted">{formatDate(workout.startedAt)}</p>
       </header>
 

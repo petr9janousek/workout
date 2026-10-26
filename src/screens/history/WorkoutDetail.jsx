@@ -7,7 +7,7 @@ import { go, back, openTab } from '../../hooks/useRoute.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { typeOf, exerciseName } from '../../model/exercises.js';
 import { isDoneSet, formatSet } from '../../model/sets.js';
-import { formatDate, formatDuration, formatTime } from '../../model/format.js';
+import { formatDate, formatDuration, formatTime, keepLastWord } from '../../model/format.js';
 import { recordSetIds, setsBefore, countRecords } from '../../model/records.js';
 import Icon from '../../components/ui/Icon.jsx';
 
@@ -43,7 +43,7 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
   return (
     <div>
       <BackButton label="History" fallback={['history']} />
-      <h1>{workout.name || formatDate(workout.startedAt)}</h1>
+      <h1>{keepLastWord(workout.name || formatDate(workout.startedAt))}</h1>
       <p className="muted">
         {workout.name && `${formatDate(workout.startedAt)} · `}
         {formatTime(workout.startedAt)} · {formatDuration(Date.parse(workout.finishedAt) - Date.parse(workout.startedAt))}

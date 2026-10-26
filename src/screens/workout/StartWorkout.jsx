@@ -13,7 +13,7 @@ import { isActivity } from '../../model/activities.js';
 import { nextDayIndex, lastPlanWorkout, dayMuscleSets, totalSets, sessionMinutes } from '../../model/plans.js';
 import { restTarget } from '../../model/settings.js';
 import { exerciseName } from '../../model/exercises.js';
-import { formatDate } from '../../model/format.js';
+import { formatDate, keepLastWord } from '../../model/format.js';
 
 // The start screen, top to bottom: this week at a glance, your plan's next
 // day (or an invitation to make a plan), other ways to start, shortcuts,
@@ -102,9 +102,9 @@ function NextDay({ plan }) {
           <span className="muted small">
             {index === next ? 'Next up' : 'Chosen'} · day {index + 1} of {plan.days.length}
           </span>
-          <h2 className="day-title">{day.name}</h2>
+          <h2 className="day-title">{keepLastWord(day.name)}</h2>
           <span className="muted small">
-            {day.items.length} exercises · {totalSets(day)} sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))} min`}
+            {day.items.length}&nbsp;exercises · {totalSets(day)}&nbsp;sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))}\u00a0min`}
           </span>
         </div>
         <div className="plan-hero-map">

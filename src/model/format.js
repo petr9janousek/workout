@@ -15,6 +15,10 @@ export function parseNumber(text) {
 // A number for display, without trailing zeros: 62.5 → "62.5", 60 → "60".
 export const formatNumber = (n) => (n == null ? '' : String(Math.round(n * 100) / 100));
 
+// A title that never leaves a short last word alone on its own line:
+// "Full body A" wraps as "Full / body A", not "Full body / A".
+export const keepLastWord = (text) => String(text ?? '').replace(/ (\S{1,3})$/, '\u00a0$1');
+
 // Big totals with thousands separators: 12345 → "12,345".
 export const formatTotal = (n) => Math.round(n).toLocaleString();
 

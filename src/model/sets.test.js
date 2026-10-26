@@ -1,7 +1,7 @@
 // Tests for sets.js and format.js: reading typed numbers and showing sets.
 
 import { describe, it, expect } from 'vitest';
-import { parseNumber, formatSigned, formatSeconds, formatNumber } from './format.js';
+import { parseNumber, formatSigned, formatSeconds, formatNumber, keepLastWord } from './format.js';
 import { formatSet, compareSets, isDoneSet, nextSet } from './sets.js';
 
 describe('Reading typed numbers', () => {
@@ -73,5 +73,17 @@ describe('Sets', () => {
     const added = nextSet([{ id: 'a', weight: 60, reps: 8, time: null, rpe: 9, done: true }]);
     expect(added).toMatchObject({ weight: 60, reps: 8, rpe: null, done: false });
     expect(added.id).not.toBe('a');
+  });
+});
+
+describe('keepLastWord', () => {
+  it('ties a short last word to the one before', () => {
+    expect(keepLastWord('Full body A')).toBe('Full body\u00a0A');
+    expect(keepLastWord('Day 1')).toBe('Day\u00a01');
+  });
+  it('leaves longer names and single words alone', () => {
+    expect(keepLastWord('Glutes & upper')).toBe('Glutes & upper');
+    expect(keepLastWord('Legs')).toBe('Legs');
+    expect(keepLastWord(undefined)).toBe('');
   });
 });

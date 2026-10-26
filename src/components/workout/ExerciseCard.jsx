@@ -33,8 +33,9 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
   const columns = COLUMNS[type];
 
   const gridTemplateColumns = [
-    '34px',
-    ...columns.map(() => 'minmax(0, 1fr)'),
+    '30px',
+    // the ± weight field also holds the sign button, so it gets more room
+    ...columns.map((c) => (c.signed ? 'minmax(0, 1.4fr)' : 'minmax(0, 1fr)')),
     ...(settings.trackRpe ? ['minmax(0, 0.8fr)'] : []),
     '44px',
     '28px',
