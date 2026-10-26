@@ -7,6 +7,7 @@
 // ones. This "fractional" counting is how training research counts volume.
 
 import { isDoneSet } from './sets.js';
+import { typeOf } from './exercises.js';
 
 export const MUSCLES = [
   { id: 'chest', label: 'Chest' },
@@ -133,3 +134,23 @@ export function level(sets, scale) {
   return lvl;
 }
 
+
+// Exercises that can stand in for `exercise` (e.g. when its machine is taken):
+// they must work at least one of its main muscles as a main muscle, and come
+// most similar first (how much of the muscle work they share), with the same
+// way of logging as a tie-breaker. `exclude`: ids to leave out.
+export function similarExercises(exercise, exercises, exclude = new Set()) {
+  const target = musclesOf(exercise);
+  const mains = Object.keys(target).filter((m) => target[m] === 1);
+  const sum = (load) => Object.values(load).reduce((a, b) => a + b, 0);
+  const score = (other) => {
+    const load = musclesOf(other);
+    const shared = Object.entries(target).reduce((s, [m, w]) => s + Math.min(w, load[m] || 0), 0);
+    return shared / (sum(target) + sum(load) - shared) + (typeOf(other) === typeOf(exercise) ? 0.05 : 0);
+  };
+  return exercises
+    .filter((e) => e.id !== exercise.id && !exclude.has(e.id) && mains.some((m) => musclesOf(e)[m] === 1))
+    .map((e) => ({ e, s: score(e) }))
+    .sort((a, b) => b.s - a.s || a.e.name.localeCompare(b.e.name))
+    .map(({ e }) => e);
+}

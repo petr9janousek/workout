@@ -14,7 +14,7 @@ import { countEvent } from '../../analytics.js';
 
 // The workout in progress: totals and timers pinned on top, muscle map,
 // the exercises, and Finish / Discard.
-export default function ActiveWorkout({ workout, picking }) {
+export default function ActiveWorkout({ workout, picking, swapping }) {
   const { exercisesById, settings, actions } = useData();
   const now = useNow();
   useWakeLock(settings.keepAwake);
@@ -79,6 +79,9 @@ export default function ActiveWorkout({ workout, picking }) {
         picking={picking}
         onOpenPicker={() => go('workout', 'add')}
         onClosePicker={() => back('workout')}
+        swapping={swapping}
+        onOpenSwap={(entryId) => go('workout', 'swap', entryId)}
+        onCloseSwap={() => back('workout')}
       />
 
       <div className="actions">

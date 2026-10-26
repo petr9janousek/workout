@@ -25,7 +25,8 @@ const COLUMNS = {
 // onChange(fn): fn gets the entry and returns the changed entry.
 // earlier: every set of this exercise before this workout (for records).
 // onSkip: for a healthy extra, drop it from today's workout without asking.
-export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSkip }) {
+// onSwap: offer other exercises for the same muscles (machine taken).
+export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSkip, onSwap }) {
   const { settings } = useData();
   const type = typeOf(exercise);
   const name = exerciseName(exercise);
@@ -60,13 +61,18 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
           {name}
           {entry.extra && <span className="badge extra-badge">Healthy extra</span>}
         </h3>
-        {entry.extra && !finished && !entry.sets.some((s) => s.done) ? (
-          <button className="btn-text small-link" onClick={onSkip}>Skip</button>
-        ) : (
-          <button className="icon-btn subtle" onClick={onRemove} aria-label={`Remove ${name}`}>
-            <Icon name="trash" size={18} />
-          </button>
-        )}
+        <span className="card-header-actions">
+          {onSwap && !finished && !entry.sets.some((s) => s.done) && (
+            <button className="btn-text small-link" onClick={onSwap}>Swap</button>
+          )}
+          {entry.extra && !finished && !entry.sets.some((s) => s.done) ? (
+            <button className="btn-text small-link" onClick={onSkip}>Skip</button>
+          ) : (
+            <button className="icon-btn subtle" onClick={onRemove} aria-label={`Remove ${name}`}>
+              <Icon name="trash" size={18} />
+            </button>
+          )}
+        </span>
       </header>
 
       {last && (

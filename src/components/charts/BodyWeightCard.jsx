@@ -29,11 +29,12 @@ export default function BodyWeightCard() {
         title="Body weight"
         hint="Weigh at the same time of day, e.g. in the morning. It goes up and down by a kilo or two from day to day, so watch the line, not single days. One entry per day; saving again replaces it. You can turn this card off in Settings."
       />
+      <span className="small muted">Today, {formatDate(asDate(today))}</span>
       <div className="body-weight-row">
         <NumberInput value={value} onChange={setValue} decimal placeholder={list.length ? formatNumber(list.at(-1).weight) : unit} label="Today's body weight" />
         <span className="muted">{unit}</span>
         <button className="btn btn-primary" onClick={save} disabled={!unsaved}>
-          {todays && !unsaved ? 'Saved ✓' : todays ? 'Update today' : 'Save today'}
+          {todays && !unsaved ? 'Saved ✓' : todays ? 'Update' : 'Save'}
         </button>
       </div>
 

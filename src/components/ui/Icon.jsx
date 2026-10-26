@@ -1,4 +1,5 @@
 // Simple line icons drawn with SVG, so they look the same on every phone.
+import { SPORT_ICONS } from './sportIcons.js';
 const PATHS = {
   workout: 'M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12',
   history: 'M4 6h16M4 12h16M4 18h10',
@@ -15,10 +16,12 @@ const PATHS = {
   plan: 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4',
   down: 'M6 9l6 6 6-6',
   trophy: 'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M9.5 17h5',
+  activity: 'M3 12h4l3-8 4 16 3-8h4',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
 };
 
-export default function Icon({ name, size = 22 }) {
+// name: one of PATHS above. paths: draw these instead (e.g. a sport icon).
+export default function Icon({ name, paths, size = 22 }) {
   return (
     <svg
       width={size}
@@ -31,7 +34,12 @@ export default function Icon({ name, size = 22 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d={PATHS[name]} />
+      {[].concat(paths ?? PATHS[name]).map((d, i) => (
+        <path key={i} d={d} />
+      ))}
     </svg>
   );
 }
+
+// The icon for an activity type (activities.js), e.g. <SportIcon type="run" />.
+export const SportIcon = ({ type, size = 22 }) => <Icon paths={SPORT_ICONS[type] || SPORT_ICONS.other} size={size} />;

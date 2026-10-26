@@ -29,7 +29,27 @@ function migrateSet(set) {
   };
 }
 
+// An activity (activities.js) keeps its own fields.
+function migrateActivity(a) {
+  return {
+    id: a.id,
+    kind: 'activity',
+    activity: a.activity || 'other',
+    name: a.name ?? '',
+    startedAt: a.startedAt,
+    finishedAt: a.finishedAt ?? a.startedAt,
+    minutes: toNumber(a.minutes) || 0,
+    effort: a.effort || 'moderate',
+    distance: toNumber(a.distance),
+    calories: toNumber(a.calories),
+    heartRate: toNumber(a.heartRate),
+    notes: a.notes ?? '',
+    entries: [],
+  };
+}
+
 function migrateWorkout(workout) {
+  if (workout.kind === 'activity') return migrateActivity(workout);
   return {
     ...(workout.planId ? { planId: workout.planId, dayId: workout.dayId, name: workout.name } : {}),
     id: workout.id,

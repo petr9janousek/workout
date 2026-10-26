@@ -117,6 +117,7 @@ src/
     extras.js              Healthy extras: the core / grip / upper back / balance finisher
     planFile.js            Plan files: sharing a plan with someone, importing one
     bodyWeight.js          Body weight log: one entry per day, the 30-day change
+    activities.js          Other activities (run, swim…): types, effort, what counts as an active day, WHO minutes
     muscles.js             Which muscles an exercise works, sets per muscle, map colours
     calendar.js            Days, weeks and months: training days, weekly counts, streaks, weekly goal
     settings.js            Settings and their defaults, weight jumps (weightStepFor), rest time
@@ -139,7 +140,8 @@ src/
     useWakeLock.js         Keep the screen on during a workout
 
   components/              ── pieces used by several screens ──
-    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework, DaysPicker
+    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework, DaysPicker, CardTitle (title + "?" hint);
+                           sportIcons.js (activity icons from Tabler Icons, MIT license)
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
     workout/               WorkoutEditor → ExerciseCard → SetRow; ExercisePicker; CreateExercise; Totals
@@ -147,6 +149,7 @@ src/
   screens/                 ── one folder per tab ──
     workout/               WorkoutScreen → StartWorkout (start screen; Welcome on a new phone) or ActiveWorkout
     exercises/             ExerciseLibrary (search, filter, add) → ExerciseDetail (edit, muscles, delete)
+    activities/            ActivityForm (log or edit an activity), ActivityDetail
     plans/                 PlansScreen → PlanList (my plans), PlanLibrary (ready-made), NewPlan (my own), PlanOverview, DayEditor
     history/               HistoryScreen (list) → WorkoutDetail
     progress/              ProgressScreen (list) → ExerciseProgress
@@ -203,9 +206,10 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | `data/sampleData.test.js` | The sample data looks like real data: current format, exercises exist, ~8 weeks of workouts, a streak, body weight |
 | `model/planFile.test.js` | Sharing a plan: names, sets, extras and muscles survive; the other phone reuses its exercises and creates missing ones; clear messages for wrong files |
 | `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets, ▲▼ comparisons |
-| `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours, searching the exercise library |
+| `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours, searching the exercise library, suggesting a swap for the same muscles |
 | `model/records.test.js` | Which sets are personal records: heavier, more reps, longer holds, assisted; only one trophy for repeating a record; none the first time |
 | `model/bodyWeight.test.js` | One body weight per day, removing a day, the change over 30 days |
+| `model/activities.test.js` | Activities of 20+ minutes count as active days (one per day), easy / moderate / hard WHO minutes, calendar day kinds, they survive backup and restore |
 | `model/settings.test.js` | Automatic weight jumps (kg and lb), an exercise's own jump, automatic rest for women and men |
 | `model/calendar.test.js` | Weeks start on Monday, training days per week, streaks (rest days don't break them, a missed week does), the weekly goal |
 | `data/migrations.test.js` | Data and backups from older versions still load correctly; when to remind about a backup |
@@ -218,6 +222,8 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
 
+- **Other activities** (start screen → Log activity): running, walking, cycling, swimming, dancing, yoga, hiking, team sport, climbing, or other (with its own name), with minutes and how hard (talk test); distance, calories, average heart rate and notes under "More details". Pace is worked out for running, walking and hiking. Shown in History and on the calendar as an orange ring (gym days are solid orange). 20+ minutes counts as an active day for the weekly goal and streak. Progress shows active minutes this week against the WHO's 150 (moderate ×1, hard ×2, easy not counted)
+- **Swap** an exercise during a workout when the machine is taken: suggestions that work the same main muscles, most similar first, or search all. Only today's workout changes, not the plan
 - **For testing** (Settings, folded): fill the app with ~8 weeks of sample data, or reset it to a fresh install. Both replace everything and ask first
 - **Body weight** is on by default: type it, tap Save, and see a chart (points spaced by date) and the last entries, each removable
 - **Healthy extras can be skipped** during a workout (Skip button), and unticked extras don't trigger the "sets not ticked" question

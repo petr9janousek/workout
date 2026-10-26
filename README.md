@@ -1,6 +1,6 @@
 # Workout
 
-A simple workout tracker for your phone. Without accounts, subscriptions or cookies.
+A simple workout tracker for your phone. Made by two people who wanted one without accounts or subscriptions.
 
 https://petr9janousek.github.io/workout/
 
@@ -11,7 +11,7 @@ https://petr9janousek.github.io/workout/
   <img src="docs/screenshots/4-plans.png" width="200" alt="Plans">
 </p>
 
-You log your sets, and next time it suggests a bit more. There are ready-made plans, a muscle map, a training calendar and a few charts. It's free, there's no sign-up, and it works offline.
+You log your sets, and next time it suggests a bit more. There are some ready-made plans, a muscle map, a training calendar and a few charts. It's free, there's no sign-up, and it works offline.
 
 ## Install
 
@@ -28,4 +28,4 @@ The site counts visits anonymously with [GoatCounter](https://www.goatcounter.co
 
 ## Development
 
-See [DOCUMENTATION.md](DOCUMENTATION.md). MIT [license](LICENSE).
+See [DOCUMENTATION.md](DOCUMENTATION.md). MIT [license](LICENSE). Activity icons from [Tabler Icons](https://tabler.io/icons) (MIT).

@@ -9,6 +9,7 @@ import { backupDue } from '../../data/backup.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { finishedWorkouts } from '../../model/workouts.js';
+import { isActivity } from '../../model/activities.js';
 import { nextDayIndex, lastPlanWorkout, dayMuscleSets, totalSets, sessionMinutes } from '../../model/plans.js';
 import { restTarget } from '../../model/settings.js';
 import { exerciseName } from '../../model/exercises.js';
@@ -20,7 +21,7 @@ import { formatDate } from '../../model/format.js';
 export default function StartWorkout() {
   const { workouts, plans, activePlan, exercisesById, settings, actions } = useData();
   const finished = finishedWorkouts(workouts);
-  const recent = finished.slice(0, 3);
+  const recent = finished.filter((w) => !isActivity(w)).slice(0, 3);
 
   // A brand-new install: the welcome steps instead.
   if (!settings.setupDone && workouts.length === 0 && plans.length === 0) return <Welcome />;
@@ -32,17 +33,28 @@ export default function StartWorkout() {
 
       {activePlan && activePlan.days.length > 0 ? <NextDay plan={activePlan} /> : <MakeAPlan />}
 
-      <button className="btn btn-secondary btn-wide" onClick={() => actions.startWorkout()}>
-        Start an empty workout
-      </button>
+      {/* Other ways to start: two equal choices */}
+      <div className="start-actions">
+        <button className="start-action" onClick={() => actions.startWorkout()}>
+          <span className="start-action-icon"><Icon name="plus" size={24} /></span>
+          <span className="start-action-title">Empty workout</span>
+          <span className="muted small">Pick exercises as you go</span>
+        </button>
+        <button className="start-action" onClick={() => go('workout', 'activity')}>
+          <span className="start-action-icon"><Icon name="activity" size={24} /></span>
+          <span className="start-action-title">Log activity</span>
+          <span className="muted small">Run, swim, dance…</span>
+        </button>
+      </div>
 
+      {/* Places to manage things */}
       <div className="shortcuts">
         <button className="shortcut" onClick={() => go('workout', 'exercises')}>
-          <Icon name="list" size={20} />
+          <Icon name="list" size={18} />
           <span>Exercises</span>
         </button>
         <button className="shortcut" onClick={() => go('workout', 'plans')}>
-          <Icon name="plan" size={20} />
+          <Icon name="plan" size={18} />
           <span>Plans</span>
         </button>
       </div>

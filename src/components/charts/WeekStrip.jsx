@@ -1,4 +1,4 @@
-import { thisWeek, dayKey, workoutsByDay, weeklyGoal, weekStreak } from '../../model/calendar.js';
+import { thisWeek, dayKey, workoutsByDay, weeklyGoal, weekStreak, dayMarks } from '../../model/calendar.js';
 import { useData } from '../../data/DataProvider.jsx';
 
 const LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -11,7 +11,10 @@ export default function WeekStrip({ onOpen }) {
   const days = thisWeek();
   const today = dayKey(new Date());
   const goal = weeklyGoal(settings, activePlan);
-  const done = days.filter((d) => byDay[dayKey(d)]).length;
+  const done = days.filter((d) => {
+    const { gym, active } = dayMarks(byDay[dayKey(d)]);
+    return gym || active;
+  }).length;
   const streak = weekStreak(workouts, goal);
 
   return (
@@ -19,7 +22,8 @@ export default function WeekStrip({ onOpen }) {
       <span className="week-days" aria-hidden="true">
         {days.map((d, i) => {
           const key = dayKey(d);
-          const cls = [byDay[key] ? 'trained' : '', key === today ? 'today' : '', key > today ? 'future' : ''].join(' ');
+          const { gym, active } = dayMarks(byDay[key]);
+          const cls = [gym ? 'day-gym' : '', active ? 'day-active' : '', key === today ? 'today' : '', key > today ? 'future' : ''].join(' ');
           return (
             <span key={key} className={`week-day ${cls}`}>
               {LETTERS[i]}

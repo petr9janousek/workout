@@ -8,6 +8,7 @@ import { planFromTemplate } from '../model/plans.js';
 import { PLAN_TEMPLATES } from '../model/planTemplates.js';
 import { withExtras } from '../model/extras.js';
 import { createWorkout, createEntry } from '../model/workouts.js';
+import { createActivity } from '../model/activities.js';
 import { newId } from '../model/ids.js';
 import { weightStepFor, settingsToList, DEFAULT_SETTINGS } from '../model/settings.js';
 import { dayKey } from '../model/calendar.js';
@@ -81,6 +82,25 @@ export function sampleData({ body = null, unit = 'kg' } = {}, now = new Date()) 
       workouts.push({ ...workout, finishedAt: new Date(start.getTime() + (50 + 10 * wobble(++n)) * 60000).toISOString() });
     }
   }
+
+  // Other activities: a Saturday run most weeks, a dance class now and then,
+  // and a short walk (too short to count as an active day).
+  for (let week = 0; week < 8; week++) {
+    const day = (offset, hour) => {
+      const d = new Date(monday);
+      d.setDate(d.getDate() + week * 7 + offset);
+      d.setHours(hour, 0, 0, 0);
+      return d;
+    };
+    const saturday = day(5, 9);
+    if (week % 4 !== 3 && saturday <= now) {
+      workouts.push(createActivity({ activity: 'run', minutes: 30 + 5 * (week % 3), effort: 'moderate', distance: Math.round((4.5 + week * 0.2) * 10) / 10 }, saturday.toISOString()));
+    }
+    const thursday = day(3, 19);
+    if (week % 3 === 1 && thursday <= now) workouts.push(createActivity({ activity: 'dance', minutes: 60, effort: 'hard', notes: 'Salsa' }, thursday.toISOString()));
+  }
+  const walk = new Date(now.getTime() - 864e5);
+  workouts.push(createActivity({ activity: 'walk', minutes: 15, effort: 'easy' }, walk.toISOString()));
 
   // Body weight about twice a week, drifting down slowly.
   const startWeight = body === 'female' ? 64 : 82;

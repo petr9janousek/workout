@@ -1,8 +1,8 @@
 // Tests for muscles.js: which muscles an exercise works and how sets are counted.
 
 import { describe, it, expect } from 'vitest';
-import { guessMuscles, workoutMuscleSets, recentMuscleSets, level, cycleMuscle, musclesOf } from './muscles.js';
-import { indexById, findExercises } from './exercises.js';
+import { guessMuscles, workoutMuscleSets, recentMuscleSets, level, cycleMuscle, musclesOf, similarExercises } from './muscles.js';
+import { indexById, findExercises, createExercise } from './exercises.js';
 
 describe('Guessing muscles from the exercise name', () => {
   it('knows common exercises', () => {
@@ -79,5 +79,24 @@ describe('Finding exercises in the library', () => {
   });
   it('filters by text in the name', () => {
     expect(findExercises(list, { query: 'pre', musclesOf }).map((e) => e.name)).toEqual(['Bench press']);
+  });
+});
+
+describe('Swapping an exercise (machine taken)', () => {
+  const ex = (name) => createExercise(name);
+  const list = ['Lat pulldown', 'Pull-up', 'Seated cable row', 'Bench press', 'Dumbbell curl', 'Assisted pull-up'].map(ex);
+  const [pulldown] = list;
+
+  it('suggests exercises for the same main muscles, most similar first', () => {
+    const names = similarExercises(pulldown, list).map((e) => e.name);
+    expect(names.slice(0, 2).sort()).toEqual(['Assisted pull-up', 'Pull-up']); // same muscles exactly
+    expect(names).toContain('Seated cable row'); // also lats
+    expect(names).not.toContain('Bench press'); // different muscles
+    expect(names).not.toContain('Dumbbell curl'); // biceps only help in a pulldown
+  });
+
+  it("leaves out exercises already in today's workout", () => {
+    const pullUp = list[1];
+    expect(similarExercises(pulldown, list, new Set([pullUp.id])).map((e) => e.name)).not.toContain('Pull-up');
   });
 });

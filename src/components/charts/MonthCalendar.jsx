@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon.jsx';
-import { monthGrid, dayKey, workoutsByDay } from '../../model/calendar.js';
+import { monthGrid, dayKey, workoutsByDay, dayMarks } from '../../model/calendar.js';
+import { isActivity, activityLabel } from '../../model/activities.js';
 import { go } from '../../hooks/useRoute.js';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// A month of training days: filled = trained, ring = today.
-// Tap a trained day to see what you did; ‹ › change the month.
+// A month of training days: solid orange = gym, orange ring = another
+// activity (20+ min), both = ring around the circle; a dot marks today.
+// Tap a day to see what you did; ‹ › change the month.
 export default function MonthCalendar({ workouts }) {
   const now = new Date();
   const [month, setMonth] = useState({ year: now.getFullYear(), month: now.getMonth() });
@@ -16,7 +18,8 @@ export default function MonthCalendar({ workouts }) {
   const today = dayKey(now);
   const title = new Date(month.year, month.month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const inMonth = (d) => d.getMonth() === month.month;
-  const trainedInMonth = weeks.flat().filter((d) => inMonth(d) && byDay[dayKey(d)]).length;
+  const marksOf = (d) => dayMarks(byDay[dayKey(d)]);
+  const trainedInMonth = weeks.flat().filter((d) => inMonth(d) && (marksOf(d).gym || marksOf(d).active)).length;
 
   function shift(by) {
     const d = new Date(month.year, month.month + by, 1);
@@ -46,12 +49,13 @@ export default function MonthCalendar({ workouts }) {
         {weeks.flat().map((d) => {
           const key = dayKey(d);
           const trained = byDay[key];
-          const cls = ['month-day', inMonth(d) ? '' : 'outside', trained ? 'trained' : '', key === today ? 'today' : '', key === selected ? 'selected' : ''].join(' ');
+          const { gym, active } = dayMarks(trained);
+          const cls = ['month-day', inMonth(d) ? '' : 'outside', gym ? 'day-gym' : '', active ? 'day-active' : '', key === today ? 'today' : '', key === selected ? 'selected' : ''].join(' ');
           return (
             <button
               key={key}
               className={cls}
-              disabled={!trained}
+              disabled={!gym && !active}
               onClick={() => setSelected(key === selected ? null : key)}
               aria-label={`${d.toLocaleDateString()}${trained ? `: ${trained.length} workout${trained.length > 1 ? 's' : ''}` : ''}`}
             >
@@ -66,7 +70,7 @@ export default function MonthCalendar({ workouts }) {
           {byDay[selected].map((w) => (
             <li key={w.id}>
               <button className="btn-text small-link" onClick={() => go('history', w.id)}>
-                {w.name || 'Workout'}: {w.entries.length} exercises
+                {isActivity(w) ? `${activityLabel(w)}: ${w.minutes} min` : `${w.name || 'Workout'}: ${w.entries.length} exercises`}
               </button>
             </li>
           ))}

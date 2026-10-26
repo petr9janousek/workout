@@ -18,12 +18,18 @@ describe('Sample data', () => {
   });
 
   it('about 8 weeks of finished workouts on the active plan, all in the past', () => {
-    expect(data.workouts.length).toBeGreaterThanOrEqual(18);
+    expect(data.workouts.filter((w) => w.kind !== 'activity').length).toBeGreaterThanOrEqual(18);
     expect(data.workouts.every((w) => w.finishedAt && new Date(w.startedAt) <= now)).toBe(true);
     const settings = settingsFromList(data.settings);
     expect(settings.activePlanId).toBe(data.plans[0].id);
     expect(settings.body).toBe('female');
     expect(data.plans[0].name).toBe('Hourglass');
+  });
+
+  it('includes other activities, some long enough to count and a short one that does not', () => {
+    const activities = data.workouts.filter((w) => w.kind === 'activity');
+    expect(activities.some((a) => a.minutes >= 20)).toBe(true);
+    expect(activities.some((a) => a.minutes < 20)).toBe(true);
   });
 
   it('has a streak, a missed week and body weight to show', () => {
