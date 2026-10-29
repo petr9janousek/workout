@@ -1,7 +1,7 @@
 // Tests for records.js: which sets get a trophy.
 
 import { describe, it, expect } from 'vitest';
-import { recordSetIds, countRecords } from './records.js';
+import { recordSetIds, countRecords, workoutRecords, recentRecords } from './records.js';
 
 let n = 0;
 const set = (weight, reps, extra = {}) => ({ id: `s${++n}`, weight, reps, time: null, rpe: null, done: true, ...extra });
@@ -61,5 +61,25 @@ describe('Personal records', () => {
     const newer = w('2', '2026-10-08T10:00:00Z', [set(62.5, 8), set(62.5, 8)]);
     expect(countRecords(newer, [newer, old], byId)).toBe(1);
     expect(countRecords(old, [newer, old], byId)).toBe(0); // later workouts don't count
+  });
+});
+
+describe('Records in a workout and this week', () => {
+  const byId = new Map([['bench', { id: 'bench', name: 'Bench press', type: 'weight' }]]);
+  const w = (id, day, sets) => ({ id, startedAt: `2026-10-${day}T18:00:00Z`, finishedAt: `2026-10-${day}T19:00:00Z`, entries: [{ id: `e${id}`, exerciseId: 'bench', sets }] });
+  const first = w('a', 10, [set(60, 8)]);
+  const better = set(62.5, 8);
+  const second = w('b', 20, [set(60, 8), better]);
+  const workouts = [first, second];
+
+  it('lists the record sets of a workout', () => {
+    expect(workoutRecords(second, workouts, byId)).toEqual([{ exerciseId: 'bench', set: better }]);
+    expect(workoutRecords(first, workouts, byId)).toEqual([]); // nothing to beat the first time
+  });
+
+  it('finds records from the last days only', () => {
+    const now = Date.parse('2026-10-22T12:00:00Z');
+    expect(recentRecords(workouts, byId, 7, now).map((r) => r.set.id)).toEqual([better.id]);
+    expect(recentRecords(workouts, byId, 1, now)).toEqual([]);
   });
 });

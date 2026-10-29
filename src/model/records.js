@@ -12,7 +12,7 @@
 // there's nothing to beat, so no records.
 
 import { estimated1RM, isDoneSet, val } from './sets.js';
-import { recentSessions } from './workouts.js';
+import { recentSessions, finishedWorkouts } from './workouts.js';
 import { typeOf } from './exercises.js';
 
 const EMPTY = { weight: -Infinity, oneRM: 0, reps: 0, time: 0, repsAtTop: 0 };
@@ -63,4 +63,22 @@ export function countRecords(workout, workouts, exercisesById) {
     const type = typeOf(exercisesById.get(entry.exerciseId));
     return count + recordSetIds(entry.sets, setsBefore(workouts, entry.exerciseId, workout.startedAt), type).size;
   }, 0);
+}
+
+// The record sets of a workout: [{ exerciseId, set }, …] in workout order.
+export function workoutRecords(workout, workouts, exercisesById) {
+  return workout.entries.flatMap((entry) => {
+    const type = typeOf(exercisesById.get(entry.exerciseId));
+    const ids = recordSetIds(entry.sets, setsBefore(workouts, entry.exerciseId, workout.startedAt), type);
+    return entry.sets.filter((s) => ids.has(s.id)).map((set) => ({ exerciseId: entry.exerciseId, set }));
+  });
+}
+
+// Records from workouts in the last `days` days, newest workout first:
+// [{ workout, exerciseId, set }, …]
+export function recentRecords(workouts, exercisesById, days = 7, now = Date.now()) {
+  const since = now - days * 864e5;
+  return finishedWorkouts(workouts)
+    .filter((w) => !w.kind && Date.parse(w.startedAt) >= since)
+    .flatMap((workout) => workoutRecords(workout, workouts, exercisesById).map((r) => ({ workout, ...r })));
 }

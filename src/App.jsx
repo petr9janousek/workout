@@ -5,14 +5,16 @@
 import { useEffect } from 'react';
 import { DataProvider, useData } from './data/DataProvider.jsx';
 import { useRoute, TABS } from './hooks/useRoute.js';
+import { useNow } from './hooks/useNow.js';
 import Icon from './components/ui/Icon.jsx';
-import WorkoutScreen from './screens/workout/WorkoutScreen.jsx';
-import HistoryScreen from './screens/history/HistoryScreen.jsx';
+import HomeScreen from './screens/home/HomeScreen.jsx';
 import ProgressScreen from './screens/progress/ProgressScreen.jsx';
-import SettingsScreen from './screens/settings/SettingsScreen.jsx';
+import PlansScreen from './screens/plans/PlansScreen.jsx';
+import ExercisesScreen from './screens/exercises/ExercisesScreen.jsx';
+import { formatClock } from './model/format.js';
 
-const SCREENS = { workout: WorkoutScreen, history: HistoryScreen, progress: ProgressScreen, settings: SettingsScreen };
-const LABELS = { workout: 'Workout', history: 'History', progress: 'Progress', settings: 'Settings' };
+const SCREENS = { home: HomeScreen, progress: ProgressScreen, plans: PlansScreen, exercises: ExercisesScreen };
+const LABELS = { home: 'Home', progress: 'Progress', plans: 'Plans', exercises: 'Exercises' };
 
 export default function App() {
   return (
@@ -52,12 +54,28 @@ function Shell() {
       <nav className="tabbar">
         {TABS.map((t) => (
           <button key={t} className={tab === t ? 'tab active' : 'tab'} onClick={() => openTab(t)} aria-current={tab === t ? 'page' : undefined}>
-            <Icon name={t} />
-            <span>{LABELS[t]}</span>
-            {t === 'workout' && activeWorkout && tab !== 'workout' && <span className="tab-dot" aria-label="Workout in progress" />}
+            {t === 'home' && activeWorkout ? (
+              <WorkoutTab startedAt={activeWorkout.startedAt} />
+            ) : (
+              <>
+                <Icon name={t} />
+                <span>{LABELS[t]}</span>
+              </>
+            )}
           </button>
         ))}
       </nav>
     </div>
+  );
+}
+
+// While a workout runs, Home is the workout: the tab shows its clock.
+function WorkoutTab({ startedAt }) {
+  const now = useNow();
+  return (
+    <>
+      <Icon name="timer" />
+      <span className="tab-clock" aria-label="Workout in progress">{formatClock(now - Date.parse(startedAt))}</span>
+    </>
   );
 }

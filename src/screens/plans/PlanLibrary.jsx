@@ -22,19 +22,19 @@ export default function PlanLibrary({ days }) {
 
   function use(template) {
     const plan = actions.newPlanFromTemplate(template, { extras });
-    switchTab('workout', 'plans', plan.id); // replaces the library in the back history
+    switchTab('plans', plan.id); // replaces the library in the back history
   }
 
   return (
     <div>
-      <BackButton label="Plans" fallback={['workout', 'plans']} />
+      <BackButton label="Plans" fallback={['plans']} />
       <h1>Ready-made plans</h1>
       <p className="lead">
         Each gives every main muscle about 10 hard sets a week. More days just means shorter sessions. You can change
         everything afterwards.
       </p>
 
-      <DaysPicker from={2} to={6} any value={days} onChange={(n) => switchTab(...['workout', 'plans', 'library', ...(n ? [n] : [])])} />
+      <DaysPicker from={2} to={6} any value={days} onChange={(n) => switchTab(...['plans', 'library', ...(n ? [n] : [])])} />
 
       <div className="library-options">
         <div className="for-row">

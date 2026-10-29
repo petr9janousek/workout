@@ -5,7 +5,7 @@ import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { useNow } from '../../hooks/useNow.js';
 import { useWakeLock } from '../../hooks/useWakeLock.js';
-import { go, back, openTab } from '../../hooks/useRoute.js';
+import { go, back } from '../../hooks/useRoute.js';
 import { finishWorkout } from '../../model/workouts.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { formatDate, formatClock, keepLastWord } from '../../model/format.js';
@@ -44,7 +44,7 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
     if (result.skipped && !confirm(`${result.skipped} set(s) not ticked as done will be left out. Finish workout?`)) return;
     actions.saveWorkout(result.workout);
     countEvent('workout-finished', 'Workout finished');
-    openTab('history');
+    go('home', 'done', result.workout.id); // the summary; back from it is Home
   }
 
   function discard() {
@@ -77,11 +77,12 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
         workout={workout}
         onChange={actions.saveWorkout}
         picking={picking}
-        onOpenPicker={() => go('workout', 'add')}
-        onClosePicker={() => back('workout')}
+        onOpenPicker={() => go('home', 'add')}
+        onClosePicker={() => back('home')}
         swapping={swapping}
-        onOpenSwap={(entryId) => go('workout', 'swap', entryId)}
-        onCloseSwap={() => back('workout')}
+        onOpenSwap={(entryId) => go('home', 'swap', entryId)}
+        onCloseSwap={() => back('home')}
+        onOpenExercise={(id) => go('home', 'exercise', id)}
       />
 
       <div className="actions">

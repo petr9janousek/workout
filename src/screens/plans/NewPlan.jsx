@@ -20,12 +20,12 @@ export default function NewPlan() {
 
   function create() {
     const plan = actions.newPlan(name.trim(), dayNames.map((n) => n.trim()));
-    switchTab('workout', 'plans', plan.id); // replaces this page in the back history
+    switchTab('plans', plan.id); // replaces this page in the back history
   }
 
   return (
     <div>
-      <BackButton label="Plans" fallback={['workout', 'plans']} />
+      <BackButton label="Plans" fallback={['plans']} />
       <h1>My own plan</h1>
 
       <label className="field">

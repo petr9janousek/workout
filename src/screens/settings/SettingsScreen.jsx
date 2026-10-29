@@ -2,24 +2,25 @@ import ChipGroup from '../../components/ui/ChipGroup.jsx';
 import CardTitle from '../../components/ui/CardTitle.jsx';
 import BackupSettings from './BackupSettings.jsx';
 import { APP_VERSION } from '../../version.js';
-import Icon from '../../components/ui/Icon.jsx';
-import { go, openTab } from '../../hooks/useRoute.js';
+import BackButton from '../../components/ui/BackButton.jsx';
+import { openTab } from '../../hooks/useRoute.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { PROGRESSION_MODES } from '../../model/progression.js';
 import { WEIGHT_STEPS, REST_OPTIONS, restTarget } from '../../model/settings.js';
 import { formatClock } from '../../model/format.js';
 
 
-// The Settings tab.
-// Address: #/settings
+// Settings, opened from the bottom of Home.
+// Address: #/home/settings
 export default function SettingsScreen() {
-  const { settings, unit, exercises, actions } = useData();
+  const { settings, unit, actions } = useData();
 
   const set = (key) => (value) => actions.setSetting(key, value);
   const mode = PROGRESSION_MODES.find((m) => m.id === settings.progression);
 
   return (
     <div>
+      <BackButton label="Home" fallback={['home']} />
       <h1>Settings</h1>
 
       <section className="card">
@@ -148,7 +149,7 @@ export default function SettingsScreen() {
             <>
               How much heavier the app suggests when you're ready to go up. Auto suits the weight:{' '}
               {unit === 'lb' ? '+2.5 lb under 25 lb, +5 lb under 150 lb, then +10 lb' : '+1 kg under 10 kg, +2 kg under 25 kg, +2.5 kg under 80 kg, then +5 kg'}
-              . An exercise can have its own jump: open it in Exercises.
+              . An exercise can have its own jump: Exercises, open it, Edit.
             </>
           }
         />
@@ -180,14 +181,6 @@ export default function SettingsScreen() {
 
       <BackupSettings />
 
-      <button className="card card-button row-between" onClick={() => go('workout', 'exercises')}>
-        <span>
-          <strong>Exercises</strong>
-          <span className="muted block small">{exercises.length} exercises: add your own, change types and muscles</span>
-        </span>
-        <Icon name="chevron" size={18} />
-      </button>
-
       <TestingTools />
 
       <p className="muted small center">
@@ -207,13 +200,13 @@ function TestingTools() {
   async function sample() {
     if (!confirm('Replace everything on this phone with sample data (8 weeks of made-up workouts)? Your own workouts and plans will be deleted. Save a backup first if you want to keep them.')) return;
     await actions.loadSampleData();
-    openTab('workout');
+    openTab('home');
   }
 
   async function reset() {
     if (!confirm('Delete ALL workouts, plans and settings on this phone and start like a new install? This cannot be undone.')) return;
     await actions.resetApp();
-    openTab('workout');
+    openTab('home');
   }
 
   return (

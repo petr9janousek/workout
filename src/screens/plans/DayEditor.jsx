@@ -22,7 +22,7 @@ export default function DayEditor({ planId, dayId, picking }) {
   if (!day) {
     return (
       <div>
-        <BackButton label="Plan" fallback={['workout', 'plans', planId]} />
+        <BackButton label="Plan" fallback={['plans', planId]} />
         <p className="empty">This day doesn't exist any more.</p>
       </div>
     );
@@ -39,7 +39,7 @@ export default function DayEditor({ planId, dayId, picking }) {
   function removeDay() {
     if (!confirm(`Remove “${day.name}” from the plan?`)) return;
     actions.savePlan({ ...plan, days: plan.days.filter((d) => d.id !== day.id) });
-    back('workout', 'plans', plan.id);
+    back('plans', plan.id);
   }
 
   function start() {
@@ -48,12 +48,12 @@ export default function DayEditor({ planId, dayId, picking }) {
       return;
     }
     actions.startPlanDay(plan, day);
-    openTab('workout');
+    openTab('home');
   }
 
   return (
     <div>
-      <BackButton label={plan.name} fallback={['workout', 'plans', plan.id]} />
+      <BackButton label={plan.name} fallback={['plans', plan.id]} />
 
       <div className="day-editor-head">
         <span className="plan-day-num">{index + 1}</span>
@@ -107,7 +107,7 @@ export default function DayEditor({ planId, dayId, picking }) {
         })}
       </ul>
 
-      <button className="btn btn-secondary btn-wide" onClick={() => go('workout', 'plans', plan.id, day.id, 'add')}>
+      <button className="btn btn-secondary btn-wide" onClick={() => go('plans', plan.id, day.id, 'add')}>
         <Icon name="plus" size={18} /> Add exercise
       </button>
 
@@ -122,9 +122,9 @@ export default function DayEditor({ planId, dayId, picking }) {
         <ExercisePicker
           onPick={(exercise) => {
             change((d) => addItem(d, exercise.id));
-            back('workout', 'plans', plan.id, day.id);
+            back('plans', plan.id, day.id);
           }}
-          onClose={() => back('workout', 'plans', plan.id, day.id)}
+          onClose={() => back('plans', plan.id, day.id)}
         />
       )}
     </div>

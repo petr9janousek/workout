@@ -1,7 +1,7 @@
 // Tests for workouts.js: finishing a workout, totals and history.
 
 import { describe, it, expect } from 'vitest';
-import { finishWorkout, workoutTotals, recentSessions, exerciseHistory, countWorkoutsWith } from './workouts.js';
+import { finishWorkout, workoutTotals, recentSessions, exerciseHistory, countWorkoutsWith, previousLike } from './workouts.js';
 
 const set = (weight, reps, done = true, extra = {}) => ({ id: Math.random() + '', weight, reps, time: null, rpe: null, done, ...extra });
 const workout = (id, startedAt, entries, finishedAt = startedAt) => ({ id, startedAt, finishedAt, notes: '', entries });
@@ -83,5 +83,22 @@ describe('Healthy extras in a workout', () => {
     const result = finishWorkout(w);
     expect(result.skipped).toBe(1); // only the squat set
     expect(result.workout.entries.map((e) => e.exerciseId)).toEqual(['squat']);
+  });
+});
+
+describe('previousLike', () => {
+  const a = { ...workout('a', '2026-10-01T10:00:00Z', []), name: 'Push', dayId: 'd1' };
+  const b = { ...workout('b', '2026-10-05T10:00:00Z', []), name: 'Pull', dayId: 'd2' };
+  const c = { ...workout('c', '2026-10-08T10:00:00Z', []), name: 'Push', dayId: 'd1' };
+  const free = { ...workout('f', '2026-10-09T10:00:00Z', []), name: 'Arms' };
+  const free2 = { ...workout('g', '2026-10-12T10:00:00Z', []), name: 'Arms' };
+
+  it('finds the last time of the same plan day', () => {
+    expect(previousLike([a, b, c], c)).toBe(a);
+    expect(previousLike([a, b, c], a)).toBe(null);
+  });
+  it('without a plan, matches by name', () => {
+    expect(previousLike([a, free, free2], free2)).toBe(free);
+    expect(previousLike([a, b], { ...workout('x', '2026-10-20T10:00:00Z', []) })).toBe(null);
   });
 });

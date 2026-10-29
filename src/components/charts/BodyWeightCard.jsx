@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import LineChart from './LineChart.jsx';
 import { NumberInput } from '../ui/NumberInput.jsx';
-import Icon from '../ui/Icon.jsx';
 import CardTitle from '../ui/CardTitle.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { logBodyWeight, bodyWeightChange } from '../../model/bodyWeight.js';
@@ -27,7 +26,7 @@ export default function BodyWeightCard() {
     <section className="card body-weight">
       <CardTitle
         title="Body weight"
-        hint="Weigh at the same time of day, e.g. in the morning. It goes up and down by a kilo or two from day to day, so watch the line, not single days. One entry per day; saving again replaces it. You can turn this card off in Settings."
+        hint="Weigh at the same time of day, e.g. in the morning. It goes up and down by a kilo or two from day to day, so watch the line, not single days. One entry per day; saving again replaces it. Tap a point on the chart to see it or remove it. You can turn this card off in Settings."
       />
       <span className="small muted">Today, {formatDate(asDate(today))}</span>
       <div className="body-weight-row">
@@ -38,22 +37,10 @@ export default function BodyWeightCard() {
         </button>
       </div>
 
-      {list.length > 0 && <LineChart unit={unit} points={list.map((e) => ({ date: asDate(e.date), value: e.weight }))} />}
-      {change != null && <p className="small">Last 30 days: {change === 0 ? 'no change' : formatSigned(change, unit)}</p>}
-
       {list.length > 0 && (
-        <ul className="weight-list">
-          {list.slice(-5).reverse().map((e) => (
-            <li key={e.date}>
-              <span>{formatDate(asDate(e.date))}</span>
-              <strong>{formatNumber(e.weight)} {unit}</strong>
-              <button className="icon-btn subtle small" onClick={() => remove(e.date)} aria-label={`Remove ${formatDate(asDate(e.date))}`}>
-                <Icon name="close" size={14} />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <LineChart unit={unit} points={list.map((e) => ({ date: asDate(e.date), value: e.weight, key: e.date }))} onRemove={(point) => remove(point.key)} />
       )}
+      {change != null && <p className="small">Last 30 days: {change === 0 ? 'no change' : formatSigned(change, unit)}</p>}
     </section>
   );
 }

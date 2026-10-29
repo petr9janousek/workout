@@ -44,17 +44,17 @@ export default function ActivityForm({ activity }) {
     const startedAt = editing && date === dayKey(activity.startedAt) ? activity.startedAt : startFor(date, form.minutes);
     if (editing) {
       actions.saveWorkout(updateActivity(activity, { ...fields, startedAt }));
-      back('history', activity.id);
+      back('progress', 'workout', activity.id);
     } else {
       actions.saveWorkout(createActivity(fields, startedAt));
       countEvent('activity-logged', 'Activity logged');
-      openTab('history');
+      openTab('home');
     }
   }
 
   return (
     <div>
-      <BackButton label={editing ? 'Back' : 'Workout'} fallback={editing ? ['history', activity.id] : ['workout']} />
+      <BackButton label={editing ? 'Back' : 'Home'} fallback={editing ? ['progress', 'workout', activity.id] : ['home']} />
       <h1>{editing ? 'Edit activity' : 'Log an activity'}</h1>
 
       <div className="activity-types" role="radiogroup" aria-label="Activity">

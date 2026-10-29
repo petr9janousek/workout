@@ -4,7 +4,8 @@ import { formatShortDate, formatDate, formatNumber } from '../../model/format.js
 // A small line chart drawn with SVG. Tap or drag on it to see each value.
 // points: [{ date, value }] oldest first. Points are spaced by date, so a
 // two-week gap looks like one.
-export default function LineChart({ points, unit }) {
+// onRemove(point): optional; the tapped point then gets a Remove button.
+export default function LineChart({ points, unit, onRemove }) {
   const svgRef = useRef(null);
   const [active, setActive] = useState(null);
 
@@ -42,6 +43,7 @@ export default function LineChart({ points, unit }) {
   }
 
   const a = active != null ? points[active] : null;
+  if (!points.length) return null;
 
   return (
     <div className="chart">
@@ -76,7 +78,20 @@ export default function LineChart({ points, unit }) {
       </svg>
       <p className="chart-readout">
         {a ? (
-          <><strong>{formatNumber(a.value)} {unit}</strong> <span className="muted">· {formatDate(a.date)}</span></>
+          <>
+            <strong>{formatNumber(a.value)} {unit}</strong> <span className="muted">· {formatDate(a.date)}</span>
+            {onRemove && (
+              <button
+                className="btn-text small-link readout-remove"
+                onClick={() => {
+                  setActive(null);
+                  onRemove(a);
+                }}
+              >
+                Remove
+              </button>
+            )}
+          </>
         ) : (
           <span className="muted">Tap the chart to see values</span>
         )}

@@ -4,7 +4,7 @@ import NewPlan from './NewPlan.jsx';
 import PlanOverview from './PlanOverview.jsx';
 import DayEditor from './DayEditor.jsx';
 
-// Plans, inside the Workout tab. Addresses (after #/workout/plans):
+// The Plans tab. Addresses (after #/plans):
 //   (nothing)                 your plans, and ways to get a new one
 //   library[/<days>]          ready-made plans, optionally only for that many days a week
 //   new                       a plan of your own: name it and its days

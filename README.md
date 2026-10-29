@@ -11,7 +11,7 @@ https://petr9janousek.github.io/workout/
   <img src="docs/screenshots/4-plans.png" width="200" alt="Plans">
 </p>
 
-You log your sets, and next time it suggests a bit more. There are some ready-made plans, a muscle map, a training calendar and a few charts. It's free, there's no sign-up, and it works offline.
+You log your sets, and next time it suggests a bit more. There are some ready-made plans, tips for every exercise, a muscle map, a training calendar and a few charts. It's free, there's no sign-up, and it works offline.
 
 ## Install
 
@@ -22,7 +22,7 @@ Open the link on your phone, then:
 
 ## Your data
 
-Everything is stored on your phone only. If you delete the app or change phones, it's gone, so save a backup now and then (Settings, Save backup).
+Everything is stored on your phone only. If you delete the app or change phones, it's gone, so save a backup now and then (Home reminds you, or Settings, Save backup).
 
 The site counts visits anonymously with [GoatCounter](https://www.goatcounter.com). No cookies, and it never sees your workouts.
 

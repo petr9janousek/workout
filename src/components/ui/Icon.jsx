@@ -18,6 +18,12 @@ const PATHS = {
   trophy: 'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M9.5 17h5',
   activity: 'M3 12h4l3-8 4 16 3-8h4',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+  home: 'M3 11l9-8 9 8M5 9.5V20h5v-6h4v6h5V9.5',
+  timer: 'M12 9v4l2.5 2M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9.5 2.5h5',
+  info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01',
+  play: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM10 8.5v7l6-3.5z',
+  exercises: 'M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12',
+  plans: 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4',
 };
 
 // name: one of PATHS above. paths: draw these instead (e.g. a sport icon).

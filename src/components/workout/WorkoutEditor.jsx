@@ -16,7 +16,8 @@ import { exerciseName } from '../../model/exercises.js';
 // address, so the back button closes it): picking, onOpenPicker, onClosePicker.
 // Swapping works the same way: swapping (an entry id), onOpenSwap(entryId),
 // onCloseSwap. Without onOpenSwap (fixing an old workout) there's no Swap.
-export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap }) {
+// onOpenExercise(id): tap an exercise's name to see how to do it.
+export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise }) {
   const { workouts, settings, exercises, exercisesById } = useData();
   // When fixing an old workout, new sets count as done straight away.
   const finished = Boolean(workout.finishedAt);
@@ -66,6 +67,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
           onRemove={() => removeEntry(entry.id)}
           onSkip={() => update({ entries: workout.entries.filter((e) => e.id !== entry.id) })}
           onSwap={onOpenSwap && (() => onOpenSwap(entry.id))}
+          onOpen={onOpenExercise && (() => onOpenExercise(entry.exerciseId))}
         />
       ))}
 

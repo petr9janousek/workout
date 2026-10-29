@@ -6,7 +6,8 @@ import { weeklyGoal, weekStreak, bestWeekStreak, weeklyCounts, daysSinceLast, ac
 import { WHO_WEEKLY_MINUTES } from '../../model/activities.js';
 
 // The habit section of Progress: this week vs the goal, streaks in weeks,
-// days since the last workout, the month calendar and the last 12 weeks.
+// days since the last workout, the month calendar (tap a day to see what
+// you did) and the last 12 weeks.
 export default function HabitCard() {
   const { workouts, settings, activePlan } = useData();
   const goal = weeklyGoal(settings, activePlan);
@@ -39,9 +40,6 @@ export default function HabitCard() {
       <ActiveMinutes minutes={activeMinutesThisWeek(workouts)} />
 
       <MonthCalendar workouts={workouts} />
-      <p className="calendar-legend muted small" aria-hidden="true">
-        <span className="legend-dot day-gym" /> Gym <span className="legend-dot day-active" /> Activity <span className="legend-dot day-both" /> Both
-      </p>
 
       <div className="habit-weeks">
         <div className="row-between">

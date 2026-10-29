@@ -24,7 +24,7 @@ export default function PlanOverview({ planId }) {
   if (!plan) {
     return (
       <div>
-        <BackButton label="Plans" to={['workout', 'plans']} />
+        <BackButton label="Plans" to={['plans']} />
         <p className="empty">This plan doesn't exist any more.</p>
       </div>
     );
@@ -38,7 +38,7 @@ export default function PlanOverview({ planId }) {
   function addDay() {
     const day = createDay(`Day ${plan.days.length + 1}`);
     actions.savePlan({ ...plan, days: [...plan.days, day] });
-    go('workout', 'plans', plan.id, day.id);
+    go('plans', plan.id, day.id);
   }
 
   // Send the plan to someone (they import it in Plans). No workouts or weights.
@@ -50,12 +50,12 @@ export default function PlanOverview({ planId }) {
   function remove() {
     if (!confirm(`Delete the plan “${plan.name}”? Your finished workouts stay in History.`)) return;
     actions.deletePlan(plan.id);
-    switchTab('workout', 'plans');
+    switchTab('plans');
   }
 
   return (
     <div>
-      <BackButton label="Plans" to={['workout', 'plans']} />
+      <BackButton label="Plans" to={['plans']} />
 
       {renaming ? (
         <input
@@ -90,7 +90,7 @@ export default function PlanOverview({ planId }) {
       <ol className="plan-days">
         {plan.days.map((day, i) => (
           <li key={day.id}>
-            <button className="card card-button plan-day" onClick={() => go('workout', 'plans', plan.id, day.id)}>
+            <button className="card card-button plan-day" onClick={() => go('plans', plan.id, day.id)}>
               <span className="plan-day-num">{i + 1}</span>
               <span className="plan-day-text">
                 <span className="day-title small-title">

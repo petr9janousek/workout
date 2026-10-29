@@ -14,12 +14,12 @@ export default function ActivityDetail({ activity }) {
   function remove() {
     if (!confirm(`Delete “${label}” on this day?`)) return;
     actions.deleteWorkout(activity.id);
-    back('history');
+    back('progress');
   }
 
   return (
     <div>
-      <BackButton label="History" fallback={['history']} />
+      <BackButton label="Progress" fallback={['progress']} />
       <h1 className="activity-title">
         <span className="activity-title-icon" aria-hidden="true">
           <SportIcon type={activity.activity} size={30} />
@@ -42,7 +42,7 @@ export default function ActivityDetail({ activity }) {
       </section>
 
       <div className="actions">
-        <button className="btn btn-secondary btn-wide" onClick={() => go('history', activity.id, 'edit')}>Edit</button>
+        <button className="btn btn-secondary btn-wide" onClick={() => go('progress', 'workout', activity.id, 'edit')}>Edit</button>
         <button className="btn btn-danger-ghost btn-wide" onClick={remove}>Delete</button>
       </div>
     </div>

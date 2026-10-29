@@ -105,3 +105,10 @@ export function exerciseHistory(workouts, exerciseId) {
 // How many workouts include an exercise (an exercise in use can't be deleted).
 export const countWorkoutsWith = (workouts, exerciseId) =>
   workouts.filter((w) => w.entries.some((e) => e.exerciseId === exerciseId)).length;
+
+// The last finished workout before this one that was the same plan day
+// (or, without a plan, had the same name), to compare with. null if none.
+export function previousLike(workouts, workout) {
+  const same = (w) => (workout.dayId ? w.dayId === workout.dayId : Boolean(workout.name) && w.name === workout.name);
+  return finishedWorkouts(workouts).find((w) => w.id !== workout.id && !w.kind && w.startedAt < workout.startedAt && same(w)) || null;
+}

@@ -1,22 +1,31 @@
 // Navigation using the part of the address after "#", e.g.
-//   #/history            the History tab
-//   #/history/abc123     one workout
-//   #/workout/add        the exercise picker over the workout
+//   #/progress                     the Progress tab
+//   #/progress/workout/abc123      one finished workout
+//   #/home/add                     the exercise picker over the workout
 // Because every screen has its own address, the phone's back button/gesture
 // goes back to the previous screen instead of closing the app.
 //
 //   const { tab, path, go, switchTab, openTab, back } = useRoute();
-//   tab:  'workout' | 'history' | 'progress' | 'settings'
-//   path: the rest of the address, as a list: ['abc123', 'edit']
+//   tab:  'home' | 'progress' | 'plans' | 'exercises'
+//   path: the rest of the address, as a list: ['workout', 'abc123']
 
 import { useEffect, useState } from 'react';
 
-export const TABS = ['workout', 'history', 'progress', 'settings'];
+export const TABS = ['home', 'progress', 'plans', 'exercises'];
+
+// Addresses from before v0.12 (bookmarks, an app reopened on an old page).
+function upgrade(parts) {
+  const [first, ...rest] = parts;
+  if (first === 'workout') return rest[0] === 'plans' || rest[0] === 'exercises' ? rest : ['home', ...rest];
+  if (first === 'history') return rest.length ? ['progress', 'workout', ...rest] : ['progress'];
+  if (first === 'settings') return ['home', 'settings'];
+  return parts;
+}
 
 function current() {
-  const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  const parts = upgrade(location.hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent));
   const known = TABS.includes(parts[0]);
-  return { tab: known ? parts[0] : 'workout', path: known ? parts.slice(1) : [] };
+  return { tab: known ? parts[0] : 'home', path: known ? parts.slice(1) : [] };
 }
 
 const toHash = (segments) => '#/' + segments.map(encodeURIComponent).join('/');
@@ -58,16 +67,16 @@ export function switchTab(...segments) {
   notify();
 }
 
-// The tab bar, like in Android apps: back from History, Progress or Settings
-// goes to the Workout tab; back from the Workout tab leaves the app.
-// The back history is always just [Workout] or [Workout, other tab, …].
+// The tab bar, like in Android apps: back from Progress, Plans or Exercises
+// goes to Home; back from Home leaves the app.
+// The back history is always just [Home] or [Home, other tab, …].
 export function openTab(tab, ...rest) {
-  if (tab === 'workout') {
-    backTo(0, () => switchTab('workout', ...rest));
+  if (tab === 'home') {
+    backTo(0, () => switchTab('home', ...rest));
     return;
   }
   if (levelNow() === 0) {
-    history.replaceState({ level: 0 }, '', toHash(['workout']));
+    history.replaceState({ level: 0 }, '', toHash(['home']));
     history.pushState({ inApp: true, level: 1 }, '', toHash([tab, ...rest]));
     notify();
     return;

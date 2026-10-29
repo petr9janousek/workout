@@ -26,7 +26,8 @@ const COLUMNS = {
 // earlier: every set of this exercise before this workout (for records).
 // onSkip: for a healthy extra, drop it from today's workout without asking.
 // onSwap: offer other exercises for the same muscles (machine taken).
-export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSkip, onSwap }) {
+// onOpen: show how to do the exercise (the name becomes a button).
+export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSkip, onSwap, onOpen }) {
   const { settings } = useData();
   const type = typeOf(exercise);
   const name = exerciseName(exercise);
@@ -59,7 +60,13 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
     <section className="card exercise-card">
       <header className="card-header">
         <h3>
-          {name}
+          {onOpen ? (
+            <button className="exercise-name-btn" onClick={onOpen} aria-label={`${name}: how to do it`}>
+              {name} <Icon name="info" size={15} />
+            </button>
+          ) : (
+            name
+          )}
           {entry.extra && <span className="badge extra-badge">Healthy extra</span>}
         </h3>
         <span className="card-header-actions">
@@ -75,6 +82,8 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
           )}
         </span>
       </header>
+
+      {exercise?.notes && <p className="exercise-notes-line">{exercise.notes}</p>}
 
       {last && (
         <p className="last-time">

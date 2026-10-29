@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import BackButton from '../../components/ui/BackButton.jsx';
 import CreateExercise from '../../components/workout/CreateExercise.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
@@ -9,8 +8,9 @@ import { findExercises, typeOf, EXERCISE_TYPES } from '../../model/exercises.js'
 import { MUSCLES, musclesOf } from '../../model/muscles.js';
 import { recentSessions } from '../../model/workouts.js';
 
-// The exercise library: everything in the app, searchable and filterable by
-// muscle. Tap an exercise to change it; type a new name to create one.
+// The Exercises tab: everything in the app, searchable and filterable by
+// muscle. Tap an exercise to see how to do it and your progress; type a new
+// name to create one.
 export default function ExerciseLibrary() {
   const { exercises, workouts } = useData();
   const [query, setQuery] = useState('');
@@ -18,11 +18,10 @@ export default function ExerciseLibrary() {
 
   const list = findExercises(exercises, { query, muscle, musclesOf });
   const exactMatch = exercises.some((e) => e.name.toLowerCase() === query.trim().toLowerCase());
-  const open = (exercise) => go('workout', 'exercises', exercise.id);
+  const open = (exercise) => go('exercises', exercise.id);
 
   return (
     <div>
-      <BackButton label="Workout" fallback={['workout']} />
       <h1>Exercises</h1>
 
       <input className="search" placeholder="Search, or type a new exercise" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search exercises" />
