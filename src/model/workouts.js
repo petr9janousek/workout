@@ -9,7 +9,7 @@
 //   suggestion: the "try heavier" hint shown when it was added (see progression.js)
 
 import { newId } from './ids.js';
-import { isDoneSet, val, estimated1RM } from './sets.js';
+import { isDoneSet, val, estimated1RM, withoutTarget } from './sets.js';
 
 const round1 = (n) => Math.round(n * 10) / 10;
 
@@ -18,9 +18,12 @@ export function createWorkout(entries = [], startedAt = new Date().toISOString()
   return { id: newId(), startedAt, finishedAt: null, notes: '', entries, ...meta };
 }
 
-// Only the hint's kind and text are kept; its suggested sets became `sets`.
+// The hint is kept with plain copies of its sets' values, so you can go
+// back to it after choosing "Same as last time".
 export function createEntry(exerciseId, sets, suggestion = null) {
-  return { id: newId(), exerciseId, sets, suggestion: suggestion ? { kind: suggestion.kind, text: suggestion.text } : null };
+  if (!suggestion) return { id: newId(), exerciseId, sets, suggestion: null };
+  const { kind, title, text } = suggestion;
+  return { id: newId(), exerciseId, sets, suggestion: { kind, title, text, sets: suggestion.sets.map(({ weight, reps, time }) => ({ weight, reps, time })) } };
 }
 
 // Finished workouts, newest first.
@@ -37,7 +40,7 @@ export const activeWorkout = (workouts) => workouts.find((w) => !w.finishedAt) |
 export function finishWorkout(workout, finishedAt = new Date().toISOString()) {
   const skipped = workout.entries.filter((e) => !e.extra).flatMap((e) => e.sets).filter((s) => !isDoneSet(s)).length;
   const entries = workout.entries
-    .map(({ suggestion, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet) }))
+    .map(({ suggestion, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet).map(withoutTarget) }))
     .filter((e) => e.sets.length > 0);
   return { workout: entries.length ? { ...workout, entries, finishedAt } : null, skipped };
 }

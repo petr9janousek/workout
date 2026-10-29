@@ -46,9 +46,17 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
   }
   const swapEntryNow = swapping && workout.entries.find((e) => e.id === swapping);
 
-  function removeEntry(entryId) {
-    if (!confirm('Remove this exercise from the workout?')) return;
-    update({ entries: workout.entries.filter((e) => e.id !== entryId) });
+  // The bin on an exercise. Healthy extras are optional, so it says so;
+  // either way only this workout changes, never the plan.
+  function removeEntry(entry) {
+    const name = exerciseName(exercisesById.get(entry.exerciseId));
+    const question = entry.extra
+      ? `Skip ${name} today? It's an optional healthy extra and stays in your plan.`
+      : finished
+        ? `Remove ${name} from this workout?`
+        : `Remove ${name} from today's workout?${workout.planId ? ' Your plan stays the same.' : ''}`;
+    if (!confirm(question)) return;
+    update({ entries: workout.entries.filter((e) => e.id !== entry.id) });
   }
 
   return (
@@ -64,8 +72,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
           earlier={setsBefore(workouts, entry.exerciseId, workout.startedAt)}
           finished={finished}
           onChange={(change) => updateEntry(entry.id, change)}
-          onRemove={() => removeEntry(entry.id)}
-          onSkip={() => update({ entries: workout.entries.filter((e) => e.id !== entry.id) })}
+          onRemove={() => removeEntry(entry)}
           onSwap={onOpenSwap && (() => onOpenSwap(entry.id))}
           onOpen={onOpenExercise && (() => onOpenExercise(entry.exerciseId))}
         />

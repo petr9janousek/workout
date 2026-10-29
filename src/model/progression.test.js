@@ -45,6 +45,45 @@ describe('Reps, then weight (default)', () => {
   });
 });
 
+describe('Suggestion titles say what to do today, with the numbers', () => {
+  it('one more rep', () => {
+    expect(suggestNext(history(session(60, [8, 8, 8])), 'weight', settings()).title).toBe('One more rep: 60 kg × 9, 9, 9');
+  });
+  it('heavier, with the change and the reps to start from', () => {
+    const s = follow(session(60, [8, 8, 8]), 4, 'double').at(-1);
+    expect(s.title).toBe('Heavier: 62.5 kg (+2.5), back to 8 reps');
+  });
+});
+
+describe('Easier than expected (a set 4+ reps above the session before)', () => {
+  const auto = { unit: 'kg', weightStep: 'auto', progression: 'double' };
+
+  it('goes heavier next time, back to the usual reps', () => {
+    // 4 kg lateral raises: 10, 10, 10, then a day of 10, 16, 10
+    const s = suggestNext(history(session(4, [10, 10, 10]), session(4, [10, 16, 10])), 'weight', auto);
+    expect(s.kind).toBe('up');
+    expect(weights(s)).toEqual([5, 5, 5]);
+    expect(reps(s)).toEqual([10, 10, 10]);
+    expect(s.title).toMatch(/16 reps was 6 more/);
+  });
+
+  it('jumps further when the set shows a lot more strength, up to 3 steps', () => {
+    const s = suggestNext(history(session(20, [10, 10]), session(20, [25, 22])), 'weight', settings());
+    expect(weights(s)[0]).toBe(27.5); // 20 kg × 25 ≈ 27 kg × 10, so 3 steps of 2.5
+  });
+
+  it('high reps on their own are fine: steady 15s keep building reps', () => {
+    const s = suggestNext(history(session(10, [15, 15, 14]), session(10, [15, 15, 15])), 'weight', settings());
+    expect(s.kind).not.toBe('up');
+    expect(suggestNext(history(session(4, [10, 16, 10])), 'weight', auto).kind).toBe('reps'); // first time: no comparison yet
+  });
+
+  it('applies in every style, but a set at RPE 9.5+ still means repeat', () => {
+    for (const mode of ['double', 'linear', 'rpe']) expect(suggestNext(history(session(30, [10, 10]), session(30, [15, 12])), 'weight', settings(mode)).kind).toBe('up');
+    expect(suggestNext(history(session(4, [10]), session(4, [16], [10])), 'weight', auto).kind).toBe('hold');
+  });
+});
+
 describe('Weight only', () => {
   it('adds weight after all reps are done two sessions in a row', () => {
     const s = follow(session(60, [8, 8, 8]), 4, 'linear');
@@ -112,14 +151,14 @@ describe('Safety rules (every style)', () => {
 });
 
 describe('Other exercise types', () => {
-  it('assisted: less assistance counts as heavier, and the text says so', () => {
+  it('assisted: less assistance counts as heavier, and the title says so', () => {
     const last = suggestNext(
       history(session(-30, [6, 6, 6]), session(-30, [7, 7, 7]), session(-30, [8, 8, 8]), session(-30, [8, 8, 8])),
       'assisted',
       settings(),
     );
     expect(weights(last)).toEqual([-27.5, -27.5, -27.5]);
-    expect(last.text).toMatch(/less assistance/);
+    expect(last.title).toMatch(/less assistance/);
   });
 
   it('bodyweight reps: one more rep per set', () => {
@@ -160,8 +199,18 @@ describe('Adding an exercise to today\'s workout (planEntry)', () => {
       workout('today', '2026-10-10', [done(100, 1)]), // must not count as "last time"
     ];
     const entry = planEntry(bench, { workouts, settings: settings(), startedAt: '2026-10-10' });
-    expect(entry.sets.map((s) => [s.weight, s.reps])).toEqual([[60, 9], [60, 9]]);
-    expect(entry.suggestion).toEqual({ kind: 'reps', text: expect.any(String) });
+    // the suggestion is the plan: grey targets, the fields themselves still empty
+    expect(entry.sets.map((s) => [s.target.weight, s.target.reps])).toEqual([[60, 9], [60, 9]]);
+    expect(entry.sets.every((s) => s.weight === null && s.reps === null && !s.done)).toBe(true);
+    expect(entry.suggestion).toMatchObject({ kind: 'reps', title: 'One more rep: 60 kg × 9, 9', text: expect.any(String) });
+    expect(entry.suggestion.sets).toEqual([{ weight: 60, reps: 9, time: null }, { weight: 60, reps: 9, time: null }]);
+  });
+
+  it('a plan day with more sets than last time repeats the last set as a plan', () => {
+    const workouts = [workout('old', '2026-10-01', [done(60, 8), done(60, 8)])];
+    const entry = planEntry(bench, { workouts, settings: settings(), startedAt: '2026-10-10' }, false, 3);
+    expect(entry.sets).toHaveLength(3);
+    expect(entry.sets.every((s) => !s.done && s.target.reps === 9)).toBe(true);
   });
 });
 

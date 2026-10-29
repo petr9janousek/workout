@@ -41,7 +41,7 @@ describe('Starting a plan day', () => {
   it('uses the planned number of sets, filled from last time with the suggestion', () => {
     const w = startPlanDay(plan, push, exercises, ctx, '2026-10-08');
     expect(w.entries[0].sets).toHaveLength(4); // planned 4, last time only 2
-    expect(w.entries[0].sets.map((s) => [s.weight, s.reps])).toEqual([[60, 9], [60, 9], [60, 9], [60, 9]]);
+    expect(w.entries[0].sets.map((s) => [s.target.weight, s.target.reps])).toEqual([[60, 9], [60, 9], [60, 9], [60, 9]]); // grey plans
   });
   it('remembers the plan, the day and its name', () => {
     expect(startPlanDay(plan, pull, exercises, ctx)).toMatchObject({ name: 'Pull', planId: plan.id, dayId: pull.id, finishedAt: null });

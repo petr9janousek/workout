@@ -39,15 +39,16 @@ export function NumberInput({ value, onChange, decimal = false, placeholder = '0
 
 // A weight with a − / + button in front: − for assistance, + for added weight.
 // Phone number keypads often have no minus key, hence the button.
-// defaultNegative: which sign to show while the field is still empty.
-export function SignedInput({ value, onChange, defaultNegative = false, label, className = '' }) {
-  const [negativeWhenEmpty, setNegativeWhenEmpty] = useState(defaultNegative);
-  const negative = value ? value < 0 : negativeWhenEmpty;
+// planned: the grey value while the field is empty (its sign shows too).
+// defaultNegative: which sign to show while the field is empty and unplanned.
+export function SignedInput({ value, onChange, planned = null, defaultNegative = false, label, className = '' }) {
+  const [signWhenEmpty, setSignWhenEmpty] = useState(null); // null = from the plan, or the default
+  const negative = value ? value < 0 : signWhenEmpty ?? (planned ? planned < 0 : defaultNegative);
   const signed = (abs, neg) => (abs == null ? null : neg ? -abs : abs);
   const [text, setText] = useNumberText(value == null ? null : Math.abs(value), (abs) => onChange(signed(abs, negative)));
 
   function flip() {
-    setNegativeWhenEmpty(!negative);
+    setSignWhenEmpty(!negative);
     if (value) onChange(-value);
   }
 
@@ -61,7 +62,7 @@ export function SignedInput({ value, onChange, defaultNegative = false, label, c
       >
         {negative ? '−' : '+'}
       </button>
-      <input inputMode="decimal" placeholder="0" value={text} onChange={(e) => setText(e.target.value.replace(/^[-+−]/, ''))} aria-label={label} />
+      <input inputMode="decimal" placeholder={planned != null ? formatNumber(Math.abs(planned)) : ''} value={text} onChange={(e) => setText(e.target.value.replace(/^[-+−]/, ''))} aria-label={label} />
     </div>
   );
 }

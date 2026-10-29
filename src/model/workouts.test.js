@@ -102,3 +102,11 @@ describe('previousLike', () => {
     expect(previousLike([a, b], { ...workout('x', '2026-10-20T10:00:00Z', []) })).toBe(null);
   });
 });
+
+describe('Finishing keeps only what was done', () => {
+  it('drops the plan from ticked sets', () => {
+    const w = workout('w', '2026-10-29T10:00:00Z', [entry('bench', [{ ...set(60, 8), target: { weight: 60, reps: 8, time: null } }])], null);
+    const sets = finishWorkout(w).workout.entries[0].sets;
+    expect('target' in sets[0]).toBe(false);
+  });
+});

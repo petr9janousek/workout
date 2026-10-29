@@ -111,8 +111,10 @@ export default function SettingsScreen() {
           title="Progression style"
           hint={
             <>
-              {mode?.help}{' '}In every style: after a set at RPE 9.5+ it suggests repeating, and if your reps drop twice in a row, or stop
-              improving for 4 sessions, it suggests going a step lighter.
+              {mode?.help}{' '}In every style: after a set at RPE 9.5+ it suggests repeating; a set 4+ reps above the time before means the weight got
+              easy, so it goes heavier; and if your reps drop twice in a row, or stop improving for 4 sessions, it suggests going a step
+              lighter. The suggestion is filled in grey: tick ✓ to take it, type what you really did, or tap the line above the sets for
+              "Same as last time instead".
             </>
           }
         />

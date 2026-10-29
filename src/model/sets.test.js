@@ -1,8 +1,9 @@
 // Tests for sets.js and format.js: reading typed numbers and showing sets.
 
 import { describe, it, expect } from 'vitest';
+import { asTarget, tickSet, planBelow, shown, compareSets as compareShown, nextSet as nextPlannedSet } from './sets.js';
 import { parseNumber, formatSigned, formatSeconds, formatNumber, keepLastWord } from './format.js';
-import { formatSet, compareSets, isDoneSet, nextSet } from './sets.js';
+import { formatSet, compareSets, isDoneSet, nextSet, formatSetList } from './sets.js';
 
 describe('Reading typed numbers', () => {
   it('accepts a decimal comma as well as a dot', () => {
@@ -25,7 +26,7 @@ describe('Reading typed numbers', () => {
 describe('Showing sets', () => {
   const s = (weight, reps, extra = {}) => ({ weight, reps, time: null, rpe: null, ...extra });
   it('weight × reps, with unit and RPE', () => {
-    expect(formatSet(s(62.5, 8, { rpe: 8 }), 'weight', 'kg')).toBe('62.5 kg × 8 @8');
+    expect(formatSet(s(62.5, 8, { rpe: 8 }), 'weight', 'kg')).toBe('62.5 kg × 8 (RPE 8)');
   });
   it('a weight exercise done without weight shows only reps', () => {
     expect(formatSet(s(null, 12), 'weight')).toBe('12 reps');
@@ -69,9 +70,9 @@ describe('Sets', () => {
     expect(isDoneSet({ done: true, reps: null, time: 30 })).toBe(true);
     expect(isDoneSet({ done: true, reps: null, time: null })).toBe(false);
   });
-  it('"Add set" copies the values of the last set but not its RPE or tick', () => {
+  it('"Add set" plans the values of the last set (grey), but not its RPE or tick', () => {
     const added = nextSet([{ id: 'a', weight: 60, reps: 8, time: null, rpe: 9, done: true }]);
-    expect(added).toMatchObject({ weight: 60, reps: 8, rpe: null, done: false });
+    expect(added).toMatchObject({ weight: null, reps: null, rpe: null, done: false, target: { weight: 60, reps: 8 } });
     expect(added.id).not.toBe('a');
   });
 });
@@ -85,5 +86,50 @@ describe('keepLastWord', () => {
     expect(keepLastWord('Glutes & upper')).toBe('Glutes & upper');
     expect(keepLastWord('Legs')).toBe('Legs');
     expect(keepLastWord(undefined)).toBe('');
+  });
+});
+
+describe('Planned (grey) values', () => {
+  const planned = asTarget({ id: 'a', weight: 60, reps: 9, time: null, rpe: null, done: false });
+
+  it('a plan keeps its values aside until the set is ticked', () => {
+    expect([planned.weight, planned.reps]).toEqual([null, null]);
+    expect([shown(planned, 'weight'), shown(planned, 'reps')]).toEqual([60, 9]);
+    const ticked = tickSet(planned, '2026-10-29T10:00:00Z');
+    expect([ticked.weight, ticked.reps, ticked.done]).toEqual([60, 9, true]);
+  });
+
+  it('what you type wins over the plan when ticking', () => {
+    expect(tickSet({ ...planned, reps: 7 }).reps).toBe(7);
+  });
+
+  it('typing into one set plans the empty sets below it, not the ones above or done', () => {
+    const sets = [{ id: '1', weight: null, done: true, target: {} }, { id: '2', weight: null, target: {} }, { id: '3', weight: null, target: {} }, { id: '4', weight: 50, target: {} }];
+    const out = planBelow(sets, 1, 'weight', 40);
+    expect(out.map((s) => s.target.weight)).toEqual([undefined, undefined, 40, undefined]);
+    expect(planBelow(sets, 1, 'rpe', 8)).toBe(sets); // RPE is never planned
+  });
+
+  it('a new set during a workout is a plan like the set above', () => {
+    const s = nextPlannedSet([{ ...planned, reps: 8 }]);
+    expect([s.reps, s.target.reps, s.target.weight, s.done]).toEqual([null, 8, 60, false]);
+    expect(nextPlannedSet([{ weight: 60, reps: 8 }], true)).toMatchObject({ weight: 60, reps: 8, done: true });
+  });
+
+  it('▲▼ compare the planned values too', () => {
+    expect(compareShown(planned, { weight: 60, reps: 8 }, 'weight')).toBe(1);
+  });
+});
+
+describe('Several sets in one line', () => {
+  const w = (weight, reps, rpe = null) => ({ weight, reps, time: null, rpe });
+  it('groups sets of the same weight and shows the hardest RPE', () => {
+    expect(formatSetList([w(42.5, 10), w(42.5, 10, 7), w(42.5, 9, 8)], 'weight', 'kg')).toBe('42.5 kg × 10, 10, 9 (RPE 8)');
+    expect(formatSetList([w(40, 10), w(42.5, 8), w(42.5, 8)], 'weight', 'kg')).toBe('40 kg × 10 · 42.5 kg × 8, 8');
+  });
+  it('bodyweight, assisted and timed sets', () => {
+    expect(formatSetList([w(null, 12), w(null, 10)], 'reps')).toBe('12, 10 reps');
+    expect(formatSetList([w(-20, 8), w(-20, 7)], 'assisted', 'kg')).toBe('−20 kg × 8, 7');
+    expect(formatSetList([{ time: 45 }, { time: 40 }], 'time')).toBe('45 s, 40 s');
   });
 });

@@ -109,7 +109,7 @@ src/
     format.js              Numbers and dates to text, typed text to numbers
     ids.js                 Unique ids
     exercises.js           Exercises and their 4 types, starter list, guessing the type from the name
-    sets.js                Sets: creating, showing ("60 kg × 8 @8"), comparing with last time
+    sets.js                Sets: creating, showing ("60 kg × 8 @8"), comparing with last time, planned (grey) values
     workouts.js            Workouts: finishing, totals, history of an exercise
     progression.js         "What to try next time": the three progression styles
     plans.js               Plans: days in order, which day is next, starting a plan day, minutes per session
@@ -145,7 +145,7 @@ src/
                            sportIcons.js (activity icons from Tabler Icons, MIT license)
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
-    workout/               WorkoutEditor → ExerciseCard → SetRow; ExercisePicker; CreateExercise; Totals;
+    workout/               WorkoutEditor → ExerciseCard → CoachLine + SetRow; ExercisePicker; CreateExercise; Totals;
                            WorkoutSummary (totals, comparison, records); SessionRow (a workout or activity in a list)
 
   screens/                 ── one folder per tab, plus the screens they share ──
@@ -203,12 +203,12 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 
 | File | What it checks |
 |---|---|
-| `model/progression.test.js` | The three progression styles, the safety rules (RPE 9.5+, dropping reps, plateaus), assisted / bodyweight / timed exercises, starting an exercise in today's workout |
+| `model/progression.test.js` | The three progression styles, the safety rules (RPE 9.5+, dropping reps, plateaus), easier than expected (4+ reps over the time before → heavier, sized by 1RM; high reps alone are fine), titles with numbers, assisted / bodyweight / timed exercises, starting an exercise in today's workout (as grey plans) |
 | `model/workouts.test.js` | Finishing a workout, totals, an exercise's history, the last time of the same plan day |
 | `model/plans.test.js` | Which plan day is next, starting a plan day, editing days; every ready-made plan gives each main muscle ~10 sets a week (or what its focus says); more days = shorter sessions; healthy extras rotate and are marked; plans for your body come first |
 | `data/sampleData.test.js` | The sample data looks like real data: current format, exercises exist, ~8 weeks of workouts, a streak, body weight |
 | `model/planFile.test.js` | Sharing a plan: names, sets, extras and muscles survive; the other phone reuses its exercises and creates missing ones; clear messages for wrong files |
-| `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets, ▲▼ comparisons |
+| `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets and grouped set lists, ▲▼ comparisons; planned values: ticking takes them, typing wins, typing plans the empty sets below |
 | `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours, searching the exercise library, suggesting a swap for the same muscles |
 | `model/records.test.js` | Which sets are personal records: heavier, more reps, longer holds, assisted; only one trophy for repeating a record; none the first time; records of a workout and of the last days |
 | `model/comparisons.test.js` | "About an Asian elephant", "almost a hippo", "about 3 washing machines"; pounds; nothing for tiny totals |
@@ -227,6 +227,11 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
 
+- **v0.13, planned values in grey:** in a workout, the values from last time plus the suggestion are only a plan, shown grey in empty fields. Tick ✓ and they become your values (white); type a number and yours counts instead. Whatever you type also becomes the grey plan for the empty sets below, so for a new exercise you fill in the first set and the rest follow. RPE is never pre-filled
+- **Coach line:** one line above each exercise's sets says what to do today, with the numbers: "One more rep: 42.5 kg × 11, 11, 10", "Heavier: 45 kg (+2.5), back to 8 reps", "Same again: once more, then heavier". Tap it for why and last time, and "Same as last time instead" for a tired day (it rewrites the grey plan of the sets not done yet; "Back to the suggestion" undoes it). Anything else, just type it: it flows to the sets below. The first time you do an exercise it says how to pick a starting weight
+- **Easier than expected:** high reps are fine on their own (muscle grows across a wide range of reps). But a set 4+ reps over its plan (or 15+ reps the first time) brings up "16 reps, 6 more than planned. Use 24 kg?" for the remaining sets, and a set 4+ reps above the time before makes the next suggestion heavier (1 to 3 steps, by estimated 1-rep max)
+- Sets read shorter everywhere: "42.5 kg × 10, 10, 9 (RPE 8)" instead of "42.5 × 10 · 42.5 × 10 · 42.5 × 9 @8"
+
 - **v0.12, clearer navigation:** four tabs, one job each. **Home** is today: this week, ways to start (the plan's next day is one choice next to an empty workout and logging an activity, never required; long exercise lists fold after five), a quick weigh-in, this week's records, the backup reminder, and Settings at the bottom. While a workout runs, the Home tab *is* the workout and shows its clock. **Progress** took in History: tap a calendar day and what you did shows underneath; "All workouts" (by month) and "Exercises" fold open at the bottom. **Plans** and **Exercises** are tabs of their own; Plans also has recent workouts to repeat. The first start asks only Woman / Man; a plan is offered, not required
 - **Finish summary:** after Finish, the totals, a comparison ("That's about a rhino"), how it compares with the last time you did that day, the new records and the muscles worked. The same summary is at the top of every workout in Progress
 - **Exercise pages:** each exercise has two pages that link to each other. **How to** (opened from Exercises, or by tapping an exercise's name during a workout): main and helping muscles, three cues and the common mistake for all built-in exercises, a YouTube link, **your own notes** (seat height, pin…, shown under the exercise during workouts), Edit at the top right, and a "Your progress" line. **Progress** (opened from Progress): next time, records, chart, sessions, and a "How to do it" line
@@ -237,7 +242,7 @@ Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](RO
 - **Swap** an exercise during a workout when the machine is taken: suggestions that work the same main muscles, most similar first, or search all. Only today's workout changes, not the plan
 - **For testing** (Settings, folded at the bottom): fill the app with ~8 weeks of sample data, or reset it to a fresh install. Both replace everything and ask first
 - **Body weight** is on by default: type it, tap Save, and see a chart (points spaced by date)
-- **Healthy extras can be skipped** during a workout (Skip button), and unticked extras don't trigger the "sets not ticked" question
+- **Healthy extras can be skipped** during a workout (the bin, which says the extra is optional and stays in the plan), and unticked extras don't trigger the "sets not ticked" question
 - **V-taper and Hourglass** both come in 3 and 4 days a week. Woman / Man is asked once (first start, or Settings), not in the plan library
 - **Plans menu:** My plans, ready-made plans (a library you pick from; only the one you choose is copied to your plans) and Make my own. Ready-made plans give each main muscle about 10 hard sets a week; more days a week just means shorter sessions, and every plan and day shows about how long it takes. New: Full body 2× and Push / Pull 2×
 - **Healthy extras:** an optional short finisher on every day (core, plus grip, upper back or balance in turn), marked in the plan

@@ -17,7 +17,7 @@ import { suggestNext } from '../../model/progression.js';
 import { settingsFor } from '../../model/settings.js';
 import { recentMuscleSets } from '../../model/muscles.js';
 import { typeOf } from '../../model/exercises.js';
-import { formatSet } from '../../model/sets.js';
+import { formatSetList } from '../../model/sets.js';
 import { formatDate } from '../../model/format.js';
 
 // The Progress tab: you over time. The habit card with the calendar (tap a
@@ -101,7 +101,7 @@ function ExerciseList() {
               {history.length} {history.length === 1 ? 'session' : 'sessions'} · last {formatDate(history.at(-1).date)}
             </span>
             <span className={`next-hint ${next.kind}`}>
-              {SUGGESTION_ICONS[next.kind]} Next: {next.sets.map((s) => formatSet(s, typeOf(exercise), unit)).join(' · ')}
+              {SUGGESTION_ICONS[next.kind]} Next: {formatSetList(next.sets, typeOf(exercise), unit)}
             </span>
           </span>
           <Icon name="chevron" size={16} />

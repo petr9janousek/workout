@@ -1,6 +1,7 @@
 import Icon from '../ui/Icon.jsx';
 import Firework from '../ui/Firework.jsx';
 import { NumberInput, SignedInput } from '../ui/NumberInput.jsx';
+import { formatNumber } from '../../model/format.js';
 
 // A record set ticked in the last few seconds gets the firework.
 const FRESH_MS = 4000;
@@ -30,12 +31,14 @@ export default function SetRow({ index, set, columns, showRpe, defaultNegative, 
         )}
       </span>
 
+      {/* An empty field shows the planned value in grey; ticking ✓ takes it. */}
       {columns.map((c) => {
+        const planned = set.target?.[c.field];
         const props = { value: set[c.field], onChange: (v) => onChange({ [c.field]: v }), label: label(c.field), className: done };
         return c.signed ? (
-          <SignedInput key={c.field} {...props} defaultNegative={defaultNegative} />
+          <SignedInput key={c.field} {...props} planned={planned} defaultNegative={defaultNegative} />
         ) : (
-          <NumberInput key={c.field} {...props} decimal={c.decimal} />
+          <NumberInput key={c.field} {...props} decimal={c.decimal} placeholder={planned != null ? formatNumber(planned) : ''} />
         );
       })}
 

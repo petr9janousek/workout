@@ -8,7 +8,7 @@ import { exerciseHistory, recentSessions } from '../../model/workouts.js';
 import { suggestNext } from '../../model/progression.js';
 import { settingsFor } from '../../model/settings.js';
 import { typeOf } from '../../model/exercises.js';
-import { formatSet } from '../../model/sets.js';
+import { formatSetList } from '../../model/sets.js';
 import { formatDate, formatNumber, formatTotal, formatSigned, formatSeconds } from '../../model/format.js';
 
 // What can be charted for each exercise type. `unit: 'weight'` = kg or lb.
@@ -78,7 +78,7 @@ export default function ExerciseProgress({ exercise }) {
 
   return (
     <section className="exercise-progress">
-      <Suggestion suggestion={next} title={`Next time: ${next.sets.map((s) => formatSet(s, type, unit)).join(' · ')}`} />
+      <Suggestion suggestion={next} title={`Next time: ${formatSetList(next.sets, type, unit)}`} />
 
       <div className="records">
         {RECORDS[type].map(([label, field, format]) => (
@@ -104,7 +104,7 @@ export default function ExerciseProgress({ exercise }) {
         {[...history].reverse().map((h) => (
           <div key={h.workoutId} className="session-row">
             <span className="muted">{formatDate(h.date)}</span>
-            <span>{h.sets.map((s) => formatSet(s, type, unit)).join(' · ')}</span>
+            <span>{formatSetList(h.sets, type, unit)}</span>
           </div>
         ))}
       </FoldCard>
