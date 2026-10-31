@@ -1,6 +1,8 @@
 // App settings and their defaults.
 // Saved in the database as separate { key, value } records.
 
+import { isBigLift } from './exercises.js';
+
 export const DEFAULT_SETTINGS = {
   unit: 'kg', // 'kg' | 'lb', only the label
   trackRpe: true, // show the RPE column when logging
@@ -9,8 +11,8 @@ export const DEFAULT_SETTINGS = {
   lastBackup: null, // when a backup was last saved (ISO date text)
   activePlanId: null, // the plan shown on the start screen, see plans.js
   weeklyGoal: null, // training days a week to aim for; null = from the plan (see calendar.js)
-  body: null, // 'female' | 'male' | null: the body drawing, recommended plans, default rest
-  restSeconds: null, // rest between sets to aim for; null = automatic, see restTarget()
+  body: null, // 'female' | 'male' | null: the body drawing and recommended plans
+  restSeconds: null, // rest between sets to aim for; null = automatic (by exercise), see restTarget()
   trackBodyWeight: true, // show the body weight card in Progress
   bodyWeights: [], // [{ date: 'YYYY-MM-DD', weight }], see bodyWeight.js
   keepAwake: true, // keep the screen on during a workout
@@ -21,9 +23,17 @@ export const DEFAULT_SETTINGS = {
 export const WEIGHT_STEPS = ['auto', 1, 1.25, 2.5, 5];
 export const REST_OPTIONS = [null, 60, 90, 120, 180];
 
-// Rest between sets. Women recover faster between sets than men at the same
-// effort (they are more fatigue resistant), so the automatic target is shorter.
-export const restTarget = (settings) => settings.restSeconds ?? (settings.body === 'female' ? 90 : 120);
+// Rest between sets, in seconds: your own choice, or automatic.
+// Automatic: 2:00 after big lifts, 1:30 after everything else. Resting at
+// least a minute or so helps muscles grow, with little extra gain past ~90 s;
+// heavy multi-muscle lifts give more reps in the next set after a longer rest.
+// Without an exercise (e.g. estimating how long a session takes): 1:45, the
+// middle of the two.
+export function restTarget(settings, exercise) {
+  if (settings.restSeconds) return settings.restSeconds;
+  if (!exercise) return 105;
+  return isBigLift(exercise) ? 120 : 90;
+}
 
 // How much heavier (or lighter) a suggestion is, for a set at `weight`.
 // A fixed step, or 'auto': a jump that suits the weight. +2.5 kg is a 4% jump

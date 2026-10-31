@@ -102,7 +102,7 @@ src/
   version.js               The version number (shown in Settings)
   updates.js               Installs new versions quietly (service worker)
   analytics.js             Anonymous counts (GoatCounter; the script is in index.html)
-  App.jsx                  The frame: current screen + tab bar (+ a banner if saving fails)
+  App.jsx                  The frame: current screen + tab bar (+ the rest timer during a workout, a banner if saving fails)
   styles.css               All the look: colours at the top, then each part of the app
 
   model/                   ── the rules (pure functions, tested) ──
@@ -145,7 +145,7 @@ src/
                            sportIcons.js (activity icons from Tabler Icons, MIT license)
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
-    workout/               WorkoutEditor → ExerciseCard → CoachLine + SetRow; ExercisePicker; CreateExercise; Totals;
+    workout/               WorkoutEditor → ExerciseCard → CoachLine + SetRow; RestTimer; ExercisePicker; CreateExercise; Totals;
                            WorkoutSummary (totals, comparison, records); SessionRow (a workout or activity in a list)
 
   screens/                 ── one folder per tab, plus the screens they share ──
@@ -165,7 +165,7 @@ src/
 - How-to tips for an exercise → `TIPS` in `src/model/tips.js`; the funny weight comparisons → `THINGS` in `src/model/comparisons.js`
 - How suggestions work → `src/model/progression.js` (and its tests)
 - Which muscles an exercise works → `RULES` in `src/model/muscles.js`
-- Automatic weight jumps → `AUTO_STEPS` in `src/model/settings.js`; automatic rest → `restTarget` in the same file
+- Automatic weight jumps → `AUTO_STEPS` in `src/model/settings.js`; automatic rest → `restTarget` in the same file (which exercises count as big lifts → `isBigLift` in `src/model/exercises.js`)
 - The shape of the female figure → `FEMALE_WIDTH` in `src/components/charts/bodyShapes.js` (how much narrower or wider the body is at each height)
 - The ready-made plans → `PLAN_TEMPLATES` in `src/model/planTemplates.js`. The tests check every plan gives each main muscle about 10 sets a week (8–13), or what its `focus` says. Run `npm test` after changing one
 - The healthy extras → `EXTRAS` in `src/model/extras.js`
@@ -215,7 +215,7 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | `model/tips.test.js` | Every exercise the app creates (starter list, plans, extras) has how-to tips |
 | `model/bodyWeight.test.js` | One body weight per day, removing a day, the change over 30 days |
 | `model/activities.test.js` | Activities of 20+ minutes count as active days (one per day), easy / moderate / hard WHO minutes, calendar day kinds, they survive backup and restore |
-| `model/settings.test.js` | Automatic weight jumps (kg and lb), an exercise's own jump, automatic rest for women and men |
+| `model/settings.test.js` | Automatic weight jumps (kg and lb), an exercise's own jump, automatic rest (2:00 big lifts, 1:30 the rest) |
 | `model/calendar.test.js` | Weeks start on Monday, training days per week, streaks (rest days don't break them, a missed week does), the weekly goal |
 | `data/migrations.test.js` | Data and backups from older versions still load correctly; when to remind about a backup |
 
@@ -226,6 +226,8 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 ## Features in detail
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
+
+- **Rest timer card:** after you tick a set, a small card above the tabs (on every screen, while the workout runs) shows the rest left: it starts as a warm orange glow with a bright edge and drains from right to left, easy to see from a few steps away, with a draining ring next to the time, "−30 s / +30 s" for just this rest, and a "?" with why rest matters. When rest is over it shows a green ✓ "Ready" and fades away after 3 s; tap it to hide it sooner. Automatic rest is now by exercise: 2:00 after big lifts (squats, deadlifts, presses, rows, pull-ups), 1:30 after everything else (no longer by woman / man). The rest chip in the workout's header is gone
 
 - **v0.13, planned values in grey:** in a workout, the values from last time plus the suggestion are only a plan, shown grey in empty fields. Tick ✓ and they become your values (white); type a number and yours counts instead. Whatever you type also becomes the grey plan for the empty sets below, so for a new exercise you fill in the first set and the rest follow. RPE is never pre-filled
 - **Coach line:** one line above each exercise's sets says what to do today, with the numbers: "One more rep: 42.5 kg × 11, 11, 10", "Heavier: 45 kg (+2.5), back to 8 reps", "Same again: once more, then heavier". Tap it for why and last time, and "Same as last time instead" for a tired day (it rewrites the grey plan of the sets not done yet; "Back to the suggestion" undoes it). Anything else, just type it: it flows to the sets below. The first time you do an exercise it says how to pick a starting weight

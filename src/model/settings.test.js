@@ -34,13 +34,18 @@ describe('Weight jumps', () => {
 });
 
 describe('Rest between sets', () => {
-  it('automatic: 1:30 for women, 2:00 otherwise', () => {
-    expect(restTarget({ body: 'female', restSeconds: null })).toBe(90);
-    expect(restTarget({ body: 'male', restSeconds: null })).toBe(120);
-    expect(restTarget({ body: null, restSeconds: null })).toBe(120);
+  const auto = { restSeconds: null };
+  it('automatic: 2:00 after big lifts, 1:30 after the rest', () => {
+    for (const name of ['Squat', 'Bench press', 'Romanian deadlift', 'Barbell row', 'Pull-up', 'Lat pulldown', 'Hip thrust', 'Arnold press'])
+      expect(restTarget(auto, { name })).toBe(120);
+    for (const name of ['Lateral raise', 'Dumbbell curl', 'Pallof press', 'Band pull-apart', 'Face pull', 'Calf raise', 'Plank'])
+      expect(restTarget(auto, { name })).toBe(90);
+  });
+  it('without an exercise (session estimates): in between', () => {
+    expect(restTarget(auto)).toBe(105);
   });
 
   it('a chosen rest time wins', () => {
-    expect(restTarget({ body: 'female', restSeconds: 60 })).toBe(60);
+    expect(restTarget({ restSeconds: 60 }, { name: 'Squat' })).toBe(60);
   });
 });

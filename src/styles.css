@@ -285,9 +285,7 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 /* Planned values (from last time / the set above) are grey until you type or tick */
 .set-input::placeholder, .signed-input input::placeholder { color: var(--muted); opacity: 0.85; }
 /* The coach line above an exercise's sets: one line, tap for why and choices */
-.coach { margin: 0 0 12px; border-radius: 10px; background: color-mix(in srgb, var(--done) 9%, transparent); }
-.coach.confirm, .coach.hold, .coach.first { background: var(--surface-2); }
-.coach.down { background: color-mix(in srgb, var(--danger) 9%, transparent); }
+.coach { margin: 0 0 12px; border-radius: 10px; background: var(--surface-2); }
 .coach-line {
   display: grid; grid-template-columns: 16px 1fr 44px; gap: 8px; align-items: center;
   width: 100%; padding: 8px 0 8px 10px; border: 0; background: none; color: var(--text);
@@ -893,3 +891,45 @@ h1, h2, .day-title { text-wrap: balance; }
 }
 .exercise-name-btn svg { color: var(--muted); flex-shrink: 0; }
 .exercise-notes-line { margin: 2px 0 6px; font-size: 0.85rem; color: var(--warning); white-space: pre-wrap; }
+
+/* ---- Rest timer: a small card above the tab bar after a ticked set ---- */
+/* --left is registered as a percentage so the browser can animate it: the
+   app updates it once a second and the edge glides between the ticks. */
+@property --left { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+.rest-timer {
+  position: fixed; left: 16px; right: 16px; z-index: 15;
+  bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 10px);
+  max-width: 528px; margin: 0 auto;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55); padding: 10px 10px 10px 12px;
+  /* Drains from right to left as you rest (--left: the rest still to go):
+     a warm glow with a bright orange edge. */
+  background:
+    linear-gradient(to right, transparent calc(var(--left) - 2px), var(--accent) calc(var(--left) - 2px), var(--accent) var(--left), transparent var(--left)),
+    linear-gradient(to right, color-mix(in srgb, var(--accent) 6%, var(--surface)) 0, color-mix(in srgb, var(--accent) 34%, var(--surface)) var(--left), var(--surface) var(--left));
+  transition: --left 1s linear;
+}
+.rest-timer .hint-btn { background: var(--surface-2); }
+.rest-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; }
+.rest-main { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 0; border: 0; background: none; color: var(--text); text-align: left; }
+.rest-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.rest-text strong { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rest-text span { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+.rest-adjust { display: flex; gap: 6px; }
+.rest-adjust .chip { min-height: 36px; padding: 0 10px; font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.rest-ring { flex-shrink: 0; }
+.rest-ring-track { fill: none; stroke: var(--surface-2); stroke-width: 4; }
+.rest-ring-left { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dasharray 1s linear; }
+.rest-ring-check { fill: none; stroke: var(--done); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.rest-timer.ready { background: var(--surface); border-color: color-mix(in srgb, var(--done) 60%, transparent); animation: rest-fade 3s ease-in forwards; }
+.rest-timer.ready .rest-ring-left { stroke: var(--done); }
+.rest-timer.ready .rest-text strong { color: var(--done); }
+.rest-hint { margin: 0 0 10px; }
+/* the "?" sits on the orange glow: give it a solid background like the buttons */
+.rest-timer .hint-btn { background: var(--surface-2); color: var(--text); width: 30px; height: 30px; }
+@keyframes rest-fade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .rest-timer.ready { animation: none; } .rest-ring-left, .rest-timer { transition: none; } }
+/* room at the end of the workout so the card never covers Finish */
+.rest-space { height: 80px; }
+/* narrow phones: shorter buttons */
+@media (max-width: 359px) { .rest-adjust .chip { padding: 0 8px; } .rest-text span { white-space: normal; } }

@@ -35,6 +35,14 @@ export function guessType(name = '') {
 
 export const typeOf = (exercise) => exercise?.type || guessType(exercise?.name);
 
+// Big lifts: many muscles and heavy loads (squats, deadlifts, presses, rows,
+// pull-ups…). They get a longer automatic rest (see restTarget in settings.js).
+export function isBigLift(exercise) {
+  const n = (exercise?.name || '').toLowerCase();
+  if (/pallof|pull-?apart|face pull/.test(n)) return false;
+  return /squat|deadlift|bench|\bpress|\brow\b|pull-?up|chin-?up|pulldown|\bdips?\b|lunge|hip thrust/.test(n);
+}
+
 export function createExercise(name, type = guessType(name), id = newId()) {
   return { id, name: name.trim(), type };
 }

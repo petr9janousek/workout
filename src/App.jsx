@@ -7,6 +7,7 @@ import { DataProvider, useData } from './data/DataProvider.jsx';
 import { useRoute, TABS } from './hooks/useRoute.js';
 import { useNow } from './hooks/useNow.js';
 import Icon from './components/ui/Icon.jsx';
+import RestTimer from './components/workout/RestTimer.jsx';
 import HomeScreen from './screens/home/HomeScreen.jsx';
 import ProgressScreen from './screens/progress/ProgressScreen.jsx';
 import PlansScreen from './screens/plans/PlansScreen.jsx';
@@ -50,6 +51,9 @@ function Shell() {
       <main className="screen">
         <Screen path={path} />
       </main>
+
+      {/* While a workout runs, the rest timer floats above the tabs on every screen. */}
+      {activeWorkout && <RestTimer workout={activeWorkout} />}
 
       <nav className="tabbar">
         {TABS.map((t) => (

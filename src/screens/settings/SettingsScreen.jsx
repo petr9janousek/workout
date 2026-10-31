@@ -6,7 +6,7 @@ import BackButton from '../../components/ui/BackButton.jsx';
 import { openTab } from '../../hooks/useRoute.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { PROGRESSION_MODES } from '../../model/progression.js';
-import { WEIGHT_STEPS, REST_OPTIONS, restTarget } from '../../model/settings.js';
+import { WEIGHT_STEPS, REST_OPTIONS } from '../../model/settings.js';
 import { formatClock } from '../../model/format.js';
 
 
@@ -168,14 +168,15 @@ export default function SettingsScreen() {
           title="Rest between sets"
           hint={
             <>
-              The rest timer turns green when it's time for the next set. Auto is 1:30 for women and 2:00 for men: women
-              recover faster between sets. For big lifts like squats, resting longer is fine.
+              After you tick a set, a small timer shows the rest left. Auto is 2:00 after big lifts (squats, deadlifts,
+              presses, rows, pull-ups) and 1:30 after everything else: resting at least a minute helps muscles grow, and
+              big lifts give more reps in the next set after a longer rest. Waiting longer never hurts.
             </>
           }
         />
         <ChipGroup
           label="Rest between sets"
-          options={REST_OPTIONS.map((sec) => ({ value: sec, label: sec == null ? `Auto (${formatClock(restTarget({ ...settings, restSeconds: null }) * 1000)})` : formatClock(sec * 1000) }))}
+          options={REST_OPTIONS.map((sec) => ({ value: sec, label: sec == null ? 'Auto (1:30–2:00)' : formatClock(sec * 1000) }))}
           value={settings.restSeconds}
           onChange={set('restSeconds')}
         />
