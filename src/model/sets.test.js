@@ -1,9 +1,8 @@
 // Tests for sets.js and format.js: reading typed numbers and showing sets.
 
 import { describe, it, expect } from 'vitest';
-import { asTarget, tickSet, planBelow, shown, compareSets as compareShown, nextSet as nextPlannedSet } from './sets.js';
 import { parseNumber, formatSigned, formatSeconds, formatNumber, keepLastWord } from './format.js';
-import { formatSet, compareSets, isDoneSet, nextSet, formatSetList } from './sets.js';
+import { formatSet, compareSets, isDoneSet, nextSet, formatSetList, asTarget, tickSet, planBelow, shown } from './sets.js';
 
 describe('Reading typed numbers', () => {
   it('accepts a decimal comma as well as a dot', () => {
@@ -75,6 +74,9 @@ describe('Sets', () => {
     expect(added).toMatchObject({ weight: null, reps: null, rpe: null, done: false, target: { weight: 60, reps: 8 } });
     expect(added.id).not.toBe('a');
   });
+  it('in a finished workout, "Add set" copies the last set as done', () => {
+    expect(nextSet([{ weight: 60, reps: 8 }], true)).toMatchObject({ weight: 60, reps: 8, done: true });
+  });
 });
 
 describe('keepLastWord', () => {
@@ -110,14 +112,8 @@ describe('Planned (grey) values', () => {
     expect(planBelow(sets, 1, 'rpe', 8)).toBe(sets); // RPE is never planned
   });
 
-  it('a new set during a workout is a plan like the set above', () => {
-    const s = nextPlannedSet([{ ...planned, reps: 8 }]);
-    expect([s.reps, s.target.reps, s.target.weight, s.done]).toEqual([null, 8, 60, false]);
-    expect(nextPlannedSet([{ weight: 60, reps: 8 }], true)).toMatchObject({ weight: 60, reps: 8, done: true });
-  });
-
   it('▲▼ compare the planned values too', () => {
-    expect(compareShown(planned, { weight: 60, reps: 8 }, 'weight')).toBe(1);
+    expect(compareSets(planned, { weight: 60, reps: 8 }, 'weight')).toBe(1);
   });
 });
 

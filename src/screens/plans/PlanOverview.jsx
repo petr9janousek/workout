@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BackButton from '../../components/ui/BackButton.jsx';
+import NotFound from '../../components/ui/NotFound.jsx';
 import BodyMap from '../../components/charts/BodyMap.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import Icon from '../../components/ui/Icon.jsx';
@@ -22,12 +23,7 @@ export default function PlanOverview({ planId }) {
   const [renaming, setRenaming] = useState(false);
 
   if (!plan) {
-    return (
-      <div>
-        <BackButton label="Plans" to={['plans']} />
-        <p className="empty">This plan doesn't exist any more.</p>
-      </div>
-    );
+    return <NotFound what="plan" label="Plans" to={['plans']} />;
   }
 
   const active = settings.activePlanId === plan.id;

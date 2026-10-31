@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import BodyFigure from './BodyFigure.jsx';
-import { MUSCLES, muscleLabel, cycleMuscle } from '../../model/muscles.js';
+import { MUSCLES, muscleLabel, cycleMuscle, musclesByRole } from '../../model/muscles.js';
 
 // Pick which muscles an exercise works by tapping the body:
 // each tap goes off → helping (½) → main → off.
@@ -8,8 +8,7 @@ import { MUSCLES, muscleLabel, cycleMuscle } from '../../model/muscles.js';
 // The same choices are also available as a list, for small muscles.
 export default function MusclePicker({ muscles, onChange }) {
   const [showList, setShowList] = useState(false);
-  const main = MUSCLES.filter((m) => muscles[m.id] === 1);
-  const helping = MUSCLES.filter((m) => muscles[m.id] === 0.5);
+  const { main, helping } = musclesByRole(muscles);
   // main = deepest red, helping = lighter
   const levelOf = (m) => (muscles[m] === 1 ? 4 : muscles[m] ? 2 : 0);
   const tap = (m) => onChange(cycleMuscle(muscles, m));
@@ -19,7 +18,7 @@ export default function MusclePicker({ muscles, onChange }) {
       <BodyFigure
         levelOf={levelOf}
         onTap={tap}
-        label={`Main: ${main.map((m) => m.label).join(', ') || 'none'}. Helping: ${helping.map((m) => m.label).join(', ') || 'none'}.`}
+        label={`Main: ${main.join(', ') || 'none'}. Helping: ${helping.join(', ') || 'none'}.`}
       />
 
       <div className="picker-legend">

@@ -5,7 +5,7 @@ import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { useRemembered } from '../../hooks/useRemembered.js';
 import { findExercises, typeOf, EXERCISE_TYPES } from '../../model/exercises.js';
-import { MUSCLES, musclesOf } from '../../model/muscles.js';
+import { MUSCLES, musclesOf, musclesByRole, muscleLabel } from '../../model/muscles.js';
 import { recentSessions } from '../../model/workouts.js';
 
 // The Exercises tab: everything in the app, searchable and filterable by
@@ -38,14 +38,12 @@ export default function ExerciseLibrary() {
 
       <p className="muted small">
         {list.length} {list.length === 1 ? 'exercise' : 'exercises'}
-        {muscle && ` for ${MUSCLES.find((m) => m.id === muscle).label.toLowerCase()}, main ones first`}
+        {muscle && ` for ${muscleLabel(muscle).toLowerCase()}, main ones first`}
       </p>
 
       <ul className="library">
         {list.map((e) => {
-          const muscles = musclesOf(e);
-          const main = MUSCLES.filter((m) => muscles[m.id] === 1).map((m) => m.label);
-          const helping = MUSCLES.filter((m) => muscles[m.id] === 0.5).map((m) => m.label);
+          const { main, helping } = musclesByRole(musclesOf(e));
           const sessions = recentSessions(workouts, e.id, null, 999).length;
           return (
             <li key={e.id}>

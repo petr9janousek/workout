@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BackButton from '../../components/ui/BackButton.jsx';
+import NotFound from '../../components/ui/NotFound.jsx';
 import ChipGroup from '../../components/ui/ChipGroup.jsx';
 import MusclePicker from '../../components/charts/MusclePicker.jsx';
 import { useData } from '../../data/DataProvider.jsx';
@@ -26,12 +27,7 @@ export default function ExerciseEditor({ exerciseId, base }) {
   const [draft, setDraft] = useState(() => (exercise ? editable(exercise) : null));
 
   if (!exercise) {
-    return (
-      <div>
-        <BackButton label="Back" fallback={[base[0]]} />
-        <p className="empty">This exercise doesn't exist any more.</p>
-      </div>
-    );
+    return <NotFound what="exercise" label="Back" fallback={[base[0]]} />;
   }
 
   const update = (changes) => setDraft((d) => ({ ...d, ...changes }));

@@ -2,7 +2,7 @@ import WorkoutSummary from '../../components/workout/WorkoutSummary.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import Firework from '../../components/ui/Firework.jsx';
 import Icon from '../../components/ui/Icon.jsx';
-import BackButton from '../../components/ui/BackButton.jsx';
+import NotFound from '../../components/ui/NotFound.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { back, openTab } from '../../hooks/useRoute.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
@@ -15,12 +15,7 @@ export default function FinishSummary({ workoutId }) {
   const workout = workouts.find((w) => w.id === workoutId && w.finishedAt);
 
   if (!workout) {
-    return (
-      <div>
-        <BackButton label="Home" fallback={['home']} />
-        <p className="empty">This workout doesn't exist any more.</p>
-      </div>
-    );
+    return <NotFound what="workout" label="Home" fallback={['home']} />;
   }
 
   const hasRecords = workoutRecords(workout, workouts, exercisesById).length > 0;

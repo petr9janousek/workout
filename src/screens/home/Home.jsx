@@ -3,6 +3,7 @@ import FitHeading from '../../components/ui/FitHeading.jsx';
 import BodyMap from '../../components/charts/BodyMap.jsx';
 import WeekStrip from '../../components/charts/WeekStrip.jsx';
 import Icon from '../../components/ui/Icon.jsx';
+import LinkCard from '../../components/ui/LinkCard.jsx';
 import { NumberInput } from '../../components/ui/NumberInput.jsx';
 import { useSaveBackup } from '../../hooks/useSaveBackup.js';
 import { backupDue } from '../../data/backup.js';
@@ -51,30 +52,19 @@ export default function Home() {
       </div>
 
       {!hasPlan && (
-        <button className="card card-button row-between get-plan" onClick={() => openTab('plans', 'library')}>
-          <span>
-            <strong>Want a plan?</strong>
-            <span className="muted block small">Ready-made plans for 2 to 6 days a week. Optional.</span>
-          </span>
-          <Icon name="chevron" size={18} />
-        </button>
+        <LinkCard
+          className="get-plan"
+          title="Want a plan?"
+          sub="Ready-made plans for 2 to 6 days a week. Optional."
+          onClick={() => openTab('plans', 'library')}
+        />
       )}
 
       {settings.trackBodyWeight && <WeighIn />}
       <RecentRecords />
       {backupDue(settings.lastBackup, finished.length) && <BackupReminder lastBackup={settings.lastBackup} />}
 
-
-      <button className="card card-button row-between settings-link" onClick={() => go('home', 'settings')}>
-        <span className="settings-link-main">
-          <Icon name="settings" size={20} />
-          <span>
-            <strong>Settings</strong>
-            <span className="muted block small">Backup, units, rest time and more</span>
-          </span>
-        </span>
-        <Icon name="chevron" size={18} />
-      </button>
+      <LinkCard icon="settings" title="Settings" sub="Backup, units, rest time and more" onClick={() => go('home', 'settings')} />
     </div>
   );
 }

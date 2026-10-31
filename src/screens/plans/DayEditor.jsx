@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BackButton from '../../components/ui/BackButton.jsx';
+import NotFound from '../../components/ui/NotFound.jsx';
 import BodyMap from '../../components/charts/BodyMap.jsx';
 import ExercisePicker from '../../components/workout/ExercisePicker.jsx';
 import Icon from '../../components/ui/Icon.jsx';
@@ -22,12 +23,7 @@ export default function DayEditor({ planId, dayId, picking }) {
   const [muscle, setMuscle] = useState(null); // tapped on the body: show ideas for it
 
   if (!day) {
-    return (
-      <div>
-        <BackButton label="Plan" fallback={['plans', planId]} />
-        <p className="empty">This day doesn't exist any more.</p>
-      </div>
-    );
+    return <NotFound what="day" label="Plan" fallback={['plans', planId]} />;
   }
 
   const index = plan.days.indexOf(day);

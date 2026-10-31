@@ -2,6 +2,7 @@ import WorkoutEditor from '../../components/workout/WorkoutEditor.jsx';
 import WorkoutSummary from '../../components/workout/WorkoutSummary.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import BackButton from '../../components/ui/BackButton.jsx';
+import NotFound from '../../components/ui/NotFound.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { useStartWorkout } from '../../hooks/useStartWorkout.js';
 import { go, back } from '../../hooks/useRoute.js';
@@ -20,12 +21,7 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
   const workout = workouts.find((w) => w.id === workoutId && w.finishedAt);
 
   if (!workout) {
-    return (
-      <div>
-        <BackButton label="Progress" fallback={['progress']} />
-        <p className="empty">This workout doesn't exist any more.</p>
-      </div>
-    );
+    return <NotFound what="workout" label="Progress" fallback={['progress']} />;
   }
 
   function remove() {

@@ -2,12 +2,14 @@ import { useState } from 'react';
 import BackButton from '../../components/ui/BackButton.jsx';
 import BodyMap from '../../components/charts/BodyMap.jsx';
 import Icon from '../../components/ui/Icon.jsx';
+import LinkCard from '../../components/ui/LinkCard.jsx';
+import NotFound from '../../components/ui/NotFound.jsx';
 import ExerciseProgress, { bestLine } from './ExerciseProgress.jsx';
 import ExerciseEditor from './ExerciseEditor.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { EXERCISE_TYPES, typeOf } from '../../model/exercises.js';
-import { MUSCLES, musclesOf } from '../../model/muscles.js';
+import { musclesOf, musclesByRole } from '../../model/muscles.js';
 import { exerciseHistory } from '../../model/workouts.js';
 import { plansUsing } from '../../model/plans.js';
 import { tipsFor, videoSearchUrl } from '../../model/tips.js';
@@ -31,12 +33,7 @@ export default function ExercisePage({ prefix, path, start, backLabel }) {
 
   if (last === 'edit') return <ExerciseEditor exerciseId={id} base={here.slice(0, -1)} />;
   if (!exercise) {
-    return (
-      <div>
-        <BackButton label={backLabel} fallback={[prefix[0]]} />
-        <p className="empty">This exercise doesn't exist any more.</p>
-      </div>
-    );
+    return <NotFound what="exercise" label={backLabel} fallback={[prefix[0]]} />;
   }
 
   // Deeper than the first page, "back" returns to the other page of this exercise.
@@ -52,8 +49,7 @@ export default function ExercisePage({ prefix, path, start, backLabel }) {
 function HowToPage({ exercise, back, onEdit, onProgress }) {
   const { workouts, plans, unit } = useData();
   const muscles = musclesOf(exercise);
-  const main = MUSCLES.filter((m) => muscles[m.id] === 1).map((m) => m.label);
-  const helping = MUSCLES.filter((m) => muscles[m.id] === 0.5).map((m) => m.label);
+  const { main, helping } = musclesByRole(muscles);
   const mapSets = Object.fromEntries(Object.entries(muscles).map(([m, w]) => [m, w === 1 ? 8 : 3]));
   const history = exerciseHistory(workouts, exercise.id);
   const inPlans = plansUsing(plans, exercise.id);
@@ -94,13 +90,7 @@ function HowToPage({ exercise, back, onEdit, onProgress }) {
       <Notes key={exercise.id} exercise={exercise} />
 
       {history.length > 0 ? (
-        <button className="card card-button row-between link-card" onClick={onProgress}>
-          <span>
-            <strong>Your progress</strong>
-            <span className="muted block small">{bestLine(exercise, history, unit)}</span>
-          </span>
-          <Icon name="chevron" size={18} />
-        </button>
+        <LinkCard title="Your progress" sub={bestLine(exercise, history, unit)} onClick={onProgress} />
       ) : (
         <p className="muted small center">Not done yet. Your progress will show up here.</p>
       )}
@@ -127,13 +117,7 @@ function ProgressPage({ exercise, back, onHowTo }) {
         <p className="empty">No sessions of this exercise yet.</p>
       )}
 
-      <button className="card card-button row-between link-card" onClick={onHowTo}>
-        <span>
-          <strong>How to do it</strong>
-          <span className="muted block small">Tips, muscles and your notes</span>
-        </span>
-        <Icon name="chevron" size={18} />
-      </button>
+      <LinkCard title="How to do it" sub="Tips, muscles and your notes" onClick={onHowTo} />
     </div>
   );
 }

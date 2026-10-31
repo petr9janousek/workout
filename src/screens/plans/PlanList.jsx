@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import Icon from '../../components/ui/Icon.jsx';
+import LinkCard from '../../components/ui/LinkCard.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { useStartWorkout } from '../../hooks/useStartWorkout.js';
 import { go } from '../../hooks/useRoute.js';
@@ -37,16 +38,13 @@ export default function PlanList() {
       <h2 className="section-title">My plans</h2>
       {plans.length === 0 && <p className="empty">No plans yet. Pick a ready-made one or make your own.</p>}
       {plans.map((plan) => (
-        <button key={plan.id} className="card card-button row-between" onClick={() => go('plans', plan.id)}>
-          <span>
-            <strong>{plan.name}</strong>
-            {plan.id === settings.activePlanId && <span className="badge">Active</span>}
-            <span className="muted block small">
-              {plan.days.length} {plan.days.length === 1 ? 'day' : 'days'}: {plan.days.map((d) => d.name).join(', ')}
-            </span>
-          </span>
-          <Icon name="chevron" size={18} />
-        </button>
+        <LinkCard
+          key={plan.id}
+          title={plan.name}
+          badge={plan.id === settings.activePlanId && <span className="badge">Active</span>}
+          sub={`${plan.days.length} ${plan.days.length === 1 ? 'day' : 'days'}: ${plan.days.map((d) => d.name).join(', ')}`}
+          onClick={() => go('plans', plan.id)}
+        />
       ))}
 
       <div className="actions">

@@ -1,7 +1,7 @@
 // Tests for muscles.js: which muscles an exercise works and how sets are counted.
 
 import { describe, it, expect } from 'vitest';
-import { guessMuscles, workoutMuscleSets, recentMuscleSets, level, cycleMuscle, musclesOf, similarExercises } from './muscles.js';
+import { guessMuscles, workoutMuscleSets, recentMuscleSets, level, cycleMuscle, musclesOf, musclesByRole, similarExercises } from './muscles.js';
 import { indexById, findExercises, createExercise } from './exercises.js';
 
 describe('Guessing muscles from the exercise name', () => {
@@ -56,7 +56,7 @@ describe('Colour levels', () => {
   });
 });
 
-describe('Editing muscles in Settings', () => {
+describe('Editing muscles', () => {
   it('a tap cycles off → helping ½ → main → off', () => {
     let m = {};
     m = cycleMuscle(m, 'chest');
@@ -65,6 +65,9 @@ describe('Editing muscles in Settings', () => {
     expect(m).toEqual({ chest: 1 });
     m = cycleMuscle(m, 'chest');
     expect(m).toEqual({});
+  });
+  it('names the main and helping muscles in body order', () => {
+    expect(musclesByRole({ triceps: 0.5, chest: 1 })).toEqual({ main: ['Chest'], helping: ['Triceps'] });
   });
 });
 

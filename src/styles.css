@@ -142,8 +142,8 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
   color: var(--muted); font-size: 0.85rem; font-weight: 600;
 }
 .chevron.down.open { transform: rotate(180deg); }
-.settings-link-main { display: flex; align-items: center; gap: 12px; }
-.settings-link-main > svg { color: var(--muted); flex-shrink: 0; }
+.link-card-main { display: flex; align-items: center; gap: 12px; }
+.link-card-main > svg { color: var(--muted); flex-shrink: 0; }
 .goal-note { margin: -6px 2px 0; color: var(--done); }
 .get-plan strong { font-size: 1rem; }
 .weigh-in-row { display: grid; grid-template-columns: 1fr 84px auto; align-items: center; gap: 10px; }
@@ -864,7 +864,7 @@ h1, h2, .day-title { text-wrap: balance; }
 }
 .page-top { display: flex; align-items: center; justify-content: space-between; }
 .page-top .back { margin-bottom: 0; }
-.link-card { margin-top: 4px; }
+.exercise-page .link-card { margin-top: 4px; }
 .page-subtitle { margin: -8px 0 12px; }
 .exercise-progress .chips { margin-bottom: 4px; }
 .exercise-name-btn {

@@ -142,7 +142,8 @@ src/
     useWakeLock.js         Keep the screen on during a workout
 
   components/              ── pieces used by several screens ──
-    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework, DaysPicker, CardTitle (title + "?" hint), FoldCard (a card that folds open);
+    ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework, DaysPicker, CardTitle (title + "?" hint), FoldCard (a card that folds open),
+                           LinkCard (a card that opens another page), NotFound (a deleted plan, exercise or workout);
                            sportIcons.js (activity icons from Tabler Icons, MIT license)
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
@@ -210,7 +211,7 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | `data/sampleData.test.js` | The sample data looks like real data: current format, exercises exist, ~8 weeks of workouts, a streak, body weight |
 | `model/planFile.test.js` | Sharing a plan: names, sets, extras and muscles survive; the other phone reuses its exercises and creates missing ones; clear messages for wrong files |
 | `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets and grouped set lists, ▲▼ comparisons; planned values: ticking takes them, typing wins, typing plans the empty sets below |
-| `model/muscles.test.js` | Guessing muscles, counting sets per muscle, map colours, searching the exercise library, suggesting a swap for the same muscles |
+| `model/muscles.test.js` | Guessing muscles, main and helping muscle names, counting sets per muscle, map colours, searching the exercise library, suggesting a swap for the same muscles |
 | `model/records.test.js` | Which sets are personal records: heavier, more reps, longer holds, assisted; only one trophy for repeating a record; none the first time; records of a workout and of the last days |
 | `model/comparisons.test.js` | "About an Asian elephant", "almost a hippo", "about 3 washing machines"; pounds; nothing for tiny totals |
 | `model/tips.test.js` | Every exercise the app creates (starter list, plans, extras) has how-to tips |

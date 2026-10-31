@@ -79,6 +79,12 @@ export function guessMuscles(name = '') {
 // An exercise's muscles: the ones you set in Settings, or a guess from the name.
 export const musclesOf = (exercise) => exercise?.muscles || guessMuscles(exercise?.name);
 
+// Muscle names by role: { main: ['Chest'], helping: ['Triceps', 'Front shoulders'] }
+export function musclesByRole(muscles) {
+  const named = (weight) => MUSCLES.filter((m) => muscles[m.id] === weight).map((m) => m.label);
+  return { main: named(1), helping: named(0.5) };
+}
+
 // Change one muscle: off → ½ (helping) → 1 (main) → off. Returns new muscles.
 export function cycleMuscle(muscles, muscle) {
   const next = { ...muscles };
