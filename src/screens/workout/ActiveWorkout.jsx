@@ -14,7 +14,6 @@ import { countEvent } from '../../analytics.js';
 // the exercises, and Finish / Discard.
 export default function ActiveWorkout({ workout, picking, swapping }) {
   const { exercisesById, settings, actions } = useData();
-  const now = useNow();
   useWakeLock(settings.keepAwake);
 
   function finish() {
@@ -44,7 +43,7 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
       <div className="sticky-bar">
         <Totals workout={workout} live />
         <div className="timers">
-          <span className="timer" aria-label="Workout duration">{formatClock(now - Date.parse(workout.startedAt))}</span>
+          <WorkoutClock startedAt={workout.startedAt} />
         </div>
       </div>
 
@@ -71,4 +70,11 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
       <div className="rest-space" aria-hidden="true" />
     </div>
   );
+}
+
+// The workout's running time. Its own component, so only this ticks every
+// second, not the whole workout.
+function WorkoutClock({ startedAt }) {
+  const now = useNow();
+  return <span className="timer" aria-label="Workout duration">{formatClock(now - Date.parse(startedAt))}</span>;
 }

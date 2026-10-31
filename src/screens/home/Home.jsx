@@ -9,7 +9,7 @@ import { backupDue } from '../../data/backup.js';
 import { useData } from '../../data/DataProvider.jsx';
 import { go, openTab } from '../../hooks/useRoute.js';
 import { finishedWorkouts } from '../../model/workouts.js';
-import { nextDayIndex, lastPlanWorkout, dayMuscleSets, totalSets, sessionMinutes } from '../../model/plans.js';
+import { nextDayIndex, lastPlanWorkout, dayMuscleSets, dayLine } from '../../model/plans.js';
 import { restTarget } from '../../model/settings.js';
 import { exerciseName, typeOf } from '../../model/exercises.js';
 import { recentRecords } from '../../model/records.js';
@@ -116,7 +116,7 @@ function NextDay({ plan }) {
           </span>
           <h2 className="day-title">{keepLastWord(day.name)}</h2>
           <span className="muted small">
-            {day.items.length}&nbsp;exercises · {totalSets(day)}&nbsp;sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))} min`}
+            {dayLine(day, restTarget(settings))}
           </span>
         </div>
         <div className="plan-hero-map">

@@ -57,6 +57,15 @@ export function sessionMinutes(items, restSeconds = 120) {
 }
 
 // "~45 min", or "~45–55 min" when the days differ.
+// "8 exercises · 20 sets · ~45 min", each number kept with its word when the
+// line wraps. withExercises: false leaves out the exercise count.
+export function dayLine(day, restSeconds, withExercises = true) {
+  const parts = [`${totalSets(day)}\u00a0sets`];
+  if (withExercises) parts.unshift(`${day.items.length}\u00a0exercises`);
+  if (day.items.length) parts.push(`~${sessionMinutes(day.items, restSeconds)}\u00a0min`);
+  return parts.join(' · ');
+}
+
 export function minutesLabel(days, restSeconds) {
   const all = days.filter((d) => d.items.length).map((d) => sessionMinutes(d.items, restSeconds));
   if (!all.length) return '';

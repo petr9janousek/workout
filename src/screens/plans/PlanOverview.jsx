@@ -5,7 +5,7 @@ import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go, switchTab } from '../../hooks/useRoute.js';
-import { dayMuscleSets, planMuscleSets, totalSets, createDay, nextDayIndex, sessionMinutes } from '../../model/plans.js';
+import { dayMuscleSets, planMuscleSets, createDay, nextDayIndex, dayLine } from '../../model/plans.js';
 import { restTarget } from '../../model/settings.js';
 import { planToFile } from '../../model/planFile.js';
 import { shareFile } from '../../data/backup.js';
@@ -99,7 +99,7 @@ export default function PlanOverview({ planId }) {
                 </span>
                 <span className="muted small">
                   {day.items.length
-                    ? `${day.items.length}\u00a0exercises · ${totalSets(day)}\u00a0sets · ~${sessionMinutes(day.items, restTarget(settings))}\u00a0min`
+                    ? dayLine(day, restTarget(settings))
                     : 'Not planned yet'}
                 </span>
               </span>

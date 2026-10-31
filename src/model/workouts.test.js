@@ -1,7 +1,7 @@
 // Tests for workouts.js: finishing a workout, totals and history.
 
 import { describe, it, expect } from 'vitest';
-import { finishWorkout, workoutTotals, recentSessions, exerciseHistory, countWorkoutsWith, previousLike } from './workouts.js';
+import { finishWorkout, workoutTotals, recentSessions, exerciseHistory, countWorkoutsWith, previousLike, finishedWorkouts } from './workouts.js';
 
 const set = (weight, reps, done = true, extra = {}) => ({ id: Math.random() + '', weight, reps, time: null, rpe: null, done, ...extra });
 const workout = (id, startedAt, entries, finishedAt = startedAt) => ({ id, startedAt, finishedAt, notes: '', entries });
@@ -108,5 +108,14 @@ describe('Finishing keeps only what was done', () => {
     const w = workout('w', '2026-10-29T10:00:00Z', [entry('bench', [{ ...set(60, 8), target: { weight: 60, reps: 8, time: null } }])], null);
     const sets = finishWorkout(w).workout.entries[0].sets;
     expect('target' in sets[0]).toBe(false);
+  });
+});
+
+describe('finishedWorkouts', () => {
+  it('gives the same list again for the same workouts, a new one when they change', () => {
+    const list = [workout('a', '2026-10-01T10:00:00Z', []), workout('b', '2026-10-02T10:00:00Z', [], null)];
+    expect(finishedWorkouts(list)).toBe(finishedWorkouts(list));
+    expect(finishedWorkouts(list).map((w) => w.id)).toEqual(['a']);
+    expect(finishedWorkouts([...list, workout('c', '2026-10-03T10:00:00Z', [])]).map((w) => w.id)).toEqual(['c', 'a']);
   });
 });

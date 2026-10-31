@@ -26,9 +26,18 @@ export function createEntry(exerciseId, sets, suggestion = null) {
   return { id: newId(), exerciseId, sets, suggestion: { kind, title, text, sets: suggestion.sets.map(({ weight, reps, time }) => ({ weight, reps, time })) } };
 }
 
-// Finished workouts, newest first.
-export const finishedWorkouts = (workouts) =>
-  workouts.filter((w) => w.finishedAt).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+// Finished workouts, newest first. Many screens ask for this many times per
+// render, so the result is remembered for each list (lists are never changed
+// in place, so a changed list is a new array and gets worked out again).
+const finishedCache = new WeakMap();
+export function finishedWorkouts(workouts) {
+  let list = finishedCache.get(workouts);
+  if (!list) {
+    list = workouts.filter((w) => w.finishedAt).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+    finishedCache.set(workouts, list);
+  }
+  return list;
+}
 
 export const activeWorkout = (workouts) => workouts.find((w) => !w.finishedAt) || null;
 

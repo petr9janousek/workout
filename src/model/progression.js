@@ -229,10 +229,16 @@ function resizeSets(sets, count) {
 }
 
 // A new workout, optionally with the exercises of an earlier one ("repeat").
+// A repeat keeps the earlier one's name and plan day, so it's compared with
+// it and counts as that day of the plan.
 export function planWorkout(template, exercisesById, { workouts, settings }, startedAt = new Date().toISOString()) {
   const entries = (template?.entries || [])
-    .map((e) => exercisesById.get(e.exerciseId))
-    .filter(Boolean)
-    .map((exercise) => planEntry(exercise, { workouts, settings, startedAt }));
-  return createWorkout(entries, startedAt);
+    .map((e) => ({ exercise: exercisesById.get(e.exerciseId), extra: e.extra }))
+    .filter((e) => e.exercise)
+    .map(({ exercise, extra }) => {
+      const entry = planEntry(exercise, { workouts, settings, startedAt });
+      return extra ? { ...entry, extra: true } : entry;
+    });
+  const { name, planId, dayId } = template || {};
+  return createWorkout(entries, startedAt, { ...(name ? { name } : {}), ...(planId ? { planId, dayId } : {}) });
 }

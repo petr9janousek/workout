@@ -3,7 +3,7 @@
 // Run all tests with: npm test
 
 import { describe, it, expect } from 'vitest';
-import { suggestNext, planEntry } from './progression.js';
+import { suggestNext, planEntry, planWorkout } from './progression.js';
 
 // A session of sets, e.g. session(60, [8, 8, 7]) or with RPE: session(60, [8, 8, 8], [7, 8, 8])
 const session = (weight, reps, rpe = []) => ({
@@ -227,5 +227,17 @@ describe('Weight jumps', () => {
 
   it('a fixed jump in Settings is used as it is', () => {
     expect(weights(suggestNext(ready(4), 'weight', settings()))[0]).toBe(6.5);
+  });
+});
+
+describe('Repeating a workout (planWorkout)', () => {
+  it('keeps its name, plan day and healthy extras', () => {
+    const bench = { id: 'bench', name: 'Bench press', type: 'weight' };
+    const old = { id: 'o', name: 'Push', planId: 'p', dayId: 'd', startedAt: '2026-10-01', finishedAt: '2026-10-01', notes: '',
+      entries: [{ id: 'e', exerciseId: 'bench', extra: true, sets: [{ id: 's', weight: 60, reps: 8, time: null, rpe: null, done: true }] }] };
+    const w = planWorkout(old, new Map([['bench', bench]]), { workouts: [old], settings: settings() }, '2026-10-08');
+    expect(w).toMatchObject({ name: 'Push', planId: 'p', dayId: 'd', finishedAt: null });
+    expect(w.entries[0].extra).toBe(true);
+    expect(planWorkout(null, new Map(), { workouts: [], settings: settings() }).name).toBeUndefined();
   });
 });

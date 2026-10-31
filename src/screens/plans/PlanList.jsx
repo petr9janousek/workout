@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
-import { go, openTab } from '../../hooks/useRoute.js';
+import { useStartWorkout } from '../../hooks/useStartWorkout.js';
+import { go } from '../../hooks/useRoute.js';
 import { finishedWorkouts } from '../../model/workouts.js';
 import { isActivity } from '../../model/activities.js';
 import { exerciseName } from '../../model/exercises.js';
@@ -69,18 +70,11 @@ export default function PlanList() {
 
 // Your last few gym workouts, to do again as they were (no plan needed).
 function RecentWorkouts() {
-  const { workouts, exercisesById, activeWorkout, actions } = useData();
+  const { workouts, exercisesById, actions } = useData();
+  const startWorkout = useStartWorkout();
   const recent = finishedWorkouts(workouts).filter((w) => !isActivity(w)).slice(0, 3);
   if (!recent.length) return null;
-
-  function repeat(workout) {
-    if (activeWorkout) {
-      alert('Finish or discard the workout in progress first.');
-      return;
-    }
-    actions.startWorkout(workout);
-    openTab('home');
-  }
+  const repeat = (workout) => startWorkout(() => actions.startWorkout(workout));
 
   return (
     <section className="recent">

@@ -36,12 +36,22 @@ describe('Updating old data', () => {
     expect(migrate(v01).workouts[0].entries[0].sets[0]).toMatchObject({ weight: 62.5, reps: 8, done: true });
   });
 
-  it('keeps hints short: only kind and text', () => {
+  it('keeps a hint to its known fields, its sets as plain values', () => {
     const data = migrate({
       ...v01,
-      workouts: [{ ...v01.workouts[0], finishedAt: null, entries: [{ id: 'e', exerciseId: 'x', sets: [], suggestion: { kind: 'up', text: 'Try 65', sets: [{}] } }] }],
+      workouts: [{ ...v01.workouts[0], finishedAt: null, entries: [{ id: 'e', exerciseId: 'x', sets: [], suggestion: { kind: 'up', text: 'Try 65', sets: [{ id: 's', weight: '65', reps: 8, done: true }], junk: 1 } }] }],
     });
-    expect(data.workouts[0].entries[0].suggestion).toEqual({ kind: 'up', text: 'Try 65' });
+    expect(data.workouts[0].entries[0].suggestion).toEqual({ kind: 'up', text: 'Try 65', sets: [{ weight: 65, reps: 8, time: null }] });
+  });
+
+  it('a workout in progress keeps its grey plans, coach line and name through a backup', () => {
+    const set = { id: 's', weight: null, reps: null, time: null, rpe: null, done: false, doneAt: null, target: { weight: 60, reps: 9, time: null } };
+    const suggestion = { kind: 'reps', title: 'One more rep: 60 kg × 9', text: 'Why', sets: [{ weight: 60, reps: 9, time: null }], chosen: 'same' };
+    const w = { id: 'w', name: 'Arms', startedAt: '2026-10-31T10:00:00Z', finishedAt: null, notes: '', entries: [{ id: 'e', exerciseId: 'x', sets: [set], suggestion }] };
+    const out = migrate({ ...v01, workouts: [w] }).workouts[0];
+    expect(out.name).toBe('Arms'); // no plan, still named
+    expect(out.entries[0].sets[0].target).toEqual(set.target);
+    expect(out.entries[0].suggestion).toEqual(suggestion);
   });
 
   it('keeps plans, and which plan day a workout came from', () => {

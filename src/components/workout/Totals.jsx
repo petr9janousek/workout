@@ -25,12 +25,3 @@ export default function Totals({ workout, live = false }) {
     </div>
   );
 }
-
-// "9 sets · 3,420 kg": the short version for lists.
-export function TotalsLine({ workout }) {
-  const { unit } = useData();
-  const t = workoutTotals(workout);
-  const parts = [`${t.sets} sets`];
-  if (t.volume > 0) parts.push(`${formatTotal(t.volume)} ${unit}`);
-  return <span className="summary-line">{parts.join(' · ')}</span>;
-}

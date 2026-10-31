@@ -138,6 +138,7 @@ src/
     useNow.js              The current time, ticking (timers)
     useRemembered.js       A setting remembered on this phone (e.g. folded cards)
     useSaveBackup.js       Save a backup file (used by Settings and the reminder on Home)
+    useStartWorkout.js     Start a workout from another screen (plan day, repeat); one at a time
     useWakeLock.js         Keep the screen on during a workout
 
   components/              ── pieces used by several screens ──
@@ -204,7 +205,7 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | File | What it checks |
 |---|---|
 | `model/progression.test.js` | The three progression styles, the safety rules (RPE 9.5+, dropping reps, plateaus), easier than expected (4+ reps over the time before → heavier, sized by 1RM; high reps alone are fine), titles with numbers, assisted / bodyweight / timed exercises, starting an exercise in today's workout (as grey plans) |
-| `model/workouts.test.js` | Finishing a workout, totals, an exercise's history, the last time of the same plan day |
+| `model/workouts.test.js` | Finishing a workout, totals, an exercise's history, the last time of the same plan day, the remembered list of finished workouts |
 | `model/plans.test.js` | Which plan day is next, starting a plan day, editing days; every ready-made plan gives each main muscle ~10 sets a week (or what its focus says); more days = shorter sessions; healthy extras rotate and are marked; plans for your body come first |
 | `data/sampleData.test.js` | The sample data looks like real data: current format, exercises exist, ~8 weeks of workouts, a streak, body weight |
 | `model/planFile.test.js` | Sharing a plan: names, sets, extras and muscles survive; the other phone reuses its exercises and creates missing ones; clear messages for wrong files |
@@ -217,7 +218,7 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | `model/activities.test.js` | Activities of 20+ minutes count as active days (one per day), easy / moderate / hard WHO minutes, calendar day kinds, they survive backup and restore |
 | `model/settings.test.js` | Automatic weight jumps (kg and lb), an exercise's own jump, automatic rest (2:00 big lifts, 1:30 the rest) |
 | `model/calendar.test.js` | Weeks start on Monday, training days per week, streaks (rest days don't break them, a missed week does), the weekly goal |
-| `data/migrations.test.js` | Data and backups from older versions still load correctly; when to remind about a backup |
+| `data/migrations.test.js` | Data and backups from older versions still load correctly; a workout in progress survives a backup (grey plans, coach line, name); when to remind about a backup |
 
 Run them before pushing a change to the rules in `model/`. When a test fails, it shows which scenario broke and the expected and actual values. `npm run test:watch` re-runs them on every save while you work.
 
@@ -226,6 +227,8 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 ## Features in detail
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
+
+- **v0.15.3, fixes from a code review:** repeating a workout keeps its name and plan day (it used to become "Workout"); restoring a backup keeps a workout in progress as it was (grey plans, the coach line, its name); long histories open faster (the sorted list of workouts is worked out once, not for every row), and a running workout no longer redraws every exercise each second (only the clock does)
 
 - **Rest timer card:** after you tick a set, a small card above the tabs (on every screen, while the workout runs) shows the rest left: it starts as a warm orange glow with a bright edge and drains from right to left, easy to see from a few steps away, with a draining ring next to the time, "−30 s / +30 s" for just this rest, and a "?" with why rest matters. When rest is over it shows a green ✓ "Ready" and fades away after 3 s; tap it to hide it sooner. Automatic rest is now by exercise: 2:00 after big lifts (squats, deadlifts, presses, rows, pull-ups), 1:30 after everything else (no longer by woman / man). The rest chip in the workout's header is gone
 

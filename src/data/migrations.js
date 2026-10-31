@@ -26,6 +26,8 @@ function migrateSet(set) {
     rpe: toNumber(set.rpe),
     done: Boolean(set.done),
     doneAt: set.doneAt ?? null,
+    // the grey plan of a set not done yet (a workout in progress, see sets.js)
+    ...(set.target ? { target: set.target } : {}),
   };
 }
 
@@ -51,7 +53,8 @@ function migrateActivity(a) {
 function migrateWorkout(workout) {
   if (workout.kind === 'activity') return migrateActivity(workout);
   return {
-    ...(workout.planId ? { planId: workout.planId, dayId: workout.dayId, name: workout.name } : {}),
+    ...(workout.name ? { name: workout.name } : {}),
+    ...(workout.planId ? { planId: workout.planId, dayId: workout.dayId } : {}),
     id: workout.id,
     startedAt: workout.startedAt,
     finishedAt: workout.finishedAt ?? null,
@@ -60,9 +63,24 @@ function migrateWorkout(workout) {
       id: entry.id,
       exerciseId: entry.exerciseId,
       sets: (entry.sets || []).map(migrateSet),
-      suggestion: entry.suggestion ? { kind: entry.suggestion.kind, text: entry.suggestion.text } : null,
+      suggestion: migrateSuggestion(entry.suggestion),
       ...(entry.extra ? { extra: true } : {}),
     })),
+  };
+}
+
+// The hint of an exercise in a workout in progress: { kind, title, text,
+// sets (the plain values, to go back to after "Same as last time"), chosen }.
+// See createEntry in workouts.js. Anything else is dropped.
+function migrateSuggestion(s) {
+  if (!s) return null;
+  const sets = s.sets?.map(({ weight, reps, time }) => ({ weight: toNumber(weight), reps: toNumber(reps), time: toNumber(time) }));
+  return {
+    kind: s.kind,
+    text: s.text,
+    ...(s.title ? { title: s.title } : {}),
+    ...(sets ? { sets } : {}),
+    ...(s.chosen ? { chosen: s.chosen } : {}),
   };
 }
 

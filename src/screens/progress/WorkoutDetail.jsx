@@ -3,7 +3,8 @@ import WorkoutSummary from '../../components/workout/WorkoutSummary.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import BackButton from '../../components/ui/BackButton.jsx';
 import { useData } from '../../data/DataProvider.jsx';
-import { go, back, openTab } from '../../hooks/useRoute.js';
+import { useStartWorkout } from '../../hooks/useStartWorkout.js';
+import { go, back } from '../../hooks/useRoute.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { typeOf, exerciseName } from '../../model/exercises.js';
 import { isDoneSet, formatSet } from '../../model/sets.js';
@@ -14,7 +15,8 @@ import Icon from '../../components/ui/Icon.jsx';
 // One finished workout: summary, muscles, sets. Repeat, edit or delete it.
 // Addresses: #/progress/workout/<id>[/edit[/add]]
 export default function WorkoutDetail({ workoutId, editing, picking }) {
-  const { workouts, exercisesById, unit, activeWorkout, actions } = useData();
+  const { workouts, exercisesById, unit, actions } = useData();
+  const startWorkout = useStartWorkout();
   const workout = workouts.find((w) => w.id === workoutId && w.finishedAt);
 
   if (!workout) {
@@ -32,14 +34,7 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
     back('progress');
   }
 
-  function repeat() {
-    if (activeWorkout) {
-      alert('Finish or discard the workout in progress first.');
-      return;
-    }
-    actions.startWorkout(workout);
-    openTab('home');
-  }
+  const repeat = () => startWorkout(() => actions.startWorkout(workout));
 
   return (
     <div>

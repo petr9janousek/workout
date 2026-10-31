@@ -4,8 +4,9 @@ import BodyMap from '../../components/charts/BodyMap.jsx';
 import ExercisePicker from '../../components/workout/ExercisePicker.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
-import { go, back, openTab } from '../../hooks/useRoute.js';
-import { updateDay, addItem, setItemSets, removeItem, moveItem, dayMuscleSets, totalSets, sessionMinutes } from '../../model/plans.js';
+import { useStartWorkout } from '../../hooks/useStartWorkout.js';
+import { go, back } from '../../hooks/useRoute.js';
+import { updateDay, addItem, setItemSets, removeItem, moveItem, dayMuscleSets, dayLine } from '../../model/plans.js';
 import { exerciseName, typeOf, EXERCISE_TYPES, findExercises } from '../../model/exercises.js';
 import { musclesOf, muscleLabel } from '../../model/muscles.js';
 import { restTarget } from '../../model/settings.js';
@@ -13,7 +14,8 @@ import { restTarget } from '../../model/settings.js';
 // Planning one day of a plan: which exercises, in which order, how many sets.
 // No weights or reps here: those come from your history when you start the day.
 export default function DayEditor({ planId, dayId, picking }) {
-  const { plans, exercises, exercisesById, activeWorkout, settings, actions } = useData();
+  const { plans, exercises, exercisesById, settings, actions } = useData();
+  const startWorkout = useStartWorkout();
   const plan = plans.find((p) => p.id === planId);
   const day = plan?.days.find((d) => d.id === dayId);
   const [name, setName] = useState(day?.name ?? '');
@@ -42,14 +44,7 @@ export default function DayEditor({ planId, dayId, picking }) {
     back('plans', plan.id);
   }
 
-  function start() {
-    if (activeWorkout) {
-      alert('Finish or discard the workout in progress first.');
-      return;
-    }
-    actions.startPlanDay(plan, day);
-    openTab('home');
-  }
+  const start = () => startWorkout(() => actions.startPlanDay(plan, day));
 
   return (
     <div>
@@ -69,7 +64,7 @@ export default function DayEditor({ planId, dayId, picking }) {
       <h2 className="section-title">
         Exercises{' '}
         <span className="muted small">
-          · {totalSets(day)}&nbsp;sets{day.items.length > 0 && ` · ~${sessionMinutes(day.items, restTarget(settings))}\u00a0min`}
+          · {dayLine(day, restTarget(settings), false)}
         </span>
       </h2>
       {day.items.length === 0 && <p className="empty">Add the exercises for this day. Weights and reps come later, at the gym.</p>}
