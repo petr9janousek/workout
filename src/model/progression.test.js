@@ -14,7 +14,7 @@ const session = (weight, reps, rpe = []) => ({
 const history = (...sessions) => sessions.reverse();
 const weights = (s) => s.sets.map((x) => x.weight);
 const reps = (s) => s.sets.map((x) => x.reps);
-const settings = (progression = 'double') => ({ unit: 'kg', weightStep: 2.5, progression });
+const settings = (progression = 'double') => ({ weightStep: 2.5, progression });
 
 // Train exactly as suggested for n sessions; returns what was suggested each time.
 function follow(first, n, mode) {
@@ -56,7 +56,7 @@ describe('Suggestion titles say what to do today, with the numbers', () => {
 });
 
 describe('Easier than expected (a set 4+ reps above the session before)', () => {
-  const auto = { unit: 'kg', weightStep: 'auto', progression: 'double' };
+  const auto = { weightStep: 'auto', progression: 'double' };
 
   it('goes heavier next time, back to the usual reps', () => {
     // 4 kg lateral raises: 10, 10, 10, then a day of 10, 16, 10
@@ -217,7 +217,7 @@ describe('Adding an exercise to today\'s workout (planEntry)', () => {
 describe('Weight jumps', () => {
   // Ready to go up: 10 reps twice after starting at 8.
   const ready = (w) => history(session(w, [8, 8, 8]), session(w, [9, 9, 9]), session(w, [10, 10, 10]), session(w, [10, 10, 10]));
-  const auto = { unit: 'kg', weightStep: 'auto', progression: 'double' };
+  const auto = { weightStep: 'auto', progression: 'double' };
 
   it('automatic jumps are small for light dumbbells and bigger for heavy lifts', () => {
     expect(weights(suggestNext(ready(4), 'weight', auto))[0]).toBe(5); // +1 kg, not 4 → 6.5

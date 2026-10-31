@@ -43,8 +43,8 @@ function setsFor(exercise, count, week, body, n) {
 }
 
 // Everything the database holds: { exercises, workouts, plans, settings: [{ key, value }] }.
-// keep: settings to carry over (body, unit).
-export function sampleData({ body = null, unit = 'kg' } = {}, now = new Date()) {
+// keep: settings to carry over (body, name).
+export function sampleData({ body = null, name = '' } = {}, now = new Date()) {
   const template = PLAN_TEMPLATES.find((t) => t.id === (body === 'female' ? 'hourglass-3' : body === 'male' ? 'v-taper-3' : 'full-body-3'));
   const exercises = starterExercises();
   const byName = new Map(exercises.map((e) => [e.name.toLowerCase(), e]));
@@ -112,8 +112,8 @@ export function sampleData({ body = null, unit = 'kg' } = {}, now = new Date()) 
 
   const settings = {
     ...DEFAULT_SETTINGS,
-    unit,
     body,
+    name,
     activePlanId: plan.id,
     setupDone: true,
     bodyWeights,

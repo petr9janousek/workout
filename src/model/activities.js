@@ -78,19 +78,18 @@ export const countsAsActiveDay = (w) => !isActivity(w) || w.minutes >= MIN_ACTIV
 export const whoMinutes = (w) => (isActivity(w) ? w.minutes * (EFFORTS.find((e) => e.id === w.effort)?.whoFactor ?? 1) : 0);
 
 // Pace for things done on foot: "5:42 /km", or null.
-export function pace(w, distanceUnit) {
+export function pace(w) {
   if (!['run', 'walk', 'hike'].includes(w.activity) || !(w.distance > 0) || !(w.minutes > 0)) return null;
   const perUnit = Math.round((w.minutes * 60) / w.distance);
-  return `${Math.floor(perUnit / 60)}:${String(perUnit % 60).padStart(2, '0')} /${distanceUnit}`;
+  return `${Math.floor(perUnit / 60)}:${String(perUnit % 60).padStart(2, '0')} /km`;
 }
 
 // "45 min · Moderate · 7.2 km · 6:15 /km · 420 kcal"
-export function activitySummary(w, distanceUnit) {
+export function activitySummary(w) {
   const parts = [`${w.minutes} min`, EFFORTS.find((e) => e.id === w.effort)?.label];
-  if (w.distance) parts.push(`${Math.round(w.distance * 100) / 100} ${distanceUnit}`);
-  parts.push(pace(w, distanceUnit));
+  if (w.distance) parts.push(`${Math.round(w.distance * 100) / 100} km`);
+  parts.push(pace(w));
   if (w.calories) parts.push(`${w.calories} kcal`);
   return parts.filter(Boolean).join(' · ');
 }
 
-export const distanceUnitFor = (unit) => (unit === 'lb' ? 'mi' : 'km');

@@ -8,9 +8,16 @@ import { setsBefore } from '../../model/records.js';
 import { similarExercises } from '../../model/muscles.js';
 import { exerciseName } from '../../model/exercises.js';
 
+// A new entry for `exercise` in this workout, planned from its history (see
+// planEntry). In a finished workout (fixing it), the sets count as done.
+export function useNewEntry(workout) {
+  const { workouts, settings } = useData();
+  return (exercise, setCount = null) => planEntry(exercise, { workouts, settings, startedAt: workout.startedAt }, Boolean(workout.finishedAt), setCount);
+}
+
 // Edits one workout: its exercises, their sets, and notes.
-// Used both for the workout in progress and for fixing old workouts.
-// Every change goes to onChange(newWorkout), which saves it.
+// Used for the workout in progress (yours, and a training partner's), and
+// for fixing old workouts. Every change goes to onChange(newWorkout).
 //
 // The exercise picker is opened and closed by the screen (it has its own
 // address, so the back button closes it): picking, onOpenPicker, onClosePicker.
@@ -18,8 +25,8 @@ import { exerciseName } from '../../model/exercises.js';
 // onCloseSwap. Without onOpenSwap (fixing an old workout) there's no Swap.
 // onOpenExercise(id): tap an exercise's name to see how to do it.
 export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise }) {
-  const { workouts, settings, exercises, exercisesById } = useData();
-  // When fixing an old workout, new sets count as done straight away.
+  const { workouts, exercises, exercisesById } = useData();
+  const newEntry = useNewEntry(workout);
   const finished = Boolean(workout.finishedAt);
 
   const update = (changes) => onChange({ ...workout, ...changes });
@@ -27,8 +34,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
     update({ entries: workout.entries.map((e) => (e.id === entryId ? change(e) : e)) });
 
   function addExercise(exercise) {
-    const entry = planEntry(exercise, { workouts, settings, startedAt: workout.startedAt }, finished);
-    update({ entries: [...workout.entries, entry] });
+    update({ entries: [...workout.entries, newEntry(exercise)] });
     onClosePicker();
   }
 
@@ -38,7 +44,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
     update({
       entries: workout.entries.map((e) => {
         if (e.id !== entryId) return e;
-        const entry = planEntry(exercise, { workouts, settings, startedAt: workout.startedAt }, false, e.sets.length);
+        const entry = newEntry(exercise, e.sets.length);
         return e.extra ? { ...entry, extra: true } : entry;
       }),
     });

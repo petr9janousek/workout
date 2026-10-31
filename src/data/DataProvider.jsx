@@ -17,6 +17,7 @@ import { createPlan, createDay, planFromTemplate, startPlanDay } from '../model/
 import { settingsFromList } from '../model/settings.js';
 import { withExtras } from '../model/extras.js';
 import { planFromFile } from '../model/planFile.js';
+import { importHandOver } from '../model/partner.js';
 import { sampleData } from './sampleData.js';
 import { countEvent } from '../analytics.js';
 
@@ -26,6 +27,14 @@ export function useData() {
   const data = useContext(DataContext);
   if (!data) throw new Error('useData() must be used inside <DataProvider>');
   return data;
+}
+
+// The same data with some parts swapped, for everything inside it. The
+// workout screen uses it to show a training partner's part with her own
+// exercises, history and settings, so the same components work for both.
+export function DataOverride({ changes, children }) {
+  const data = useData();
+  return <DataContext.Provider value={{ ...data, ...changes }}>{children}</DataContext.Provider>;
 }
 
 // Count a first launch only once, even if loading runs twice (React's
@@ -161,6 +170,17 @@ export function DataProvider({ children }) {
       actions.savePlan(plan);
       return plan;
     },
+    // A workout handed over from a training partner's phone (partner.js).
+    // Returns it; throws an Error with a message if it can't be added.
+    importWorkout(data) {
+      const { workout, created } = importHandOver(data, state.exercises, state.workouts, state.plans);
+      if (created.length) {
+        setState((s) => ({ ...s, exercises: [...s.exercises, ...created] }));
+        created.forEach((e) => save(db.put('exercises', e)));
+      }
+      actions.saveWorkout(workout);
+      return workout;
+    },
     setSetting(key, value) {
       setState((s) => ({ ...s, settings: { ...s.settings, [key]: value } }));
       save(db.put('settings', { key, value }));
@@ -173,7 +193,7 @@ export function DataProvider({ children }) {
     // For testing (Settings → For testing): replace everything with sample
     // data, or delete everything and start like a new install.
     async loadSampleData() {
-      await db.replaceAll(sampleData({ body: state.settings.body, unit: state.settings.unit }));
+      await db.replaceAll(sampleData({ body: state.settings.body, name: state.settings.name }));
       await reload();
     },
     async resetApp() {
@@ -191,6 +211,6 @@ export function DataProvider({ children }) {
   if (!state) return <div className="loading">Loading…</div>;
 
   const activePlan = state.plans.find((p) => p.id === state.settings.activePlanId) || null;
-  const value = { ...state, unit: state.settings.unit, exercisesById, activeWorkout: current, activePlan, actions, saveError };
+  const value = { ...state, exercisesById, activeWorkout: current, activePlan, actions, saveError };
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

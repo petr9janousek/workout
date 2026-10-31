@@ -1,6 +1,6 @@
 import Icon, { SportIcon } from '../ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
-import { isActivity, activityLabel, activitySummary, distanceUnitFor } from '../../model/activities.js';
+import { isActivity, activityLabel, activitySummary } from '../../model/activities.js';
 import { workoutTotals } from '../../model/workouts.js';
 import { countRecords } from '../../model/records.js';
 import { formatDate, formatTime, formatDuration, formatTotal } from '../../model/format.js';
@@ -13,7 +13,7 @@ import { formatDate, formatTime, formatDuration, formatTotal } from '../../model
 const keepUnits = (text) => text.replace(/ (min|h|km|mi|kcal|\/km|\/mi)\b/g, '\u00a0$1');
 
 export default function SessionRow({ workout: w, onOpen, showDate = true }) {
-  const { workouts, exercisesById, unit } = useData();
+  const { workouts, exercisesById } = useData();
   const when = showDate ? formatDate(w.startedAt) : formatTime(w.startedAt);
 
   if (isActivity(w)) {
@@ -22,7 +22,7 @@ export default function SessionRow({ workout: w, onOpen, showDate = true }) {
         <span className="session-icon ring"><SportIcon type={w.activity} size={18} /></span>
         <span className="session-text">
           <strong>{activityLabel(w)}</strong>
-          <span className="muted small">{when} · {keepUnits(activitySummary(w, distanceUnitFor(unit)))}</span>
+          <span className="muted small">{when} · {keepUnits(activitySummary(w))}</span>
         </span>
         <Icon name="chevron" size={16} />
       </button>
@@ -32,7 +32,7 @@ export default function SessionRow({ workout: w, onOpen, showDate = true }) {
   const t = workoutTotals(w);
   const records = countRecords(w, workouts, exercisesById);
   const parts = [when, formatDuration(Date.parse(w.finishedAt) - Date.parse(w.startedAt)), `${t.sets} sets`];
-  if (t.volume > 0) parts.push(`${formatTotal(t.volume)} ${unit}`);
+  if (t.volume > 0) parts.push(`${formatTotal(t.volume)} kg`);
   return (
     <button className="session-row-btn" onClick={onOpen}>
       <span className="session-icon filled"><Icon name="exercises" size={18} /></span>

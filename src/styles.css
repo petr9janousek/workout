@@ -14,6 +14,10 @@
   --danger: #ff5c5c;
   --radius: 14px;
   --warning: #f5b14c;
+  /* Training together: each person's stripe (you are --accent) */
+  --person-2: #b197fc;
+  --person-3: #f472b6;
+  --person-4: #facc15;
   --font-display: 'Barlow Condensed', system-ui, sans-serif;
   --tabbar-height: 64px;
 
@@ -160,8 +164,17 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .records-item strong, .summary-records strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .records-item .muted { text-align: right; }
 .records-card > .muted { margin: 6px 0 0; }
+.welcome { padding-top: 12px; }
 .welcome .lead { margin: 0; }
 .welcome .actions { margin-top: 4px; }
+.welcome .back { margin-bottom: 0; }
+.welcome-icon { width: 72px; height: 72px; border-radius: 18px; border: 1px solid var(--border); }
+.welcome-step { display: flex; flex-direction: column; gap: 10px; }
+.welcome-step h3, .welcome-step p { margin: 0; }
+.welcome-step .chips { margin: 0; }
+.step-dots { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
+.step-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+.step-dots span.on { background: var(--accent); }
 
 /* ---- Active workout ---- */
 .workout-header h1 { margin-bottom: 0; }
@@ -915,3 +928,50 @@ h1, h2, .day-title { text-wrap: balance; }
 .rest-space { height: 80px; }
 /* narrow phones: shorter buttons */
 @media (max-width: 359px) { .rest-adjust .chip { padding: 0 8px; } .rest-text span { white-space: normal; } }
+
+/* ---- Train together (partner.js) ---- */
+.together .card h3 { margin-top: 0; }
+.qr-card { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.qr { width: 100%; max-width: 340px; aspect-ratio: 1; display: block; border-radius: 12px; }
+.qr-loading { background: #fff; opacity: 0.15; }
+.scan { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.scan-view { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 16px; background: var(--surface-2); }
+.scan-view video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scan-note { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+.scan-message { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.row-gap { display: flex; gap: 10px; align-items: center; }
+.row-gap .search { flex: 1; min-width: 0; }
+.hand-over strong { color: var(--accent); }
+
+.together .card > h3:first-child { margin: 0 0 8px; }
+.together-actions { margin-top: 8px; }
+.together-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); font-weight: 600;
+}
+.card > .together-actions { margin-top: 0; }
+.together-actions.open .together-toggle { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.together-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 12px 12px; overflow: hidden; }
+.together-item { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; background: none; border: 0; border-top: 1px solid var(--border); text-align: left; }
+.together-item:first-child { border-top: 0; }
+.together-item:active { background: var(--surface-2); }
+
+/* Training together: everyone's page side by side (ActiveWorkout) */
+.people { display: flex; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.people::-webkit-scrollbar { display: none; }
+.person-chip {
+  display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; text-align: left;
+  padding: 6px 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface); white-space: nowrap;
+}
+.person-chip::before { content: ''; grid-row: span 2; width: 10px; height: 10px; border-radius: 50%; background: var(--person); }
+.person-chip[aria-pressed='true'] { border-color: var(--person); box-shadow: inset 0 0 0 1px var(--person); }
+.person-chip-name { font-weight: 700; font-size: 0.95rem; }
+.person-chip-totals { color: var(--muted); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.people-pages {
+  display: flex; align-items: flex-start; margin: 0 -16px;
+  overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.people-pages::-webkit-scrollbar { display: none; }
+.person-page { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; padding: 0 16px 0 12px; border-left: 4px solid var(--person); }
+.same-as-you { margin-bottom: 12px; }
+.remove-partner { display: block; margin: 4px auto 0; }

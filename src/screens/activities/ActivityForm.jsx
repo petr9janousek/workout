@@ -5,7 +5,7 @@ import { NumberInput } from '../../components/ui/NumberInput.jsx';
 import { SportIcon } from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { back, openTab } from '../../hooks/useRoute.js';
-import { ACTIVITY_TYPES, EFFORTS, MIN_ACTIVE_MINUTES, createActivity, updateActivity, distanceUnitFor } from '../../model/activities.js';
+import { ACTIVITY_TYPES, EFFORTS, MIN_ACTIVE_MINUTES, createActivity, updateActivity } from '../../model/activities.js';
 import { dayKey } from '../../model/calendar.js';
 import { countEvent } from '../../analytics.js';
 
@@ -20,7 +20,7 @@ function startFor(date, minutes) {
 // Logging a run, a swim, a dance class… or changing one (`activity` given).
 // Address: #/workout/activity (new) or #/history/<id>/edit (existing).
 export default function ActivityForm({ activity }) {
-  const { unit, actions } = useData();
+  const { actions } = useData();
   const editing = Boolean(activity);
   const [form, setForm] = useState(() => ({
     activity: activity?.activity ?? null,
@@ -36,7 +36,6 @@ export default function ActivityForm({ activity }) {
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
   const ready = form.activity && form.minutes > 0;
   const hasDetails = Boolean(activity && (activity.distance || activity.calories || activity.heartRate || activity.notes));
-  const distanceUnit = distanceUnitFor(unit);
   const effort = EFFORTS.find((e) => e.id === form.effort);
 
   function save() {
@@ -109,7 +108,7 @@ export default function ActivityForm({ activity }) {
           <summary>More details (optional)</summary>
           <div className="optional-row">
             <label className="field">
-              <span className="small">Distance ({distanceUnit})</span>
+              <span className="small">Distance (km)</span>
               <NumberInput value={form.distance} onChange={set('distance')} decimal label="Distance" placeholder="–" />
             </label>
             <label className="field">

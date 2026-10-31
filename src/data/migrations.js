@@ -55,6 +55,8 @@ function migrateWorkout(workout) {
   return {
     ...(workout.name ? { name: workout.name } : {}),
     ...(workout.planId ? { planId: workout.planId, dayId: workout.dayId } : {}),
+    // training partners in a workout in progress (partner.js)
+    ...(workout.partners?.length ? { partners: workout.partners.map((p) => ({ ...p, workout: migrateWorkout(p.workout) })) } : {}),
     id: workout.id,
     startedAt: workout.startedAt,
     finishedAt: workout.finishedAt ?? null,

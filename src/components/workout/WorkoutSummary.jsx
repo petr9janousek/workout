@@ -12,9 +12,9 @@ import { formatDate } from '../../model/format.js';
 // compares with the last time you did the same day, and the new records.
 // Shown right after finishing and when you open the workout later.
 export default function WorkoutSummary({ workout }) {
-  const { workouts, exercisesById, unit } = useData();
+  const { workouts, exercisesById } = useData();
   const totals = workoutTotals(workout);
-  const comparison = weightComparison(totals.volume, unit);
+  const comparison = weightComparison(totals.volume);
   const records = workoutRecords(workout, workouts, exercisesById);
   const change = changeSince(previousLike(workouts, workout), totals);
 
@@ -35,7 +35,7 @@ export default function WorkoutSummary({ workout }) {
               return (
                 <li key={set.id}>
                   <span>{exerciseName(exercise)}</span>
-                  <strong>{formatSet(set, typeOf(exercise), unit)}</strong>
+                  <strong>{formatSet(set, typeOf(exercise))}</strong>
                 </li>
               );
             })}

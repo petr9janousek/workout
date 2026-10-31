@@ -10,7 +10,7 @@ import { formatDate, formatNumber, formatSigned } from '../../model/format.js';
 // Body weight in Progress (can be turned off in Settings): note today's
 // weight, see the trend. One entry per day; saving again replaces today's.
 export default function BodyWeightCard() {
-  const { settings, unit, actions } = useData();
+  const { settings, actions } = useData();
   const list = settings.bodyWeights || [];
   const today = dayKey(new Date());
   const todays = list.find((e) => e.date === today);
@@ -30,17 +30,17 @@ export default function BodyWeightCard() {
       />
       <span className="small muted">Today, {formatDate(asDate(today))}</span>
       <div className="body-weight-row">
-        <NumberInput value={value} onChange={setValue} decimal placeholder={list.length ? formatNumber(list.at(-1).weight) : unit} label="Today's body weight" />
-        <span className="muted">{unit}</span>
+        <NumberInput value={value} onChange={setValue} decimal placeholder={list.length ? formatNumber(list.at(-1).weight) : 'kg'} label="Today's body weight" />
+        <span className="muted">kg</span>
         <button className="btn btn-primary" onClick={save} disabled={!unsaved}>
           {todays && !unsaved ? 'Saved ✓' : todays ? 'Update' : 'Save'}
         </button>
       </div>
 
       {list.length > 0 && (
-        <LineChart unit={unit} points={list.map((e) => ({ date: asDate(e.date), value: e.weight, key: e.date }))} onRemove={(point) => remove(point.key)} />
+        <LineChart unit="kg" points={list.map((e) => ({ date: asDate(e.date), value: e.weight, key: e.date }))} onRemove={(point) => remove(point.key)} />
       )}
-      {change != null && <p className="small">Last 30 days: {change === 0 ? 'no change' : formatSigned(change, unit)}</p>}
+      {change != null && <p className="small">Last 30 days: {change === 0 ? 'no change' : formatSigned(change, 'kg')}</p>}
     </section>
   );
 }

@@ -68,13 +68,12 @@ export function heavierFor(weight, reps, targetReps, type, settings) {
 // usual number, otherwise 10.
 const repsAfterJump = (startReps) => (startReps >= 6 && startReps <= 15 ? startReps : 10);
 
-// settings: { unit, weightStep, progression } (weightStep: a number or 'auto',
+// settings: { weightStep, progression } (weightStep: a number or 'auto',
 // see weightStepFor() in settings.js; use settingsFor() for an exercise's own step)
 export function suggestNext(sessions, type, settings = {}) {
   if (!sessions?.length) return null;
-  const unit = settings.unit || 'kg';
   const mode = settings.progression || 'double';
-  const list = (sets) => formatSetList(sets, type, unit);
+  const list = (sets) => formatSetList(sets, type);
 
   const last = sessions[0].sets;
   const copy = copySets(last);
@@ -116,10 +115,10 @@ export function suggestNext(sessions, type, settings = {}) {
   // "45 kg (+2.5)" / "less assistance: −25 kg (+2.5)"
   const weightChange = (w) => {
     const change = `(${formatSigned(round1(w - top))})`;
-    if (type !== 'assisted') return `${formatNumber(w)} ${unit} ${change}`;
-    if (w < 0) return `less assistance, ${formatSigned(w, unit)} ${change}`;
+    if (type !== 'assisted') return `${formatNumber(w)} kg ${change}`;
+    if (w < 0) return `less assistance, ${formatSigned(w, 'kg')} ${change}`;
     if (w === 0) return 'no assistance';
-    return `${formatSigned(w, unit)} ${change}`;
+    return `${formatSigned(w, 'kg')} ${change}`;
   };
   // The top sets with a new weight (and optionally new reps); other sets unchanged.
   const withWeight = (weight, reps) =>

@@ -22,12 +22,9 @@ const THINGS = [
   [7300000, 'the Eiffel Tower', 'Eiffel Towers'],
 ].map(([kg, one, many]) => ({ kg, one, many }));
 
-const LB_TO_KG = 0.4536;
-
-// kg (or lb with unit 'lb') → "about a hippo", "almost a rhino",
-// "about 3 cows"… or null when it's too little to compare.
-export function weightComparison(amount, unit = 'kg') {
-  const kg = unit === 'lb' ? amount * LB_TO_KG : amount;
+// kg → "about a hippo", "almost a rhino", "about 3 cows"… or null when it's
+// too little to compare.
+export function weightComparison(kg) {
   if (!(kg >= THINGS[0].kg)) return null;
   const i = THINGS.findLastIndex((t) => t.kg <= kg);
   const thing = THINGS[i];

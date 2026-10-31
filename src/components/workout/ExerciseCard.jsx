@@ -14,15 +14,15 @@ import { recordSetIds } from '../../model/records.js';
 // The input columns for each exercise type (besides set number, RPE and ✓).
 const COLUMNS = {
   weight: [
-    { field: 'weight', label: (unit) => unit, decimal: true },
-    { field: 'reps', label: () => 'Reps' },
+    { field: 'weight', label: 'kg', decimal: true },
+    { field: 'reps', label: 'Reps' },
   ],
-  reps: [{ field: 'reps', label: () => 'Reps' }],
+  reps: [{ field: 'reps', label: 'Reps' }],
   assisted: [
-    { field: 'weight', label: (unit) => `± ${unit}`, decimal: true, signed: true },
-    { field: 'reps', label: () => 'Reps' },
+    { field: 'weight', label: '± kg', decimal: true, signed: true },
+    { field: 'reps', label: 'Reps' },
   ],
-  time: [{ field: 'time', label: () => 'Sec' }],
+  time: [{ field: 'time', label: 'Sec' }],
 };
 
 // One exercise inside a workout: last time, the suggestion, and its sets.
@@ -116,17 +116,17 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
       {finished
         ? last && (
             <p className="last-time">
-              Last time ({formatDate(last.date)}): {formatSetList(last.sets, type, settings.unit)}
+              Last time ({formatDate(last.date)}): {formatSetList(last.sets, type)}
             </p>
           )
         : !(entry.sets.some((s) => s.done) && !suggestion) && (
-            <CoachLine suggestion={suggestion} last={last} type={type} unit={settings.unit} onChoose={choose} />
+            <CoachLine suggestion={suggestion} last={last} type={type} onChoose={choose} />
           )}
 
       <div className="set-grid" style={{ gridTemplateColumns }}>
         <span className="set-head">Set</span>
         {columns.map((c) => (
-          <span key={c.field} className="set-head">{c.label(settings.unit)}</span>
+          <span key={c.field} className="set-head">{c.label}</span>
         ))}
         {settings.trackRpe && <span className="set-head">RPE</span>}
         <span />
@@ -157,7 +157,7 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
           }}
         >
           <span className="hint-actions">
-            <button className="btn-text small-link" onClick={goHeavier}>Use {formatNumber(heavierWeight)} {settings.unit}</button>
+            <button className="btn-text small-link" onClick={goHeavier}>Use {formatNumber(heavierWeight)} kg</button>
             <button className="btn-text small-link muted" onClick={() => setDismissed(tooLight.id)}>No</button>
           </span>
         </Suggestion>

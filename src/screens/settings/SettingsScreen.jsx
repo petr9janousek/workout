@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import ChipGroup from '../../components/ui/ChipGroup.jsx';
 import CardTitle from '../../components/ui/CardTitle.jsx';
 import BackupSettings from './BackupSettings.jsx';
@@ -12,13 +13,15 @@ import { formatClock } from '../../model/format.js';
 // Settings, opened from the bottom of Home.
 // Address: #/home/settings
 export default function SettingsScreen() {
-  const { settings, unit } = useData();
+  const { settings } = useData();
   const mode = PROGRESSION_MODES.find((m) => m.id === settings.progression);
 
   return (
     <div>
       <BackButton label="Home" fallback={['home']} />
       <h1>Settings</h1>
+
+      <NameSetting />
 
       <Setting
         name="body"
@@ -50,13 +53,6 @@ export default function SettingsScreen() {
             goes back to normal when you finish.
           </>
         }
-      />
-
-      <Setting
-        name="unit"
-        title="Weight unit"
-        options={['kg', 'lb']}
-        hint="Only changes the label. Numbers you've logged are not converted."
       />
 
       <Setting
@@ -103,12 +99,11 @@ export default function SettingsScreen() {
         name="weightStep"
         title="Suggested weight increase"
         label="Weight increase"
-        options={WEIGHT_STEPS.map((step) => ({ value: step, label: step === 'auto' ? 'Auto' : `+${step} ${unit}` }))}
+        options={WEIGHT_STEPS.map((step) => ({ value: step, label: step === 'auto' ? 'Auto' : `+${step} kg` }))}
         hint={
           <>
-            How much heavier the app suggests when you're ready to go up. Auto suits the weight:{' '}
-            {unit === 'lb' ? '+2.5 lb under 25 lb, +5 lb under 150 lb, then +10 lb' : '+1 kg under 10 kg, +2 kg under 25 kg, +2.5 kg under 80 kg, then +5 kg'}
-            . An exercise can have its own jump: Exercises, open it, Edit.
+            How much heavier the app suggests when you're ready to go up. Auto suits the weight: +1 kg under 10 kg,
+            +2 kg under 25 kg, +2.5 kg under 80 kg, then +5 kg. An exercise can have its own jump: Exercises, open it, Edit.
           </>
         }
       />
@@ -136,6 +131,26 @@ export default function SettingsScreen() {
         The app counts visits anonymously (no cookies, no workout data).
       </p>
     </div>
+  );
+}
+
+// Your name or nickname, for training together (partner.js). Saved when you
+// leave the field.
+function NameSetting() {
+  const { settings, actions } = useData();
+  const [name, setName] = useState(settings.name);
+  return (
+    <section className="card">
+      <CardTitle title="Your name" hint="Only for training together: when someone logs your sets on their phone, it shows whose are whose." />
+      <input
+        className="search"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={() => name.trim() !== settings.name && actions.setSetting('name', name.trim())}
+        placeholder="Name or nickname"
+        aria-label="Your name"
+      />
+    </section>
   );
 }
 

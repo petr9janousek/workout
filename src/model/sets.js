@@ -75,22 +75,22 @@ export function nextSet(sets, done = false) {
 // A set counts once it's ticked and has reps or a time.
 export const isDoneSet = (set) => Boolean(set.done) && (val(set.reps) > 0 || val(set.time) > 0);
 
-// "60 kg × 8 (RPE 8)", "12 reps", "45 s", "−20 kg × 8". Leave out unit for a shorter version.
-export function formatSet(set, type = 'weight', unit = '') {
+// "60 kg × 8 (RPE 8)", "12 reps", "45 s", "−20 kg × 8".
+export function formatSet(set, type = 'weight') {
   let text;
   const w = val(set.weight);
   const reps = val(set.reps);
   if (type === 'time') text = formatSeconds(set.time);
-  else if (type === 'assisted') text = `${formatSigned(w, unit)} × ${reps}`;
+  else if (type === 'assisted') text = `${formatSigned(w, 'kg')} × ${reps}`;
   else if (type === 'reps' || !w) text = `${reps} reps`;
-  else text = `${formatNumber(w)}${unit ? ' ' + unit : ''} × ${reps}`;
+  else text = `${formatNumber(w)} kg × ${reps}`;
   return set.rpe ? `${text} (RPE ${formatNumber(set.rpe)})` : text;
 }
 
 // Several sets in one short line, sets of the same weight grouped:
 // "42.5 kg × 10, 10, 9 (RPE 8)", "40 kg × 10 · 42.5 kg × 8, 8", "12, 10 reps",
 // "45 s, 40 s". The RPE shown is the hardest set's.
-export function formatSetList(sets, type = 'weight', unit = '') {
+export function formatSetList(sets, type = 'weight') {
   if (!sets.length) return '';
   const rpe = Math.max(0, ...sets.map((s) => val(s.rpe)));
   const tail = rpe ? ` (RPE ${formatNumber(rpe)})` : '';
@@ -102,7 +102,7 @@ export function formatSetList(sets, type = 'weight', unit = '') {
     if (groups.at(-1)?.weight === w) groups.at(-1).reps.push(val(s.reps));
     else groups.push({ weight: w, reps: [val(s.reps)] });
   }
-  const weightText = (w) => (type === 'assisted' ? formatSigned(w, unit) : w ? `${formatNumber(w)}${unit ? ' ' + unit : ''}` : null);
+  const weightText = (w) => (type === 'assisted' ? formatSigned(w, 'kg') : w ? `${formatNumber(w)} kg` : null);
   return (
     groups.map((g) => (weightText(g.weight) ? `${weightText(g.weight)} × ${g.reps.join(', ')}` : `${g.reps.join(', ')} reps`)).join(' · ') + tail
   );

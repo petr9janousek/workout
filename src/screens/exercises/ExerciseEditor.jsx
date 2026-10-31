@@ -13,7 +13,7 @@ import { formatNumber } from '../../model/format.js';
 import { weightStepFor } from '../../model/settings.js';
 
 // Weight jumps an exercise can have of its own (null = like in Settings).
-const OWN_STEPS = { kg: [null, 1, 1.25, 2, 2.5, 5], lb: [null, 2.5, 5, 10] };
+const OWN_STEPS = [null, 1, 1.25, 2, 2.5, 5];
 
 // The fields you can edit. `muscles` undefined = guessed from the name.
 const editable = (e) => ({ name: e.name, type: typeOf(e), weightStep: e.weightStep ?? null, muscles: e.muscles });
@@ -22,7 +22,7 @@ const editable = (e) => ({ name: e.name, type: typeOf(e), weightStep: e.weightSt
 // the body), and deleting it. Changes are a draft until you tap Save, so
 // nothing changes by accident. base: the exercise page's address.
 export default function ExerciseEditor({ exerciseId, base }) {
-  const { exercisesById, workouts, plans, settings, unit, actions } = useData();
+  const { exercisesById, workouts, plans, settings, actions } = useData();
   const exercise = exercisesById.get(exerciseId);
   const [draft, setDraft] = useState(() => (exercise ? editable(exercise) : null));
 
@@ -81,9 +81,9 @@ export default function ExerciseEditor({ exerciseId, base }) {
             <span className="small">Weight jump when you're ready to go up</span>
             <ChipGroup
               label="Weight jump"
-              options={(OWN_STEPS[unit] || OWN_STEPS.kg).map((step) => ({
+              options={OWN_STEPS.map((step) => ({
                 value: step,
-                label: step == null ? `Like Settings: ${generalStep}` : `+${formatNumber(step)} ${unit}`,
+                label: step == null ? `Like Settings: ${generalStep}` : `+${formatNumber(step)} kg`,
               }))}
               value={draft.weightStep}
               onChange={(weightStep) => update({ weightStep })}

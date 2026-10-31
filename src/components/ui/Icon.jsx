@@ -24,6 +24,8 @@ const PATHS = {
   play: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM10 8.5v7l6-3.5z',
   exercises: 'M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12',
   plans: 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4',
+  people: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.5a6.5 6.5 0 0 1 3.5 5.5',
+  qr: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2',
 };
 
 // name: one of PATHS above. paths: draw these instead (e.g. a sport icon).

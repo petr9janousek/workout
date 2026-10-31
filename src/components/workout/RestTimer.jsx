@@ -9,8 +9,9 @@ import { formatClock } from '../../model/format.js';
 // on every screen while the workout runs (it lives in App.jsx). It drains;
 // when it's empty the card says "Ready" and fades away. Tap it to hide it;
 // −30 s / +30 s change only this rest.
-// The rest is timed from the most recently ticked set, against the rest for
-// that exercise (big lifts rest longer, see restTarget in settings.js).
+// The rest is timed from the most recently ticked set (yours or a training
+// partner's), against the rest for that exercise (big lifts rest longer, see
+// restTarget in settings.js).
 const READY_MS = 3000; // how long "Ready" stays before it fades away
 
 export default function RestTimer({ workout }) {
@@ -20,10 +21,13 @@ export default function RestTimer({ workout }) {
   const [hint, setHint] = useState(false);
   const [extra, setExtra] = useState({ for: 0, ms: 0 }); // ±30 s, for one rest only
 
-  const startedAt = Math.max(0, ...workout.entries.flatMap((e) => e.sets).map((s) => (s.done && s.doneAt ? Date.parse(s.doneAt) : 0)));
-  const entry = workout.entries.find((e) => e.sets.some((s) => s.done && s.doneAt && Date.parse(s.doneAt) === startedAt));
+  const partners = workout.partners || [];
+  const entries = [...workout.entries, ...partners.flatMap((p) => p.workout.entries)];
+  const startedAt = Math.max(0, ...entries.flatMap((e) => e.sets).map((s) => (s.done && s.doneAt ? Date.parse(s.doneAt) : 0)));
+  const entry = entries.find((e) => e.sets.some((s) => s.done && s.doneAt && Date.parse(s.doneAt) === startedAt));
+  const exercise = exercisesById.get(entry?.exerciseId) || partners.flatMap((p) => p.exercises).find((e) => e.id === entry?.exerciseId);
   const extraMs = extra.for === startedAt ? extra.ms : 0;
-  const goal = Math.max(15000, restTarget(settings, exercisesById.get(entry?.exerciseId)) * 1000 + extraMs);
+  const goal = Math.max(15000, restTarget(settings, exercise) * 1000 + extraMs);
   const rest = now - startedAt;
   const over = rest - goal;
   const onAdjust = (ms) => setExtra({ for: startedAt, ms: extraMs + ms });

@@ -83,7 +83,7 @@ function AllWorkouts() {
 
 // Exercises done at least once, most recent first, with the next suggestion.
 function ExerciseList() {
-  const { exercises, workouts, settings, unit } = useData();
+  const { exercises, workouts, settings } = useData();
   const tracked = exercises
     .map((exercise) => ({ exercise, history: exerciseHistory(workouts, exercise.id) }))
     .filter((t) => t.history.length > 0)
@@ -101,7 +101,7 @@ function ExerciseList() {
               {history.length} {history.length === 1 ? 'session' : 'sessions'} · last {formatDate(history.at(-1).date)}
             </span>
             <span className={`next-hint ${next.kind}`}>
-              {SUGGESTION_ICONS[next.kind]} Next: {formatSetList(next.sets, typeOf(exercise), unit)}
+              {SUGGESTION_ICONS[next.kind]} Next: {formatSetList(next.sets, typeOf(exercise))}
             </span>
           </span>
           <Icon name="chevron" size={16} />

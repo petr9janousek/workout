@@ -4,7 +4,6 @@
 import { isBigLift } from './exercises.js';
 
 export const DEFAULT_SETTINGS = {
-  unit: 'kg', // 'kg' | 'lb', only the label
   trackRpe: true, // show the RPE column when logging
   weightStep: 'auto', // how much heavier a "try heavier" suggestion is: 'auto' or a number, see weightStepFor()
   progression: 'double', // suggestion style, see PROGRESSION_MODES in progression.js
@@ -18,6 +17,8 @@ export const DEFAULT_SETTINGS = {
   keepAwake: true, // keep the screen on during a workout
   setupDone: false, // the welcome steps were finished or skipped
   planExtras: true, // add the healthy extras when choosing a ready-made plan (extras.js)
+  name: '', // your first name, shown to a training partner (partner.js)
+  outbox: [], // partners' finished workouts waiting to be handed over: [{ id, workoutId, data }]
 };
 
 export const WEIGHT_STEPS = ['auto', 1, 1.25, 2.5, 5];
@@ -40,15 +41,12 @@ export function restTarget(settings, exercise) {
 // on a 60 kg squat but 60% on 4 kg dumbbells, so light lifts get small jumps,
 // matching what gyms have (light dumbbells go up by 1 kg, heavier by 2 kg,
 // barbells by 2.5 kg plates). Edit the tables to taste: [below this weight, jump]
-const AUTO_STEPS = {
-  kg: [[10, 1], [25, 2], [80, 2.5], [Infinity, 5]],
-  lb: [[25, 2.5], [150, 5], [Infinity, 10]],
-};
+const AUTO_STEPS = [[10, 1], [25, 2], [80, 2.5], [Infinity, 5]];
 // Assisted exercises use the size of the assistance (−20 kg → ±2).
-export function weightStepFor(weight, { weightStep = 'auto', unit = 'kg' } = {}) {
+export function weightStepFor(weight, { weightStep = 'auto' } = {}) {
   if (typeof weightStep === 'number') return weightStep;
   const w = Math.abs(weight || 0);
-  return (AUTO_STEPS[unit] || AUTO_STEPS.kg).find(([below]) => w < below)[1];
+  return AUTO_STEPS.find(([below]) => w < below)[1];
 }
 
 // Settings for one exercise: its own weight jump (set in the exercise library)
@@ -56,7 +54,7 @@ export function weightStepFor(weight, { weightStep = 'auto', unit = 'kg' } = {})
 export const settingsFor = (settings, exercise) =>
   exercise?.weightStep ? { ...settings, weightStep: exercise.weightStep } : settings;
 
-// [{ key, value }, …] from the database → { unit: 'kg', … } with defaults filled in.
+// [{ key, value }, …] from the database → { trackRpe: true, … } with defaults filled in.
 export function settingsFromList(list = []) {
   const settings = { ...DEFAULT_SETTINGS };
   for (const { key, value } of list) if (key in DEFAULT_SETTINGS) settings[key] = value;

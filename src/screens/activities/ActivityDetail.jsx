@@ -1,14 +1,14 @@
 import BackButton from '../../components/ui/BackButton.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go, back } from '../../hooks/useRoute.js';
-import { activityLabel, activitySummary, distanceUnitFor, countsAsActiveDay, whoMinutes, MIN_ACTIVE_MINUTES } from '../../model/activities.js';
+import { activityLabel, activitySummary, countsAsActiveDay, whoMinutes, MIN_ACTIVE_MINUTES } from '../../model/activities.js';
 import { SportIcon } from '../../components/ui/Icon.jsx';
 import { formatDate, formatTime } from '../../model/format.js';
 
 // One logged activity: what, when, how long and hard; change or delete it.
 // Address: #/history/<id>
 export default function ActivityDetail({ activity }) {
-  const { unit, actions } = useData();
+  const { actions } = useData();
   const label = activityLabel(activity);
 
   function remove() {
@@ -31,7 +31,7 @@ export default function ActivityDetail({ activity }) {
       </p>
 
       <section className="card">
-        <p className="activity-summary">{activitySummary(activity, distanceUnitFor(unit))}</p>
+        <p className="activity-summary">{activitySummary(activity)}</p>
         {activity.heartRate > 0 && <p className="small">Average heart rate: {activity.heartRate} bpm</p>}
         <p className="muted small">
           {countsAsActiveDay(activity)

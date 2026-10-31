@@ -11,14 +11,11 @@ What we've agreed to build next. Done items move to "Features in detail" in [DOC
 - Plan and day names get the language that was active when the plan was created.
 - Also the exercise tips (tips.js) and the weight comparisons.
 
-### Log a guest
-Train with someone and log their sets on your phone, then hand the workout over.
-- During a workout: "Add a person". Each exercise then has a set list per person.
-- The finish summary is the natural place for the "Send to her phone" button.
-- Hand-over by QR code: your phone shows a code, their app scans it with the camera and adds the workout to their history. Works offline, on iPhone and Android. (Bluetooth and NFC in the browser only work on Android Chrome, so they're out.)
-- Optional at the start: the guest shows a code with their last weights, so they get suggestions too.
-- Fallback: send the workout as a file (share sheet / AirDrop / WhatsApp) and import it, the same way plans work.
-- Replaces "Two people on one phone" from the ideas list.
+### Train together, later steps
+Done in v0.16 (one phone logs both, QR hand-over; see DOCUMENTATION.md). Possible next:
+- A text summary for someone without the app ("Copy as text" on the hand-over screen).
+- Supersets: alternate between your exercise and your partner's without switching back and forth.
+- Another channel instead of QR if scanning is a hassle (the data side is ready for it, see transfer.js).
 
 ## Later
 - **Share progress with a partner, no server:** "Share my week" shows a QR code or card; the other phone shows it next to its own week (streak, workouts, records). A snapshot, not live.
@@ -30,7 +27,7 @@ Train with someone and log their sets on your phone, then hand the workout over.
 - **Automatic backup** to the user's own Google Drive (optional)
 
 ## Ideas, not decided
-- **Live sharing and automatic backup with a tiny server:** an encrypted box (e.g. a free Cloudflare Worker). Phones pair by QR code, the key stays on the phones, the server only ever sees scrambled data. No accounts. Costs nothing at our size, but it's a server to look after and it changes "everything stays on your phone".
+- **Live sharing and automatic backup with a tiny server (or a free relay such as ntfy.sh / Nostr):** an encrypted box (e.g. a free Cloudflare Worker). Phones pair by QR code, the key stays on the phones, the server only ever sees scrambled data. No accounts. Costs nothing at our size, but it's a server to look after and it changes "everything stays on your phone".
 - Plateau hint: "Bench hasn't moved in 4 sessions", with what to try
 - Balance check: push vs pull, front vs back, quads vs hamstrings over the last weeks
 - Monthly recap ("October: 13 workouts, hip thrust +15 kg, 3 records")

@@ -8,6 +8,9 @@ export default defineConfig({
   // './' makes all paths relative, so the built app works on GitHub Pages
   // no matter what the repository is called.
   base: './',
+  // The QR libraries load only when a code is shown or scanned. Preparing
+  // them up front keeps the dev server from reloading the page that moment.
+  optimizeDeps: { include: ['jsqr', 'qrcode-generator'] },
   plugins: [
     react(),
 

@@ -116,6 +116,7 @@ src/
     planTemplates.js       The ready-made plans, and the research they're based on (~10 sets per muscle a week)
     extras.js              Healthy extras: the core / grip / upper back / balance finisher
     planFile.js            Plan files: sharing a plan with someone, importing one
+    partner.js             Train together: a partner's code (pass), her part of your workout, handing it over, importing it
     bodyWeight.js          Body weight log: one entry per day, the 30-day change
     activities.js          Other activities (run, swim…): types, effort, what counts as an active day, WHO minutes
     muscles.js             Which muscles an exercise works, sets per muscle, map colours
@@ -132,6 +133,7 @@ src/
     migrations.js          Updates data saved by older versions of the app
     backup.js              Backup files: making, reading, sharing
     sampleData.js          Sample data for testing (Settings → For testing)
+    transfer.js            Data ⇄ a few hundred bytes for a QR code (JSON, deflated); the channel can change later
 
   hooks/                   ── small reusable React helpers ──
     useRoute.js            Navigation and the back button
@@ -143,7 +145,8 @@ src/
 
   components/              ── pieces used by several screens ──
     ui/                    Icon, ChipGroup (pill buttons), NumberInput (+ ± input), BackButton, Suggestion, FitHeading, Firework, DaysPicker, CardTitle (title + "?" hint), FoldCard (a card that folds open),
-                           LinkCard (a card that opens another page), NotFound (a deleted plan, exercise or workout);
+                           LinkCard (a card that opens another page), NotFound (a deleted plan, exercise or workout),
+                           QrCode (show a code), ScanCode (camera, or a file instead; the QR libraries load only when used);
                            sportIcons.js (activity icons from Tabler Icons, MIT license)
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
@@ -151,8 +154,9 @@ src/
                            WorkoutSummary (totals, comparison, records); SessionRow (a workout or activity in a list)
 
   screens/                 ── one folder per tab, plus the screens they share ──
-    home/                  HomeScreen → Home (today), Welcome (new phone), FinishSummary (after Finish); or the workout
-    workout/               ActiveWorkout (the workout in progress, shown on Home)
+    home/                  HomeScreen → Home (today), Welcome (new phone: who, then name), FinishSummary (after Finish), TogetherActions (the Train together fold under Start), TogetherScreen (your code, get your workout),
+                           HandOverScreen (a partner's finished workout as a code); or the workout
+    workout/               ActiveWorkout (the workout in progress, shown on Home), PartnerJoin (add a training partner)
     progress/              ProgressScreen (calendar, all workouts, exercises) → WorkoutDetail
     plans/                 PlansScreen → PlanList (my plans), PlanLibrary (ready-made), NewPlan (my own), PlanOverview, DayEditor
     exercises/             ExercisesScreen → ExerciseLibrary → ExercisePage (How to page ⇄ Progress page) → ExerciseEditor
@@ -213,11 +217,12 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | `model/sets.test.js` | Reading typed numbers ("62,5"), showing sets and grouped set lists, ▲▼ comparisons; planned values: ticking takes them, typing wins, typing plans the empty sets below |
 | `model/muscles.test.js` | Guessing muscles, main and helping muscle names, counting sets per muscle, map colours, searching the exercise library, suggesting a swap for the same muscles |
 | `model/records.test.js` | Which sets are personal records: heavier, more reps, longer holds, assisted; only one trophy for repeating a record; none the first time; records of a workout and of the last days |
-| `model/comparisons.test.js` | "About an Asian elephant", "almost a hippo", "about 3 washing machines"; pounds; nothing for tiny totals |
+| `model/partner.test.js` | Train together: her code carries her plan day exactly as her app plans it, enough history for "last time" and trophies, fits one QR code; only ticked sets are handed over; on her phone exercises match by name or are created, her plan day counts, the same workout can't be added twice |
+| `model/comparisons.test.js` | "About an Asian elephant", "almost a hippo", "about 3 washing machines"; nothing for tiny totals |
 | `model/tips.test.js` | Every exercise the app creates (starter list, plans, extras) has how-to tips |
 | `model/bodyWeight.test.js` | One body weight per day, removing a day, the change over 30 days |
 | `model/activities.test.js` | Activities of 20+ minutes count as active days (one per day), easy / moderate / hard WHO minutes, calendar day kinds, they survive backup and restore |
-| `model/settings.test.js` | Automatic weight jumps (kg and lb), an exercise's own jump, automatic rest (2:00 big lifts, 1:30 the rest) |
+| `model/settings.test.js` | Automatic weight jumps, an exercise's own jump, automatic rest (2:00 big lifts, 1:30 the rest) |
 | `model/calendar.test.js` | Weeks start on Monday, training days per week, streaks (rest days don't break them, a missed week does), the weekly goal |
 | `data/migrations.test.js` | Data and backups from older versions still load correctly; a workout in progress survives a backup (grey plans, coach line, name); when to remind about a backup |
 
@@ -228,6 +233,10 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 ## Features in detail
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
+
+- **v0.18, training together, simpler:** "Train together" folds open on Home under the day choice: **Start together** (starts the chosen day and adds your partner: scan or a name), **Show my code** (their phone logs your chosen day; with no plan you follow theirs), **Get my workout** (afterwards). Your name is asked once (welcome, or Settings → Your name). In the workout each person has the same page as a workout on your own, side by side: swipe sideways between them or tap a name on top. Each page has a stripe in that person's colour down its side, and the names on top show everyone's sets and kg so far, on one line with the clock. An empty partner page offers "Same exercises as you". The welcome is two short steps in the app's style (who's training, then a name with "Skip and start"). Scanning is more reliable: each camera frame is read at a different size
+- **v0.16, train together:** one phone logs two (or more) people. On her phone, Home → Train together shows a QR code with her name and today's plan day, already planned by her app (grey values, suggestions), plus her last session and records of those exercises. On your phone, in the workout, ＋ Training partner scans it and a "You | Anna" switch appears on top; her part works like yours (coach line, rest timer, trophies, her body drawing), and she can do exercises from your list too. Someone without the app can be added by name. Finish saves your workout, and hers waits as a code ("Anna's workout is waiting" on Home) until her phone scans it in Train together → Get my workout; there it's a normal workout of hers (records, streak, plan day). Exercises go by name, so nothing has to match between the phones. No server, no account, works offline; a file can be sent instead of scanning. The data and the channel are separate (transfer.js), so the QR code can be swapped for something else later
+- **kg only:** the kg / lb setting is gone, and so are miles
 
 - **v0.15.3, fixes from a code review:** repeating a workout keeps its name and plan day (it used to become "Workout"); restoring a backup keeps a workout in progress as it was (grey plans, the coach line, its name); long histories open faster (the sorted list of workouts is worked out once, not for every row), and a running workout no longer redraws every exercise each second (only the clock does)
 

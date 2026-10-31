@@ -24,16 +24,16 @@ describe('Reading typed numbers', () => {
 
 describe('Showing sets', () => {
   const s = (weight, reps, extra = {}) => ({ weight, reps, time: null, rpe: null, ...extra });
-  it('weight × reps, with unit and RPE', () => {
-    expect(formatSet(s(62.5, 8, { rpe: 8 }), 'weight', 'kg')).toBe('62.5 kg × 8 (RPE 8)');
+  it('weight × reps, with kg and RPE', () => {
+    expect(formatSet(s(62.5, 8, { rpe: 8 }), 'weight')).toBe('62.5 kg × 8 (RPE 8)');
   });
   it('a weight exercise done without weight shows only reps', () => {
     expect(formatSet(s(null, 12), 'weight')).toBe('12 reps');
   });
   it('assisted: minus for assistance, plus for added weight, BW for none', () => {
-    expect(formatSet(s(-20, 8), 'assisted', 'kg')).toBe('−20 kg × 8');
-    expect(formatSet(s(10, 6), 'assisted', 'kg')).toBe('+10 kg × 6');
-    expect(formatSet(s(0, 6), 'assisted', 'kg')).toBe('BW × 6');
+    expect(formatSet(s(-20, 8), 'assisted')).toBe('−20 kg × 8');
+    expect(formatSet(s(10, 6), 'assisted')).toBe('+10 kg × 6');
+    expect(formatSet(s(0, 6), 'assisted')).toBe('BW × 6');
   });
   it('timed holds in seconds, minutes from 60 s', () => {
     expect(formatSet(s(null, null, { time: 45 }), 'time')).toBe('45 s');
@@ -120,12 +120,12 @@ describe('Planned (grey) values', () => {
 describe('Several sets in one line', () => {
   const w = (weight, reps, rpe = null) => ({ weight, reps, time: null, rpe });
   it('groups sets of the same weight and shows the hardest RPE', () => {
-    expect(formatSetList([w(42.5, 10), w(42.5, 10, 7), w(42.5, 9, 8)], 'weight', 'kg')).toBe('42.5 kg × 10, 10, 9 (RPE 8)');
-    expect(formatSetList([w(40, 10), w(42.5, 8), w(42.5, 8)], 'weight', 'kg')).toBe('40 kg × 10 · 42.5 kg × 8, 8');
+    expect(formatSetList([w(42.5, 10), w(42.5, 10, 7), w(42.5, 9, 8)], 'weight')).toBe('42.5 kg × 10, 10, 9 (RPE 8)');
+    expect(formatSetList([w(40, 10), w(42.5, 8), w(42.5, 8)], 'weight')).toBe('40 kg × 10 · 42.5 kg × 8, 8');
   });
   it('bodyweight, assisted and timed sets', () => {
     expect(formatSetList([w(null, 12), w(null, 10)], 'reps')).toBe('12, 10 reps');
-    expect(formatSetList([w(-20, 8), w(-20, 7)], 'assisted', 'kg')).toBe('−20 kg × 8, 7');
+    expect(formatSetList([w(-20, 8), w(-20, 7)], 'assisted')).toBe('−20 kg × 8, 7');
     expect(formatSetList([{ time: 45 }, { time: 40 }], 'time')).toBe('45 s, 40 s');
   });
 });

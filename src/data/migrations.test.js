@@ -14,7 +14,7 @@ const v01 = {
       entries: [{ id: 'e1', exerciseId: 'starter-0', sets: [{ id: 's1', weight: '62,5', reps: '8', done: true, doneAt: '2026-10-22T18:10:00Z' }] }],
     },
   ],
-  settings: [{ key: 'unit', value: 'kg' }],
+  settings: [{ key: 'body', value: 'female' }],
 };
 
 describe('Updating old data', () => {
@@ -54,6 +54,15 @@ describe('Updating old data', () => {
     expect(out.entries[0].suggestion).toEqual(suggestion);
   });
 
+  it("a workout in progress keeps the training partner's part through a backup", () => {
+    const set = { id: 's', weight: null, reps: null, time: null, rpe: null, done: false, doneAt: null, target: { weight: 40, reps: 10, time: null } };
+    const partnerWorkout = { id: 'pw', name: 'Glutes', startedAt: '2026-10-31T10:00:00Z', finishedAt: null, notes: '', entries: [{ id: 'e', exerciseId: 'h', sets: [set], suggestion: null }] };
+    const partner = { id: 'p', name: 'Anna', settings: { body: 'female' }, exercises: [{ id: 'h', name: 'Hip thrust', type: 'weight' }], history: [], workout: partnerWorkout };
+    const w = { id: 'w', startedAt: '2026-10-31T10:00:00Z', finishedAt: null, notes: '', entries: [], partners: [partner] };
+    const out = migrate({ ...v01, workouts: [w] }).workouts[0];
+    expect(out.partners).toEqual([partner]);
+  });
+
   it('keeps plans, and which plan day a workout came from', () => {
     const plan = { id: 'p', name: 'PPL', days: [{ id: 'd', name: 'Push', items: [{ exerciseId: 'starter-0', sets: 4 }] }] };
     const data = migrate({ ...v01, plans: [plan], workouts: [{ ...v01.workouts[0], planId: 'p', dayId: 'd', name: 'Push' }] });
@@ -72,7 +81,7 @@ describe('Updating old data', () => {
 
   it('keeps settings and records the new version', () => {
     const settings = migrate(v01).settings;
-    expect(settings).toContainEqual({ key: 'unit', value: 'kg' });
+    expect(settings).toContainEqual({ key: 'body', value: 'female' });
     expect(settings).toContainEqual({ key: 'schemaVersion', value: SCHEMA_VERSION });
   });
 });
@@ -85,10 +94,10 @@ describe('Backup files', () => {
 
   it('a new backup reads back the same', () => {
     const current = migrate(v01);
-    const backup = createBackup({ exercises: current.exercises, workouts: current.workouts, settings: { unit: 'lb' } });
+    const backup = createBackup({ exercises: current.exercises, workouts: current.workouts, settings: { body: 'male' } });
     const restored = readBackup(JSON.stringify(backup));
     expect(restored.workouts).toEqual(current.workouts);
-    expect(restored.settings).toContainEqual({ key: 'unit', value: 'lb' });
+    expect(restored.settings).toContainEqual({ key: 'body', value: 'male' });
   });
 
   it('reminds about a backup after 3 workouts, then every two weeks', () => {

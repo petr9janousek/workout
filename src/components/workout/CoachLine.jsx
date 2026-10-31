@@ -10,7 +10,7 @@ import { formatDate } from '../../model/format.js';
 // back to the suggestion); that rewrites the grey plan of the sets not done.
 // suggestion: entry.suggestion { kind, title, text, sets, chosen }
 // last: last time's session { date, sets }, or null the first time
-export default function CoachLine({ suggestion, last, type, unit, onChoose }) {
+export default function CoachLine({ suggestion, last, type, onChoose }) {
   const [open, setOpen] = useState(false);
 
   // First time: how to pick a starting weight.
@@ -28,14 +28,14 @@ export default function CoachLine({ suggestion, last, type, unit, onChoose }) {
   const same = suggestion.chosen === 'same';
   const canSwitch = last && !['hold', 'confirm'].includes(suggestion.kind);
   const kind = same ? 'hold' : suggestion.kind;
-  const title = same ? `Same as last time: ${formatSetList(last.sets.map((s) => ({ ...s, rpe: null })), type, unit)}` : suggestion.title;
+  const title = same ? `Same as last time: ${formatSetList(last.sets.map((s) => ({ ...s, rpe: null })), type)}` : suggestion.title;
 
   return (
     <Line kind={kind} icon={SUGGESTION_ICONS[kind]} title={title} open={open} onToggle={() => setOpen(!open)}>
       <p>{same ? `Your choice for today. The suggestion was: ${suggestion.title.charAt(0).toLowerCase()}${suggestion.title.slice(1)}` : suggestion.text}.</p>
       {last && !same && (
         <p className="muted">
-          Last time ({formatDate(last.date)}): {formatSetList(last.sets, type, unit)}
+          Last time ({formatDate(last.date)}): {formatSetList(last.sets, type)}
         </p>
       )}
       {canSwitch && (

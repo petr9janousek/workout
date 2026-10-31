@@ -11,8 +11,7 @@ describe('weightComparison', () => {
     expect(weightComparison(200)).toBe('about 3 washing machines');
     expect(weightComparison(100)).toBe('more than a washing machine');
   });
-  it('works in pounds and for huge totals', () => {
-    expect(weightComparison(9000, 'lb')).toBe('about an Asian elephant');
+  it('works for huge totals', () => {
     expect(weightComparison(15e6)).toBe('about 2 Eiffel Towers');
   });
   it('says nothing for very little', () => {

@@ -4,6 +4,7 @@ import BodyMap from '../../components/charts/BodyMap.jsx';
 import WeekStrip from '../../components/charts/WeekStrip.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import LinkCard from '../../components/ui/LinkCard.jsx';
+import TogetherActions from './TogetherActions.jsx';
 import { NumberInput } from '../../components/ui/NumberInput.jsx';
 import { useSaveBackup } from '../../hooks/useSaveBackup.js';
 import { backupDue } from '../../data/backup.js';
@@ -60,11 +61,20 @@ export default function Home() {
         />
       )}
 
+      {settings.outbox.map((o) => (
+        <LinkCard key={o.id} className="hand-over" icon="qr" title={`${o.data.to}'s workout is waiting`} sub="Show the code to their phone" onClick={() => go('home', 'send', o.id)} />
+      ))}
+      {!hasPlan && (
+        <section className="card">
+          <TogetherActions />
+        </section>
+      )}
+
       {settings.trackBodyWeight && <WeighIn />}
       <RecentRecords />
       {backupDue(settings.lastBackup, finished.length) && <BackupReminder lastBackup={settings.lastBackup} />}
 
-      <LinkCard icon="settings" title="Settings" sub="Backup, units, rest time and more" onClick={() => go('home', 'settings')} />
+      <LinkCard icon="settings" title="Settings" sub="Backup, rest time, progression and more" onClick={() => go('home', 'settings')} />
     </div>
   );
 }
@@ -147,6 +157,8 @@ function NextDay({ plan }) {
         </div>
       )}
 
+      {day.items.length > 0 && <TogetherActions plan={plan} day={day} />}
+
       {last && (
         <p className="muted small plan-hero-last">
           Last time: {last.name}, {formatDate(last.startedAt)}
@@ -188,7 +200,7 @@ function DayList({ items }) {
 
 // Today's body weight in one line, until it's saved for today.
 function WeighIn() {
-  const { settings, unit, actions } = useData();
+  const { settings, actions } = useData();
   const list = settings.bodyWeights || [];
   const today = dayKey(new Date());
   const [value, setValue] = useState(null);
@@ -206,7 +218,7 @@ function WeighIn() {
     <section className="card weigh-in">
       {saved != null ? (
         <p className="weigh-in-done">
-          <Icon name="check" size={18} /> Saved {formatNumber(saved)} {unit} for today
+          <Icon name="check" size={18} /> Saved {formatNumber(saved)} kg for today
         </p>
       ) : (
         <div className="weigh-in-row">
@@ -214,7 +226,7 @@ function WeighIn() {
             <strong>Weigh in?</strong>
             <span className="muted small">Body weight today</span>
           </span>
-          <NumberInput value={value} onChange={setValue} decimal placeholder={list.length ? formatNumber(list.at(-1).weight) : unit} label="Today's body weight" />
+          <NumberInput value={value} onChange={setValue} decimal placeholder={list.length ? formatNumber(list.at(-1).weight) : 'kg'} label="Today's body weight" />
           <button className="btn btn-primary" onClick={save} disabled={value == null}>Save</button>
         </div>
       )}
@@ -224,7 +236,7 @@ function WeighIn() {
 
 // Personal records from the last 7 days; tap one to see the exercise.
 function RecentRecords() {
-  const { workouts, exercisesById, unit } = useData();
+  const { workouts, exercisesById } = useData();
   const records = recentRecords(workouts, exercisesById, 7);
   if (!records.length) return null;
   const shown = records.slice(0, 3);
@@ -241,7 +253,7 @@ function RecentRecords() {
             <li key={set.id}>
               <button className="records-item" onClick={() => go('home', 'exercise', exerciseId)}>
                 <span>{exerciseName(exercise)}</span>
-                <strong>{formatSet(set, typeOf(exercise), unit)}</strong>
+                <strong>{formatSet(set, typeOf(exercise))}</strong>
                 <span className="muted small">{dayKey(new Date(workout.startedAt)) === dayKey(new Date()) ? 'Today' : formatDate(workout.startedAt).split(',')[0]}</span>
               </button>
             </li>

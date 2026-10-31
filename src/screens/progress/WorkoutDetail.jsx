@@ -16,7 +16,7 @@ import Icon from '../../components/ui/Icon.jsx';
 // One finished workout: summary, muscles, sets. Repeat, edit or delete it.
 // Addresses: #/progress/workout/<id>[/edit[/add]]
 export default function WorkoutDetail({ workoutId, editing, picking }) {
-  const { workouts, exercisesById, unit, actions } = useData();
+  const { workouts, exercisesById, actions } = useData();
   const startWorkout = useStartWorkout();
   const workout = workouts.find((w) => w.id === workoutId && w.finishedAt);
 
@@ -65,7 +65,7 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
                 <ol className="set-list">
                   {e.sets.filter(isDoneSet).map((s) => (
                     <li key={s.id}>
-                      {formatSet(s, typeOf(exercise), unit)}
+                      {formatSet(s, typeOf(exercise))}
                       {records.has(s.id) && (
                         <span className="record-count" role="img" aria-label="Personal record"> <Icon name="trophy" size={14} /></span>
                       )}

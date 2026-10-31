@@ -47,7 +47,7 @@ export default function ExercisePage({ prefix, path, start, backLabel }) {
 }
 
 function HowToPage({ exercise, back, onEdit, onProgress }) {
-  const { workouts, plans, unit } = useData();
+  const { workouts, plans } = useData();
   const muscles = musclesOf(exercise);
   const { main, helping } = musclesByRole(muscles);
   const mapSets = Object.fromEntries(Object.entries(muscles).map(([m, w]) => [m, w === 1 ? 8 : 3]));
@@ -90,7 +90,7 @@ function HowToPage({ exercise, back, onEdit, onProgress }) {
       <Notes key={exercise.id} exercise={exercise} />
 
       {history.length > 0 ? (
-        <LinkCard title="Your progress" sub={bestLine(exercise, history, unit)} onClick={onProgress} />
+        <LinkCard title="Your progress" sub={bestLine(exercise, history)} onClick={onProgress} />
       ) : (
         <p className="muted small center">Not done yet. Your progress will show up here.</p>
       )}

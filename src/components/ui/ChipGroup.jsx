@@ -1,6 +1,6 @@
 // A row of pill buttons where one is selected (like radio buttons).
-//   <ChipGroup options={[{ value: 'kg', label: 'kg' }, …]} value={unit} onChange={setUnit} />
-// options may also be plain values: ['kg', 'lb']
+//   <ChipGroup options={[{ value: 'female', label: 'Woman' }, …]} value={body} onChange={setBody} />
+// options may also be plain values: [2, 3, 4]
 export default function ChipGroup({ options, value, onChange, label }) {
   const items = options.map((o) => (typeof o === 'object' ? o : { value: o, label: String(o) }));
   return (
