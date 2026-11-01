@@ -16,7 +16,7 @@
 // and entries point to an exercise by its place in `exercises` (ids are long).
 
 import { newId } from './ids.js';
-import { newSet, shown, val, estimated1RM } from './sets.js';
+import { newSet, shown, val, estimated1RM, emptySets } from './sets.js';
 import { createWorkout, createEntry, finishWorkout, recentSessions } from './workouts.js';
 import { startPlanDay } from './plans.js';
 import { createExercise, typeOf } from './exercises.js';
@@ -144,6 +144,18 @@ export function partnerFromPass(pass, now = new Date().toISOString()) {
 }
 
 export const newPartner = (name, now) => partnerFromPass({ name }, now);
+
+// Someone who just joins your workout (no code needed): your exercises with
+// as many sets each, left empty for their own weights. They pick from your
+// exercises, so the names and how-to tips are the same.
+export function joinYourWorkout(name, workout, now) {
+  const partner = newPartner(name, now);
+  const entries = workout.entries.map((e) => {
+    const entry = createEntry(e.exerciseId, emptySets(e.sets.length));
+    return e.extra ? { ...entry, extra: true } : entry;
+  });
+  return { ...partner, workout: { ...partner.workout, entries, ...(workout.name ? { name: workout.name } : {}) } };
+}
 
 // What the partner can pick from: her own exercises first, then yours that
 // she doesn't have.

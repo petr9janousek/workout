@@ -972,6 +972,10 @@ h1, h2, .day-title { text-wrap: balance; }
   overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
 }
 .people-pages::-webkit-scrollbar { display: none; }
-.person-page { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; padding: 0 16px 0 12px; border-left: 4px solid var(--person); }
+.person-page { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; padding: 0 16px 0 12px; border-left: 6px solid var(--person); }
 .same-as-you { margin-bottom: 12px; }
 .remove-partner { display: block; margin: 4px auto 0; }
+.together-option { display: flex; flex-direction: column; gap: 8px; }
+.together-option h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.together-option h3 svg { color: var(--accent); }
+.together-option p { margin: 0; }

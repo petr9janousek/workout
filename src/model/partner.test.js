@@ -2,7 +2,7 @@
 // your phone and handing the workout over to hers.
 
 import { describe, it, expect } from 'vitest';
-import { makePass, partnerFromPass, newPartner, partnerLibrary, handOver, importHandOver, setToWire } from './partner.js';
+import { makePass, partnerFromPass, newPartner, joinYourWorkout, partnerLibrary, handOver, importHandOver, setToWire } from './partner.js';
 import { pack, unpack } from '../data/transfer.js';
 import { createExercise, indexById } from './exercises.js';
 import { createDay, createPlan, startPlanDay } from './plans.js';
@@ -70,6 +70,21 @@ describe('Before: her code', () => {
     const her = partnerFromPass(pass());
     expect(partnerLibrary(partner, yours).map((e) => e.name)).toEqual(['Hip thrust', 'Bench press']);
     expect(partnerLibrary(her, yours).map((e) => e.name)).toEqual(['Hip thrust', 'Push-up', 'Bench press']); // hers first, no doubles
+  });
+});
+
+describe('Joining your workout without a code', () => {
+  it('gets your exercises and as many sets, empty, and none of your plan', () => {
+    const yours = { id: 'w', name: 'Glutes', planId: 'p', dayId: 'd', startedAt: '2026-10-20T17:00:00Z', entries: [
+      { id: 'a', exerciseId: thrust.id, sets: [set(60, 8), set(60, 8), set(60, 8)] },
+      { id: 'b', exerciseId: pushUp.id, sets: [set(null, 12)], extra: true },
+    ] };
+    const tom = joinYourWorkout('Tom', yours);
+    expect(tom.name).toBe('Tom');
+    expect(tom.workout.name).toBe('Glutes');
+    expect(tom.workout.planId).toBeUndefined();
+    expect(tom.workout.entries.map((e) => [e.exerciseId, e.sets.length, e.extra ?? false])).toEqual([[thrust.id, 3, false], [pushUp.id, 1, true]]);
+    expect(tom.workout.entries[0].sets.every((s) => s.weight == null && !s.done)).toBe(true);
   });
 });
 

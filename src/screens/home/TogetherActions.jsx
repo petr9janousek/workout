@@ -31,7 +31,7 @@ export default function TogetherActions({ plan = null, day = null }) {
         <div className="together-list">
           <button className="together-item" onClick={start}>
             <strong>Start together</strong>
-            <span className="muted small">This phone logs you both. Scan their code or type a name.</span>
+            <span className="muted small">This phone logs you both. They can just join your workout.</span>
           </button>
           <button className="together-item" onClick={() => go('home', 'together', 'code', day?.id ?? 'none')}>
             <strong>Show my code</strong>

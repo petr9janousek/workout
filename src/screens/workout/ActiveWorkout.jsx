@@ -99,6 +99,10 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
     })),
   ];
 
+  // A partner's exercise as one of yours (same name), for its how-to page.
+  const yourByName = new Map(exercises.map((e) => [e.name.toLowerCase(), e]));
+  const yourExerciseFor = (p, id) => yourByName.get(p.scope.exercisesById.get(id)?.name.toLowerCase());
+
   // One person's page: the same as a workout on your own.
   const page = (p) => (
     <>
@@ -113,7 +117,8 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
         swapping={swapping}
         onOpenSwap={(entryId) => go('home', 'swap', entryId)}
         onCloseSwap={() => back('home')}
-        onOpenExercise={p.partner ? null : (id) => go('home', 'exercise', id)}
+        onOpenExercise={(id) => go('home', 'exercise', p.partner ? yourExerciseFor(p, id).id : id)}
+        canOpen={(id) => !p.partner || Boolean(yourExerciseFor(p, id))}
       />
       {p.partner && (
         <button className="btn-text small-link center-link remove-partner" onClick={() => removePartner(p.partner)}>

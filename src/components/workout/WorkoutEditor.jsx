@@ -23,8 +23,9 @@ export function useNewEntry(workout) {
 // address, so the back button closes it): picking, onOpenPicker, onClosePicker.
 // Swapping works the same way: swapping (an entry id), onOpenSwap(entryId),
 // onCloseSwap. Without onOpenSwap (fixing an old workout) there's no Swap.
-// onOpenExercise(id): tap an exercise's name to see how to do it.
-export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise }) {
+// onOpenExercise(id): tap an exercise's name to see how to do it (only where
+// canOpen(id) says so, e.g. a partner's exercises you also have).
+export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise, canOpen = () => true }) {
   const { workouts, exercises, exercisesById } = useData();
   const newEntry = useNewEntry(workout);
   const finished = Boolean(workout.finishedAt);
@@ -80,7 +81,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
           onChange={(change) => updateEntry(entry.id, change)}
           onRemove={() => removeEntry(entry)}
           onSwap={onOpenSwap && (() => onOpenSwap(entry.id))}
-          onOpen={onOpenExercise && (() => onOpenExercise(entry.exerciseId))}
+          onOpen={onOpenExercise && canOpen(entry.exerciseId) ? () => onOpenExercise(entry.exerciseId) : null}
         />
       ))}
 
