@@ -5,7 +5,7 @@ import BodyMap from '../../components/charts/BodyMap.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
-import { go, switchTab } from '../../hooks/useRoute.js';
+import { go, switchTab, openTab } from '../../hooks/useRoute.js';
 import { dayMuscleSets, planMuscleSets, createDay, nextDayIndex, dayLine } from '../../model/plans.js';
 import { restTarget } from '../../model/settings.js';
 import { planToFile } from '../../model/planFile.js';
@@ -17,7 +17,8 @@ import { formatSets, keepLastWord } from '../../model/format.js';
 const MAJOR = ['chest', 'lats', 'shoulders', 'quads', 'glutes', 'hamstrings'];
 
 // One plan: its days in order, the muscles it trains in a week, and settings.
-export default function PlanOverview({ planId }) {
+// justMade: right after choosing or making it: a note and Done (to Home).
+export default function PlanOverview({ planId, justMade = false }) {
   const { plans, workouts, exercisesById, settings, actions } = useData();
   const plan = plans.find((p) => p.id === planId);
   const [renaming, setRenaming] = useState(false);
@@ -81,6 +82,17 @@ export default function PlanOverview({ planId }) {
         )}
         <button className="btn-text small-link" onClick={() => setRenaming(true)}>Rename</button>
       </div>
+
+      {justMade && (
+        <section className="card plan-ready">
+          <p>
+            {plan.days.every((d) => d.items.length)
+              ? 'Your plan is ready. Change anything below if you like; your next workout waits on Home.'
+              : 'Now plan each day: tap a day below and add its exercises. Your next workout waits on Home.'}
+          </p>
+          <button className="btn btn-primary btn-wide" onClick={() => openTab('home')}>Done</button>
+        </section>
+      )}
 
       <h2 className="section-title">Days, in order</h2>
       <ol className="plan-days">

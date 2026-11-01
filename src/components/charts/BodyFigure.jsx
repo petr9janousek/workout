@@ -8,10 +8,11 @@ import { useData } from '../../data/DataProvider.jsx';
 //   selected:          a muscle to outline
 //   captions:          show "Front" / "Back" under the figures
 //   label:             what a screen reader says for the picture
-// The figure is female or male following Settings → About you.
-export default function BodyFigure({ levelOf, onTap, selected, captions = true, label }) {
+//   body:              'female' / 'male'; without it, Settings → About you
+//   back:              false: only the front view
+export default function BodyFigure({ levelOf, onTap, selected, captions = true, label, body, back = true }) {
   const { settings } = useData();
-  const shapes = figureFor(settings.body);
+  const shapes = figureFor(body ?? settings.body);
 
   function half(shapes, lines, mirror) {
     return (
@@ -49,9 +50,9 @@ export default function BodyFigure({ levelOf, onTap, selected, captions = true, 
   );
 
   return (
-    <svg viewBox={captions ? '0 0 250 220' : '0 0 250 208'} role="img" aria-label={label}>
+    <svg viewBox={`0 0 ${back ? 250 : 120} ${captions ? 220 : 208}`} role="img" aria-label={label}>
       {figure(shapes.front, shapes.frontLines, 0, 'Front', shapes.hairFront, null)}
-      {figure(shapes.back, shapes.backLines, 130, 'Back', null, shapes.hairBack)}
+      {back && figure(shapes.back, shapes.backLines, 130, 'Back', null, shapes.hairBack)}
     </svg>
   );
 }

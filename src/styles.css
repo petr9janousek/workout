@@ -164,17 +164,37 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .records-item strong, .summary-records strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .records-item .muted { text-align: right; }
 .records-card > .muted { margin: 6px 0 0; }
-.welcome { padding-top: 12px; }
-.welcome .lead { margin: 0; }
-.welcome .actions { margin-top: 4px; }
-.welcome .back { margin-bottom: 0; }
-.welcome-icon { width: 72px; height: 72px; border-radius: 18px; border: 1px solid var(--border); }
-.welcome-step { display: flex; flex-direction: column; gap: 10px; }
-.welcome-step h3, .welcome-step p { margin: 0; }
-.welcome-step .chips { margin: 0; }
-.step-dots { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
-.step-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
-.step-dots span.on { background: var(--accent); }
+/* First run (Welcome.jsx): the two figures are the first choice; the
+   chosen one warms up like the muscle map. */
+.welcome { gap: 8px; }
+/* A clear gap between the separate choices: who, name, how to start */
+.welcome-bodies, .welcome > .search, .welcome-starts { margin-top: 10px; }
+.welcome-hero .fit-heading { margin: 8px 0 0; }
+.welcome-lead { margin: 4px 0 0; color: var(--muted); }
+.welcome-bodies { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.welcome-body {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); font-weight: 600;
+}
+.welcome-body svg { height: 104px; width: auto; }
+.welcome-body .body-muscle { cursor: inherit; transition: fill 0.5s ease; }
+.welcome-body.on { border-color: var(--accent); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent); }
+/* Muscles warm up one after another, not all at once. */
+.welcome-body.on .body-muscle:nth-of-type(3n + 1) { transition-delay: 0.08s; }
+.welcome-body.on .body-muscle:nth-of-type(3n + 2) { transition-delay: 0.2s; }
+.welcome-body.on .body-muscle:nth-of-type(3n) { transition-delay: 0.32s; }
+@media (prefers-reduced-motion: reduce) { .welcome-body .body-muscle { transition: none; } }
+.welcome-starts { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.welcome-start {
+  display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; padding: 8px 14px;
+  background: none; border: 0; border-top: 1px solid var(--border); text-align: left; color: var(--muted);
+}
+.welcome-start:first-child { border-top: 0; }
+.welcome-start:active { background: var(--surface-2); }
+.welcome-start-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--text); }
+.welcome-start.main .welcome-start-icon { background: var(--accent); color: var(--accent-text); }
+.welcome-start-text { display: flex; flex-direction: column; gap: 2px; }
+.welcome-start-text strong { color: var(--text); font-size: 1rem; }
 
 /* ---- Active workout ---- */
 .workout-header h1 { margin-bottom: 0; }
@@ -972,10 +992,36 @@ h1, h2, .day-title { text-wrap: balance; }
   overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
 }
 .people-pages::-webkit-scrollbar { display: none; }
-.person-page { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; padding: 0 16px 0 12px; border-left: 6px solid var(--person); }
+.person-page { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; padding: 0 16px 0 12px; border-left: 4px solid var(--person); }
 .same-as-you { margin-bottom: 12px; }
 .remove-partner { display: block; margin: 4px auto 0; }
 .together-option { display: flex; flex-direction: column; gap: 8px; }
 .together-option h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
 .together-option h3 svg { color: var(--accent); }
 .together-option p { margin: 0; }
+.plan-ready { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.plan-ready p { margin: 0; }
+
+/* Walkthrough (Tour.jsx): the page dims around one lit thing, with a bubble */
+.tour { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+.tour-shield { position: fixed; pointer-events: auto; }
+.tour-bubble { pointer-events: auto; }
+.tour-hole.tap { animation: tour-pulse 1.4s ease-in-out infinite; }
+@keyframes tour-pulse { 50% { box-shadow: 0 0 0 4px var(--accent), 0 0 0 200vmax rgba(5, 6, 8, 0.72); } }
+@media (prefers-reduced-motion: reduce) { .tour-hole.tap { animation: none; } }
+.tour-hole {
+  position: fixed; border-radius: calc(var(--radius) + 4px); pointer-events: none;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 200vmax rgba(5, 6, 8, 0.72);
+  transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+}
+.tour-bubble {
+  position: fixed; left: 16px; right: 16px; max-width: 420px; margin: 0 auto;
+  padding: 14px 14px 10px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+.tour-bubble p { margin: 0 0 10px; line-height: 1.4; }
+.tour-actions { display: flex; align-items: center; gap: 12px; }
+.tour-actions .muted { margin-right: auto; }
+.tour-actions .btn { min-height: 40px; padding: 0 18px; }
+@media (prefers-reduced-motion: reduce) { .tour-hole { transition: none; } }
+.walkthrough-again { margin: 4px 0 12px; }

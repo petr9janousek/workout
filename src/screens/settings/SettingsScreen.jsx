@@ -27,7 +27,7 @@ export default function SettingsScreen() {
         name="body"
         title="About you"
         label="Body"
-        options={[{ value: 'female', label: 'Woman' }, { value: 'male', label: 'Man' }]}
+        options={[{ value: 'male', label: 'Man' }, { value: 'female', label: 'Woman' }]}
         hint={
           <>
             Changes the body drawing, which ready-made plans are recommended for you, and the automatic rest time.
@@ -123,6 +123,8 @@ export default function SettingsScreen() {
 
       <BackupSettings />
 
+      <ShowTourAgain />
+
       <TestingTools />
 
       <p className="muted small center">
@@ -131,6 +133,24 @@ export default function SettingsScreen() {
         The app counts visits anonymously (no cookies, no workout data).
       </p>
     </div>
+  );
+}
+
+// The walkthrough (Home → Progress → Plans → Exercises, and the first
+// workout's) once more, from Home. See Tour.jsx.
+function ShowTourAgain() {
+  const { settings, actions } = useData();
+  if (!settings.toursSeen.length) return null;
+  return (
+    <button
+      className="btn btn-secondary btn-wide walkthrough-again"
+      onClick={() => {
+        actions.setSetting('toursSeen', []);
+        openTab('home');
+      }}
+    >
+      Show the walkthrough again
+    </button>
   );
 }
 

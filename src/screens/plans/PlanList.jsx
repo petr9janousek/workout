@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import Icon from '../../components/ui/Icon.jsx';
 import LinkCard from '../../components/ui/LinkCard.jsx';
+import Tour from '../../components/ui/Tour.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { useStartWorkout } from '../../hooks/useStartWorkout.js';
 import { go } from '../../hooks/useRoute.js';
@@ -13,6 +14,14 @@ import { readPlanFile } from '../../model/planFile.js';
 // The Plans tab: your plans (the active one marked), three ways to get a new
 // one (ready-made, your own, a plan file someone sent you), and recent
 // workouts to repeat.
+// The walkthrough's part for this tab (Tour.jsx).
+const PLANS_TOUR = [
+  { target: '.screen .link-card', text: 'Your plans. Tap one to change its days and exercises, or to make it the one on Home.' },
+  { target: '.plans-library', text: 'Ready-made plans for 2 to 6 days a week, with healthy extras for core, grip and balance.' },
+  { target: '.plans-new', text: 'Or make your own: name it, then add exercises to each day.' },
+  { target: '.tabbar .tab:nth-child(4)', text: 'Last one: tap Exercises.', tap: true },
+];
+
 export default function PlanList() {
   const { plans, settings, actions } = useData();
   const fileInput = useRef(null);
@@ -48,10 +57,10 @@ export default function PlanList() {
       ))}
 
       <div className="actions">
-        <button className="btn btn-primary btn-wide" onClick={() => go('plans', 'library')}>
+        <button className="btn btn-primary btn-wide plans-library" onClick={() => go('plans', 'library')}>
           <Icon name="list" size={18} /> Ready-made plans
         </button>
-        <button className="btn btn-secondary btn-wide" onClick={() => go('plans', 'new')}>
+        <button className="btn btn-secondary btn-wide plans-new" onClick={() => go('plans', 'new')}>
           <Icon name="plus" size={18} /> Make my own
         </button>
         <button className="btn-text small-link import-link" onClick={() => fileInput.current.click()}>
@@ -60,6 +69,7 @@ export default function PlanList() {
       </div>
       <input ref={fileInput} type="file" accept="application/json,.json,text/plain,.txt" hidden onChange={importFile} />
       {message && <p className="warning small">{message}</p>}
+      <Tour id="plans" steps={PLANS_TOUR} />
 
       <RecentWorkouts />
     </div>

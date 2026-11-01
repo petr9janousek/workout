@@ -1,81 +1,87 @@
 import { useState } from 'react';
-import ChipGroup from '../../components/ui/ChipGroup.jsx';
+import FitHeading from '../../components/ui/FitHeading.jsx';
+import BodyFigure from '../../components/charts/BodyFigure.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { openTab } from '../../hooks/useRoute.js';
 import { useData } from '../../data/DataProvider.jsx';
 
-// First run, two short steps: who's training, then a name (optional, for
-// training together). A plan is offered, not required. Shown on Home until
-// there's a workout or a plan, or it's finished.
+// How warm each muscle gets on the chosen figure: a whole-body workout
+// lighting up, the app's muscle map in miniature.
+const WARM = { chest: 3, shoulders: 2, biceps: 2, triceps: 1, forearms: 1, abs: 2, obliques: 1, quads: 4, adductors: 2, calves: 1, glutes: 3, hamstrings: 2, lats: 3, traps: 1 };
+
+// First run, one screen: who's training (the figures set the body drawing,
+// recommended plans and rest), an optional name for training together, then
+// three ways to start. Home follows with a short walkthrough (Tour.jsx). Home's heading
+// answers this one: "Ready to train". The weekly goal isn't asked: it comes
+// from the plan (or 2 without one), and can be changed in Settings.
 export default function Welcome() {
   const { settings, actions } = useData();
-  const [step, setStep] = useState(1);
   const [name, setName] = useState(settings.name);
 
-  function done(thenPlans = false) {
+  function start(where) {
     if (name.trim()) actions.setSetting('name', name.trim());
     actions.setSetting('setupDone', true);
-    if (thenPlans) openTab('plans', 'library');
+    if (where === 'library') openTab('plans', 'library');
+    if (where === 'new') openTab('plans', 'new');
   }
 
-  if (step === 1) {
-    return (
-      <div className="welcome">
-        <img className="welcome-icon" src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="72" height="72" />
-        <h1>Welcome</h1>
-        <p className="lead">Log your workouts and it suggests a bit more each time. No account, and everything stays on this phone.</p>
-
-        <section className="card welcome-step">
-          <h3>Who's training?</h3>
-          <ChipGroup
-            label="Who's training"
-            options={[{ value: 'female', label: 'Woman' }, { value: 'male', label: 'Man' }]}
-            value={settings.body}
-            onChange={(body) => actions.setSetting('body', body)}
-          />
-          <p className="muted small">For the body drawing, recommended plans and rest times.</p>
-        </section>
-
-        <button className="btn btn-primary btn-wide" onClick={() => setStep(2)}>Next</button>
-        <StepDots step={1} />
-      </div>
-    );
-  }
+  const figure = (body, label) => (
+    <button
+      className={settings.body === body ? 'welcome-body on' : 'welcome-body'}
+      role="radio"
+      aria-checked={settings.body === body}
+      onClick={() => actions.setSetting('body', body)}
+    >
+      <BodyFigure body={body} back={false} captions={false} levelOf={(m) => (settings.body === body ? WARM[m] || 1 : 0)} label="" />
+      <span>{label}</span>
+    </button>
+  );
 
   return (
     <div className="welcome">
-      <button className="back" onClick={() => setStep(1)}>
-        <Icon name="back" size={18} /> Back
-      </button>
-      <h1>Your name</h1>
-      <p className="lead">For training together: when someone logs your sets on their phone, this tells whose are whose.</p>
-
-      <section className="card welcome-step">
-        <input
-          className="search"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Name or nickname"
-          aria-label="Your name"
-          autoComplete="given-name"
-        />
-        <p className="muted small">Optional. You can change it in Settings.</p>
-      </section>
-
-      <div className="actions">
-        <button className="btn btn-primary btn-wide" onClick={() => done()}>{name.trim() ? 'Start' : 'Skip and start'}</button>
-        <button className="btn btn-secondary btn-wide" onClick={() => done(true)}>Pick a ready-made plan first</button>
+      <div className="welcome-hero">
+        <FitHeading>Getting ready</FitHeading>
+        <p className="welcome-lead">No account, no tracking.</p>
       </div>
-      <StepDots step={2} />
+
+      <div className="welcome-bodies" role="radiogroup" aria-label="Who's training">
+        {figure('male', 'Man')}
+        {figure('female', 'Woman')}
+      </div>
+
+      <input
+        className="search"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Your name (optional, for training together)"
+        aria-label="Your name, optional, for training together"
+        autoComplete="given-name"
+      />
+
+      <div className="welcome-starts">
+        <StartRow
+          icon="list"
+          title="Pick a ready-made plan"
+          sub="2 to 6 days a week, ready to go"
+          onClick={() => start('library')}
+          main
+        />
+        <StartRow icon="plans" title="Make my own plan" sub="Name it, add exercises to each day" onClick={() => start('new')} />
+        <StartRow icon="plus" title="Just start" sub="Pick exercises as you go" onClick={() => start('home')} />
+      </div>
     </div>
   );
 }
 
-function StepDots({ step }) {
+function StartRow({ icon, title, sub, onClick, main = false }) {
   return (
-    <div className="step-dots" aria-label={`Step ${step} of 2`}>
-      <span className={step === 1 ? 'on' : ''} />
-      <span className={step === 2 ? 'on' : ''} />
-    </div>
+    <button className={main ? 'welcome-start main' : 'welcome-start'} onClick={onClick}>
+      <span className="welcome-start-icon"><Icon name={icon} size={20} /></span>
+      <span className="welcome-start-text">
+        <strong>{title}</strong>
+        <span className="muted small">{sub}</span>
+      </span>
+      <Icon name="chevron" size={18} />
+    </button>
   );
 }

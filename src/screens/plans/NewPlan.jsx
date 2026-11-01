@@ -20,7 +20,7 @@ export default function NewPlan() {
 
   function create() {
     const plan = actions.newPlan(name.trim(), dayNames.map((n) => n.trim()));
-    switchTab('plans', plan.id); // replaces this page in the back history
+    switchTab('plans', plan.id, 'ready'); // replaces this page in the back history
   }
 
   return (

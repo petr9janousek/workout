@@ -22,7 +22,7 @@ export default function PlanLibrary({ days }) {
 
   function use(template) {
     const plan = actions.newPlanFromTemplate(template, { extras });
-    switchTab('plans', plan.id); // replaces the library in the back history
+    switchTab('plans', plan.id, 'ready'); // replaces the library in the back history
   }
 
   return (

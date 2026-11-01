@@ -5,6 +5,7 @@ import WeekStrip from '../../components/charts/WeekStrip.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import LinkCard from '../../components/ui/LinkCard.jsx';
 import TogetherActions from './TogetherActions.jsx';
+import Tour from '../../components/ui/Tour.jsx';
 import { NumberInput } from '../../components/ui/NumberInput.jsx';
 import { useSaveBackup } from '../../hooks/useSaveBackup.js';
 import { backupDue } from '../../data/backup.js';
@@ -74,10 +75,21 @@ export default function Home() {
       <RecentRecords />
       {backupDue(settings.lastBackup, finished.length) && <BackupReminder lastBackup={settings.lastBackup} />}
 
-      <LinkCard icon="settings" title="Settings" sub="Backup, rest time, progression and more" onClick={() => go('home', 'settings')} />
+      <LinkCard className="settings-link" icon="settings" title="Settings" sub="Backup, rest time, progression and more" onClick={() => go('home', 'settings')} />
+
+      <Tour id="home" steps={HOME_TOUR} />
     </div>
   );
 }
+
+// The first visit's walkthrough (Tour.jsx); steps not on screen are skipped.
+const HOME_TOUR = [
+  { target: '.plan-hero-body', text: "Your plan's next workout, and the muscles it trains. The numbered days further down let you pick another one." },
+  { target: '.plan-hero .btn-big', text: 'At the gym, start it here.' },
+  { target: '.start-actions', text: 'Or start an empty workout and pick exercises as you go. Runs, swims and other activities go in Log activity.' },
+  { target: '.settings-link', text: 'Settings: your name, rest time, how the suggestions work, and backups. Everything is only on this phone, so save a backup now and then.' },
+  { target: '.tabbar .tab:nth-child(2)', text: 'Now tap Progress to see where your training shows up.', tap: true },
+]
 
 // Under the week strip, once this week's goal is reached.
 function GoalNote() {

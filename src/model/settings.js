@@ -19,6 +19,7 @@ export const DEFAULT_SETTINGS = {
   planExtras: true, // add the healthy extras when choosing a ready-made plan (extras.js)
   name: '', // your first name, shown to a training partner (partner.js)
   outbox: [], // partners' finished workouts waiting to be handed over: [{ id, workoutId, data }]
+  toursSeen: [], // walkthroughs already shown: 'home', 'workout', 'progress' (Tour.jsx)
 };
 
 export const WEIGHT_STEPS = ['auto', 1, 1.25, 2.5, 5];

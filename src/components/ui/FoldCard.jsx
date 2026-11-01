@@ -9,7 +9,7 @@ export default function FoldCard({ id, title, count, hint, defaultOpen = false, 
   const [open, setOpen] = useRemembered(`fold.${id}.open`, defaultOpen);
 
   return (
-    <section className="card fold-card">
+    <section className="card fold-card" data-fold={id}>
       <CardTitle
         title={title}
         hint={hint}

@@ -3,6 +3,7 @@ import WorkoutEditor, { useNewEntry } from '../../components/workout/WorkoutEdit
 import Totals from '../../components/workout/Totals.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import Icon from '../../components/ui/Icon.jsx';
+import Tour from '../../components/ui/Tour.jsx';
 import { useData, DataOverride } from '../../data/DataProvider.jsx';
 import { useNow } from '../../hooks/useNow.js';
 import { useWakeLock } from '../../hooks/useWakeLock.js';
@@ -18,6 +19,13 @@ import { countEvent } from '../../analytics.js';
 // look at other screens: { workoutId, person }.
 let shown = { workoutId: null, person: 'me' };
 export const showPerson = (workoutId, person) => (shown = { workoutId, person });
+
+// The first workout's walkthrough (Tour.jsx).
+const WORKOUT_TOUR = [
+  { target: '.coach', text: 'This line says what to do today. The first time, it helps you pick a weight; after that it builds on last time. Tap it for why.' },
+  { target: '.set-grid', text: 'Type what you lift and tick ✓ when the set is done; the rest timer then counts down at the bottom. Next time, the plan shows here in grey: tick ✓ to take it as it is.' },
+  { target: '.finish-workout', text: 'Done? Finish saves the workout. Sets you didn’t tick are left out.' },
+];
 
 // Colours for training partners' pages (you are orange); see styles.css.
 const PARTNER_COLORS = ['var(--person-2)', 'var(--person-3)', 'var(--person-4)'];
@@ -163,9 +171,11 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
         <button className="btn btn-secondary btn-wide" onClick={() => go('home', 'partner')}>
           <Icon name="people" size={18} /> {partners.length ? 'Another training partner' : 'Training partner'}
         </button>
-        <button className="btn btn-primary btn-wide" onClick={finish}>Finish workout</button>
+        <button className="btn btn-primary btn-wide finish-workout" onClick={finish}>Finish workout</button>
         <button className="btn btn-danger-ghost btn-wide" onClick={discard}>Discard</button>
       </div>
+
+      {workout.entries.length > 0 && <Tour id="workout" steps={WORKOUT_TOUR} />}
 
       {/* room so the rest timer (in App.jsx) never covers Finish */}
       <div className="rest-space" aria-hidden="true" />

@@ -7,6 +7,7 @@ import HabitCard from '../../components/charts/HabitCard.jsx';
 import BodyWeightCard from '../../components/charts/BodyWeightCard.jsx';
 import SessionRow from '../../components/workout/SessionRow.jsx';
 import FoldCard from '../../components/ui/FoldCard.jsx';
+import Tour from '../../components/ui/Tour.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import { SUGGESTION_ICONS } from '../../components/ui/Suggestion.jsx';
 import { useData } from '../../data/DataProvider.jsx';
@@ -51,9 +52,19 @@ export default function ProgressScreen({ path }) {
       />
       <AllWorkouts />
       <ExerciseList />
+      <Tour id="progress" steps={PROGRESS_TOUR} />
     </div>
   );
 }
+
+// The first visit's walkthrough (Tour.jsx); steps not on screen are skipped.
+const PROGRESS_TOUR = [
+  { target: '.month-calendar', text: 'Every day you trained, on the calendar. Tap a day to see what you did.' },
+  { target: '.muscle-card', text: 'Which muscles got work in the last 7 days. Tap a muscle to see its sets.' },
+  { target: '[data-fold="allWorkouts"]', text: 'Every workout and activity, newest first. Tap one to see it or fix it.' },
+  { target: '[data-fold="exercises"]', text: 'Each exercise you have done, with what to try next time and your records.' },
+  { target: '.tabbar .tab:nth-child(3)', text: 'Next, tap Plans.', tap: true },
+]
 
 // Every finished workout and activity, newest first, by month.
 function AllWorkouts() {

@@ -9,12 +9,14 @@ import DayEditor from './DayEditor.jsx';
 //   library[/<days>]          ready-made plans, optionally only for that many days a week
 //   new                       a plan of your own: name it and its days
 //   <plan id>                 one plan: its days and weekly muscle balance
+//   <plan id>/ready           the same, right after making it, with Done
 //   <plan id>/<day id>[/add]  planning one day (add = exercise picker open)
 export default function PlansScreen({ path }) {
   const [first, second, third] = path;
   if (!first) return <PlanList />;
   if (first === 'library') return <PlanLibrary days={Number(second) || null} />;
   if (first === 'new') return <NewPlan />;
+  if (second === 'ready') return <PlanOverview planId={first} justMade />;
   if (second) return <DayEditor planId={first} dayId={second} picking={third === 'add'} />;
   return <PlanOverview planId={first} />;
 }
