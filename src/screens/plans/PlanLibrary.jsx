@@ -11,6 +11,8 @@ import { withExtras } from '../../model/extras.js';
 import { minutesLabel, templateDays } from '../../model/plans.js';
 import { restTarget } from '../../model/settings.js';
 import { guessMuscles } from '../../model/muscles.js';
+import { STRETCHING } from '../../model/warmup.js';
+import { WARMUP_HINT, STRETCH_HINT } from '../../components/workout/MovesCard.jsx';
 
 // The ready-made plans. Choosing one copies it into your plans (then it's
 // yours to change); the others stay here, not in your list.
@@ -18,7 +20,6 @@ export default function PlanLibrary({ days }) {
   const { settings, actions } = useData();
   const templates = templatesForDays(days, settings.body);
   const extras = settings.planExtras;
-  const [help, setHelp] = useState(false);
 
   function use(template) {
     const plan = actions.newPlanFromTemplate(template, { extras });
@@ -37,28 +38,38 @@ export default function PlanLibrary({ days }) {
       <DaysPicker from={2} to={6} any value={days} onChange={(n) => switchTab(...['plans', 'library', ...(n ? [n] : [])])} />
 
       <div className="library-options">
-        <div className="for-row">
-          <span className="small muted">Healthy extras</span>
-          <HintButton open={help} onToggle={() => setHelp(!help)} about="healthy extras" />
-          <ChipGroup
-            label="Healthy extras"
-            options={[{ value: true, label: 'Add' }, { value: false, label: 'No' }]}
-            value={extras}
-            onChange={(v) => actions.setSetting('planExtras', v)}
-          />
-        </div>
-        {help && (
-          <p className="hint-text">
-            A short finisher each day for core, grip, upper back and balance, the things muscle plans usually skip.
-            About 5 minutes, and you can skip them during a workout.
-          </p>
-        )}
+        <OptionRow
+          name="planExtras"
+          label="Healthy extras"
+          options={[{ value: true, label: 'Add' }, { value: false, label: 'No' }]}
+          hint="A short finisher each day for core, grip, upper back and balance, the things muscle plans usually skip. About 5 minutes, and you can skip them during a workout."
+        />
+        <OptionRow name="warmUp" label="Warm-up" options={[{ value: true, label: 'On' }, { value: false, label: 'Off' }]} hint={WARMUP_HINT} />
+        <OptionRow name="stretching" label="Stretching" options={STRETCHING} hint={STRETCH_HINT} />
       </div>
 
       {templates.map((t) => (
         <TemplateCard key={t.id} template={extras ? withExtras(t) : t} recommended={isRecommended(t, settings.body)} onUse={() => use(t)} />
       ))}
     </div>
+  );
+}
+
+// One option above the plans, with its "?" (a setting, settings.js). Healthy
+// extras go into the plan you choose; warm-up and stretching are for every
+// workout (also in Settings).
+function OptionRow({ name, label, options, hint }) {
+  const { settings, actions } = useData();
+  const [help, setHelp] = useState(false);
+  return (
+    <>
+      <div className="for-row">
+        <span className="small muted option-label">{label}</span>
+        <HintButton open={help} onToggle={() => setHelp(!help)} about={label.toLowerCase()} />
+        <ChipGroup label={label} options={options} value={settings[name]} onChange={(v) => actions.setSetting(name, v)} />
+      </div>
+      {help && <p className="hint-text">{hint}</p>}
+    </>
   );
 }
 

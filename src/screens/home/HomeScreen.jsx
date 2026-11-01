@@ -6,6 +6,7 @@ import ActiveWorkout from '../workout/ActiveWorkout.jsx';
 import ActivityForm from '../activities/ActivityForm.jsx';
 import SettingsScreen from '../settings/SettingsScreen.jsx';
 import ExercisePage from '../exercises/ExercisePage.jsx';
+import MovePage from '../exercises/MovePage.jsx';
 import TogetherScreen from './TogetherScreen.jsx';
 import HandOverScreen from './HandOverScreen.jsx';
 import PartnerJoin from '../workout/PartnerJoin.jsx';
@@ -15,6 +16,7 @@ import PartnerJoin from '../workout/PartnerJoin.jsx';
 //   (nothing)               home, or the workout in progress
 //   add[/<person>], swap/<entry id>   the exercise picker (for you or a training partner) / swap list
 //   exercise/<id>[/…]       an exercise (from the workout or a record); see ExercisePage
+//   move/<id>              a warm-up move or stretch from the workout's checklist
 //   done/<workout id>       the summary right after finishing
 //   activity                log a run, a swim…
 //   settings
@@ -32,6 +34,7 @@ export default function HomeScreen({ path }) {
   if (first === 'partner' && activeWorkout) return <PartnerJoin workout={activeWorkout} />;
   if (first === 'done') return <FinishSummary workoutId={second} />;
   if (first === 'exercise') return <ExercisePage key={second} prefix={['home', 'exercise']} path={path.slice(1)} start="how" backLabel={activeWorkout ? 'Workout' : 'Home'} />;
+  if (first === 'move') return <MovePage id={second} backLabel={activeWorkout ? 'Workout' : 'Home'} fallback={['home']} />;
   if (activeWorkout) return <ActiveWorkout workout={activeWorkout} picking={first === 'add' ? second || 'me' : null} swapping={first === 'swap' ? second : null} />;
   // A brand-new install: a short welcome first.
   if (!settings.setupDone && workouts.length === 0 && plans.length === 0) return <Welcome />;

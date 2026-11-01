@@ -1025,3 +1025,18 @@ h1, h2, .day-title { text-wrap: balance; }
 .tour-actions .btn { min-height: 40px; padding: 0 18px; }
 @media (prefers-reduced-motion: reduce) { .tour-hole { transition: none; } }
 .walkthrough-again { margin: 4px 0 12px; }
+
+/* ---- Warm-up and stretching checklists (MovesCard) ---- */
+.moves { list-style: none; margin: 0; padding: 0; }
+.move { display: grid; grid-template-columns: 1fr 52px; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--border); }
+.move:first-child { border-top: 0; }
+.move-name { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 4px 0; background: none; border: 0; text-align: left; color: inherit; }
+.move-name strong { font-weight: 600; }
+.move.done .move-name strong { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent); }
+.moves-skip { display: block; margin: 8px 0 0 auto; }
+.moves-done { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 0 4px; color: var(--done); font-size: 0.9rem; font-weight: 600; }
+.moves-done.stretch { margin: 16px 0 0; }
+.moves-card.stretch { margin: 16px 0 0; }
+.moves-title { margin: 22px 0 4px; font-size: 1.05rem; }
+.move-group h3 { margin: 14px 0 0; font-weight: 600; }
+.option-label { min-width: 7.2em; }

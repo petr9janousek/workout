@@ -123,8 +123,8 @@ function ProgressPage({ exercise, back, onHowTo }) {
 }
 
 // Three cues and the most common mistake, plus a video search.
-function HowTo({ exercise }) {
-  const tips = tipsFor(exercise);
+// tips: { cues, avoid }; by default the exercise's own (tips.js).
+export function HowTo({ exercise, tips = tipsFor(exercise) }) {
   return (
     <section className="card how-to">
       <h3>How to do it</h3>

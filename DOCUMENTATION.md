@@ -126,6 +126,7 @@ src/
     records.js             Personal records: which sets beat everything before, records in a workout / this week
     comparisons.js         "That's about a hippo": weight lifted compared with things you can picture
     tips.js                How to do the built-in exercises: three cues and the common mistake each
+    warmup.js              Warm-up moves and stretches (with how-to), and which ones a workout gets from its muscles
     *.test.js              Tests (see below)
 
   data/                    ── the data ──
@@ -152,7 +153,8 @@ src/
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
     workout/               WorkoutEditor → ExerciseCard → CoachLine + SetRow; RestTimer; ExercisePicker; CreateExercise; Totals;
-                           WorkoutSummary (totals, comparison, records); SessionRow (a workout or activity in a list)
+                           WorkoutSummary (totals, comparison, records); SessionRow (a workout or activity in a list);
+                           MovesCard (the warm-up / stretching checklist)
 
   screens/                 ── one folder per tab, plus the screens they share ──
     home/                  HomeScreen → Home (today), Welcome (new phone: one screen), FinishSummary (after Finish), TogetherActions (the Train together fold under Start), TogetherScreen (your code, get your workout),
@@ -160,7 +162,7 @@ src/
     workout/               ActiveWorkout (the workout in progress, shown on Home), PartnerJoin (add a training partner)
     progress/              ProgressScreen (calendar, all workouts, exercises) → WorkoutDetail
     plans/                 PlansScreen → PlanList (my plans), PlanLibrary (ready-made), NewPlan (my own), PlanOverview, DayEditor
-    exercises/             ExercisesScreen → ExerciseLibrary → ExercisePage (How to page ⇄ Progress page) → ExerciseEditor
+    exercises/             ExercisesScreen → ExerciseLibrary → ExercisePage (How to page ⇄ Progress page) → ExerciseEditor; MovePage (a warm-up move or stretch)
     activities/            ActivityForm (log or edit an activity), ActivityDetail
     settings/              SettingsScreen, BackupSettings (opened from the bottom of Home)
 ```
@@ -235,6 +237,8 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
 
+- **v0.26, warm-up and stretching:** a warm-up checklist under the muscle map (on by default): 5 min easy cardio, then 3 moves for the muscles in today's workout, each ticked off with ✓, or "Skip the warm-up today". Optional stretching at the end, after Add exercise and above the notes (Off / Quick: 4 stretches, 30 s, ~5 min / Thorough: held twice, plus hips and upper back, ~12 min). Picked from the workout's planned sets (healthy extras left out), so a leg day gets leg moves. Nothing is logged: the ticks disappear when the workout is finished. Only on your own page when training together. 13 warm-up moves and 17 stretches with how-to pages in Exercises → "Warm-up & stretch" (a search finds them too). Settings, and the options above the ready-made plans, turn them on or off, each with a "?"
+  - Why: warming up improved performance in 79% of measures in a meta-analysis, with little sign of harm ([Fradkin et al. 2010](https://www.bisp-surf.de/Record/PU201102000946)); dynamic, load-building warm-ups help upper-body strength and power, short static stretching does nothing for power ([McCrary et al. 2015](https://bjsm.bmj.com/content/49/14/935.abstract)); structured warm-ups cut leg injuries in young athletes ([Herman et al. 2012](https://pmc.ncbi.nlm.nih.gov/articles/PMC3408383)); ACSM: 5–10 min light to moderate, dynamic before, static stretches (15–30 s) after. Static stretching under 60 s per muscle barely affects strength ([Behm et al. 2019](https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2019.01468/pdf)); a cool-down doesn't reduce soreness or injuries ([Van Hooren & Peake 2018](https://rd.springer.com/content/pdf/10.1007/s40279-018-0916-2.pdf)), so stretching is off by default and its "?" says what it's for; lifting through a full range improves mobility about as much as stretching (Alizadeh et al. 2023)
 - **v0.25, one walkthrough through the whole app:** it starts on Home (next workout, Start, empty workout and activities, Settings), then asks you to tap Progress (the lit tab pulses and works, everything else waits), goes on there (calendar, muscles, all workouts, exercises), then Plans (your plans, ready-made, make your own), then Exercises (search, muscle filter, how-to pages), and ends with "That's it". Skip ends all of it. Settings → "Show the walkthrough again" is now a button, above For testing
 - **v0.24.1:** the welcome photo is gone again (plain background, larger body drawings)
 - **v0.24, clearer first steps:** the welcome's three choices (who's training, your name, how to start) have clear space between them, and the days-a-week question is gone: the weekly goal comes from the plan (or 2 without one) and can be changed in Settings. The walkthrough on Home now has one step per tab (Progress, Plans, Exercises), and Progress has its own the first time you open it (habit, body weight, muscles, all workouts, exercises). The bubble always stays on screen, even next to a card taller than the screen. The "plan ready" card no longer touches the Active plan row

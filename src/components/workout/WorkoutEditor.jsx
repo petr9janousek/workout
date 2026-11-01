@@ -25,7 +25,8 @@ export function useNewEntry(workout) {
 // onCloseSwap. Without onOpenSwap (fixing an old workout) there's no Swap.
 // onOpenExercise(id): tap an exercise's name to see how to do it (only where
 // canOpen(id) says so, e.g. a partner's exercises you also have).
-export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise, canOpen = () => true }) {
+// children: shown after Add exercise, before the notes (the stretches).
+export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise, canOpen = () => true, children }) {
   const { workouts, exercises, exercisesById } = useData();
   const newEntry = useNewEntry(workout);
   const finished = Boolean(workout.finishedAt);
@@ -88,6 +89,8 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
       <button className="btn btn-secondary btn-wide" onClick={onOpenPicker}>
         <Icon name="plus" size={18} /> Add exercise
       </button>
+
+      {children}
 
       <label className="notes">
         <span>Notes</span>

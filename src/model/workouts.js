@@ -1,9 +1,10 @@
 // Workouts and the history built from them.
 //
 // A workout is a plain object, saved as one record in the database:
-//   { id, startedAt, finishedAt, notes, entries: [entry, …], name?, planId?, dayId? }
+//   { id, startedAt, finishedAt, notes, entries: [entry, …], name?, planId?, dayId?, movesDone?, movesSkipped? }
 //   finishedAt: null while the workout is in progress
 //   name, planId, dayId: set when it was started from a plan day (see plans.js)
+//   movesDone, movesSkipped: warm-up and stretches ticked off or skipped while it runs (warmup.js)
 // An entry is one exercise inside a workout:
 //   { id, exerciseId, sets: [set, …], suggestion? }
 //   suggestion: the "try heavier" hint shown when it was added (see progression.js)
@@ -46,7 +47,9 @@ export const activeWorkout = (workouts) => workouts.find((w) => !w.finishedAt) |
 // skipped is how many unticked sets were left out.
 // `skipped` counts unticked sets, except those of healthy extras (skipping
 // those is fine, so finishing doesn't ask about them).
-export function finishWorkout(workout, finishedAt = new Date().toISOString()) {
+// The warm-up and stretch ticks (movesDone, movesSkipped; see warmup.js)
+// are only for while it runs, so they're not kept.
+export function finishWorkout({ movesDone, movesSkipped, ...workout }, finishedAt = new Date().toISOString()) {
   const skipped = workout.entries.filter((e) => !e.extra).flatMap((e) => e.sets).filter((s) => !isDoneSet(s)).length;
   const entries = workout.entries
     .map(({ suggestion, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet).map(withoutTarget) }))

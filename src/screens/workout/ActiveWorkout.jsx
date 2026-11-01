@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import WorkoutEditor, { useNewEntry } from '../../components/workout/WorkoutEditor.jsx';
 import Totals from '../../components/workout/Totals.jsx';
+import MovesCard from '../../components/workout/MovesCard.jsx';
 import MuscleCard from '../../components/charts/MuscleCard.jsx';
 import Icon from '../../components/ui/Icon.jsx';
 import Tour from '../../components/ui/Tour.jsx';
@@ -22,6 +23,7 @@ export const showPerson = (workoutId, person) => (shown = { workoutId, person })
 
 // The first workout's walkthrough (Tour.jsx).
 const WORKOUT_TOUR = [
+  { target: '.moves-card.warmup', text: 'A short warm-up for today’s muscles. Tap a name for how to do it, ✓ when done, or skip it. Settings can turn it off, or add stretching at the end.' },
   { target: '.coach', text: 'This line says what to do today. The first time, it helps you pick a weight; after that it builds on last time. Tap it for why.' },
   { target: '.set-grid', text: 'Type what you lift and tick ✓ when the set is done; the rest timer then counts down at the bottom. Next time, the plan shows here in grey: tick ✓ to take it as it is.' },
   { target: '.finish-workout', text: 'Done? Finish saves the workout. Sets you didn’t tick are left out.' },
@@ -31,7 +33,7 @@ const WORKOUT_TOUR = [
 const PARTNER_COLORS = ['var(--person-2)', 'var(--person-3)', 'var(--person-4)'];
 
 // The workout in progress: totals and timers pinned on top, muscle map,
-// the exercises, and Finish / Discard.
+// the warm-up, the exercises, stretches, notes, and Finish / Discard.
 // With training partners (partner.js) each person gets the same page side by
 // side: swipe between them, or tap a name on top. Each page has a stripe in
 // that person's colour down its side, and the names on top show everyone's
@@ -112,9 +114,11 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
   const yourExerciseFor = (p, id) => yourByName.get(p.scope.exercisesById.get(id)?.name.toLowerCase());
 
   // One person's page: the same as a workout on your own.
+  // Warm-up and stretches only on your own page.
   const page = (p) => (
     <>
       <MuscleCard id="workout" title="Muscles worked" sets={workoutMuscleSets(p.workout, p.scope?.exercisesById || exercisesById)} scale="workout" />
+      {!p.partner && <MovesCard part="warmup" workout={p.workout} onChange={p.onChange} />}
       {p.partner && <SameAsYou partner={p} you={people[0]} yours={exercisesById} />}
       <WorkoutEditor
         workout={p.workout}
@@ -127,7 +131,9 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
         onCloseSwap={() => back('home')}
         onOpenExercise={(id) => go('home', 'exercise', p.partner ? yourExerciseFor(p, id).id : id)}
         canOpen={(id) => !p.partner || Boolean(yourExerciseFor(p, id))}
-      />
+      >
+        {!p.partner && <MovesCard part="stretch" workout={p.workout} onChange={p.onChange} />}
+      </WorkoutEditor>
       {p.partner && (
         <button className="btn-text small-link center-link remove-partner" onClick={() => removePartner(p.partner)}>
           Remove {p.name} from this workout

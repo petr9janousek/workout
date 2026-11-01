@@ -12,14 +12,10 @@ What we've agreed to build next. Done items move to "Features in detail" in [DOC
 - Also the exercise tips (tips.js) and the weight comparisons.
 
 ## Later
-- **Share progress with a partner, no server:** "Share my week" shows a QR code or card; the other phone shows it next to its own week (streak, workouts, records). A snapshot, not live.
 - **"Lose fat" focus:** 2–3 full-body strength days to keep muscle, an activity target (~250 min a week, per ACSM), the body weight trend, and a clear note that food decides most of the result. No calorie counting.
 - **Share a plan as a link** (the plan is stored inside the link; same data as the file)
-- **Weekly goal optional** ("no goal")
 - **A strength plan** (5×5 style) in the library
-- **Mobility exercises** in the exercise library (timed holds), not in plans
 - **Automatic backup** to the user's own Google Drive (optional)
-- **Train together, small extras** (done in v0.16–0.19, see DOCUMENTATION.md): a text summary for someone without the app; another channel than QR if scanning turns out to be a hassle (transfer.js is ready for it). Tried in the gym: when you do different exercises around the gym, each on their own phone is easier, so this stays small.
 
 ## Ideas, not decided
 - **Live sharing and automatic backup with a tiny server (or a free relay such as ntfy.sh / Nostr):** an encrypted box (e.g. a free Cloudflare Worker). Phones pair by QR code, the key stays on the phones, the server only ever sees scrambled data. No accounts. Costs nothing at our size, but it's a server to look after and it changes "everything stays on your phone".
@@ -29,7 +25,7 @@ What we've agreed to build next. Done items move to "Features in detail" in [DOC
 - Goals with an estimated date ("Hip thrust 80 kg, on track for February")
 - Progress photos (camera works in the app; photos make backups big)
 - Travel mode: today's plan with dumbbell or bodyweight swaps
-- Warm-up sets, plate calculator, supersets
+- Plate calculator, supersets
 - Weekly summary, deload week suggestions
 - TypeScript or type-checked JSDoc
 

@@ -110,6 +110,11 @@ export function muscleSets(items, exercisesById) {
 export const workoutMuscleSets = (workout, exercisesById) =>
   muscleSets(workout.entries.map((e) => ({ exerciseId: e.exerciseId, sets: e.sets.filter(isDoneSet).length })), exercisesById);
 
+// Sets per muscle a workout has planned, ticked or not, leaving out the
+// healthy extras (for picking its warm-up and stretches, see warmup.js).
+export const plannedMuscleSets = (workout, exercisesById) =>
+  muscleSets(workout.entries.filter((e) => !e.extra).map((e) => ({ exerciseId: e.exerciseId, sets: e.sets.length })), exercisesById);
+
 // Sets per muscle over the last `days` days, including a workout in progress.
 export function recentMuscleSets(workouts, exercisesById, days = 7, now = Date.now()) {
   const since = new Date(now - days * 864e5).toISOString();

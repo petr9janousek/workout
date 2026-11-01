@@ -1,12 +1,15 @@
 import ExerciseLibrary from './ExerciseLibrary.jsx';
 import ExercisePage from './ExercisePage.jsx';
+import MovePage from './MovePage.jsx';
 
 // The Exercises tab. Addresses (after #/exercises):
 //   (nothing)        every exercise, searchable, filter by muscle
 //   <id>             one exercise: how to do it and your notes
 //   <id>/progress    your progress on it (…/how goes back the other way)
 //   …/edit           change its name, type, weight jump, muscles
+//   move/<id>        a warm-up move or stretch (warmup.js)
 export default function ExercisesScreen({ path }) {
+  if (path[0] === 'move') return <MovePage id={path[1]} backLabel="Exercises" fallback={['exercises']} />;
   if (path[0]) return <ExercisePage key={path[0]} prefix={['exercises']} path={path} start="how" backLabel="Exercises" />;
   return <ExerciseLibrary />;
 }

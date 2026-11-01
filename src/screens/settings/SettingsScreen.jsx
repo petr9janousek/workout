@@ -9,6 +9,8 @@ import { useData } from '../../data/DataProvider.jsx';
 import { PROGRESSION_MODES } from '../../model/progression.js';
 import { WEIGHT_STEPS, REST_OPTIONS } from '../../model/settings.js';
 import { formatClock } from '../../model/format.js';
+import { STRETCHING } from '../../model/warmup.js';
+import { WARMUP_HINT, STRETCH_HINT } from '../../components/workout/MovesCard.jsx';
 
 // Settings, opened from the bottom of Home.
 // Address: #/home/settings
@@ -120,6 +122,10 @@ export default function SettingsScreen() {
           </>
         }
       />
+
+      <Setting name="warmUp" title="Warm-up" options={onOff('Checklist at the start', 'Off')} hint={WARMUP_HINT} />
+
+      <Setting name="stretching" title="Stretching at the end" label="Stretching" options={STRETCHING} hint={STRETCH_HINT} />
 
       <BackupSettings />
 
