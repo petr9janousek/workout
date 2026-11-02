@@ -119,3 +119,12 @@ describe('finishedWorkouts', () => {
     expect(finishedWorkouts([...list, workout('c', '2026-10-03T10:00:00Z', [])]).map((w) => w.id)).toEqual(['c', 'a']);
   });
 });
+
+describe('finishWorkout and swaps', () => {
+  it('forgets which exercise was swapped', () => {
+    const w = { id: 'w', startedAt: '2026-11-01T10:00:00Z', entries: [{ id: 'e', exerciseId: 'b', swappedFrom: 'a', swapKept: true, sets: [{ id: 's', weight: 20, reps: 10, done: true }] }] };
+    const entry = finishWorkout(w).workout.entries[0];
+    expect(entry).not.toHaveProperty('swappedFrom');
+    expect(entry).not.toHaveProperty('swapKept');
+  });
+});

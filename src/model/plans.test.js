@@ -2,7 +2,7 @@
 // a plan day, and checking that every ready-made plan is sensible.
 
 import { describe, it, expect } from 'vitest';
-import { createPlan, createDay, nextDayIndex, startPlanDay, planFromTemplate, planMuscleSets, moveItem, setItemSets, plansUsing, sessionMinutes, templateDays, addItem } from './plans.js';
+import { createPlan, createDay, nextDayIndex, startPlanDay, planFromTemplate, planMuscleSets, moveItem, setItemSets, plansUsing, sessionMinutes, templateDays, addItem, swapInPlan } from './plans.js';
 import { withExtras, EXTRAS } from './extras.js';
 import { PLAN_TEMPLATES, templatesForDays, defaultDayNames, isRecommended, MAIN_MUSCLES, targetRange } from './planTemplates.js';
 import { createExercise, indexById, typeOf } from './exercises.js';
@@ -180,5 +180,19 @@ describe('Ready-made plans', () => {
   it('suggests day names for a plan of your own', () => {
     expect(defaultDayNames(3)).toEqual(['Push', 'Pull', 'Legs']);
     expect(defaultDayNames(7)).toHaveLength(7);
+  });
+});
+
+describe('swapInPlan', () => {
+  it('swaps on that day only, keeping sets and extras', () => {
+    const plan = { id: 'p', days: [
+      { id: 'a', name: 'A', items: [{ exerciseId: 'row', sets: 3 }, { exerciseId: 'plank', sets: 2, extra: true }] },
+      { id: 'b', name: 'B', items: [{ exerciseId: 'row', sets: 4 }] },
+    ] };
+    const out = swapInPlan(plan, 'a', 'row', 'dbrow');
+    expect(out.days[0].items[0]).toEqual({ exerciseId: 'dbrow', sets: 3 });
+    expect(out.days[0].items[1].extra).toBe(true);
+    expect(out.days[1].items[0].exerciseId).toBe('row');
+    expect(plan.days[0].items[0].exerciseId).toBe('row');
   });
 });

@@ -46,6 +46,13 @@ export function nextDayIndex(plan, workouts) {
 export const dayMuscleSets = (day, exercisesById) => muscleSets(day.items, exercisesById);
 export const planMuscleSets = (plan, exercisesById) => addLoads(plan.days.map((d) => dayMuscleSets(d, exercisesById)));
 
+// The plan with one exercise swapped for another on one day (a swap during
+// a workout, kept for next time too). Sets and healthy-extra marks stay.
+export function swapInPlan(plan, dayId, fromId, toId) {
+  const swap = (item) => (item.exerciseId === fromId ? { ...item, exerciseId: toId } : item);
+  return { ...plan, days: plan.days.map((d) => (d.id === dayId ? { ...d, items: d.items.map(swap) } : d)) };
+}
+
 export const totalSets = (day) => day.items.reduce((sum, item) => sum + item.sets, 0);
 
 // About how long a session takes: each set ≈ 45 s of work plus your rest

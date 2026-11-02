@@ -23,10 +23,12 @@ export function useNewEntry(workout) {
 // address, so the back button closes it): picking, onOpenPicker, onClosePicker.
 // Swapping works the same way: swapping (an entry id), onOpenSwap(entryId),
 // onCloseSwap. Without onOpenSwap (fixing an old workout) there's no Swap.
+// keepSwap: { inPlan(exerciseId), keep(entry) } for a workout of a plan day:
+// a swapped plan exercise then offers "Keep in plan" (see ExerciseCard).
 // onOpenExercise(id): tap an exercise's name to see how to do it (only where
 // canOpen(id) says so, e.g. a partner's exercises you also have).
 // children: shown after Add exercise, before the notes (the stretches).
-export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise, canOpen = () => true, children }) {
+export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker, onClosePicker, swapping, onOpenSwap, onCloseSwap, onOpenExercise, canOpen = () => true, keepSwap, children }) {
   const { workouts, exercises, exercisesById } = useData();
   const newEntry = useNewEntry(workout);
   const finished = Boolean(workout.finishedAt);
@@ -42,16 +44,26 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
 
   // Machine taken: today's workout gets another exercise in the same place,
   // with as many sets, filled from its own history. The plan is unchanged.
+  // swappedFrom remembers the plan's exercise (also after swapping twice).
   function swapEntry(entryId, exercise) {
     update({
       entries: workout.entries.map((e) => {
         if (e.id !== entryId) return e;
         const entry = newEntry(exercise, e.sets.length);
-        return e.extra ? { ...entry, extra: true } : entry;
+        const from = e.swappedFrom || e.exerciseId;
+        if (e.extra) entry.extra = true;
+        if (keepSwap?.inPlan(from) && from !== exercise.id) entry.swappedFrom = from;
+        return entry;
       }),
     });
     onCloseSwap();
   }
+  const swapNote = (entry) =>
+    entry.swapKept
+      ? { kept: true }
+      : entry.swappedFrom && keepSwap
+        ? { from: exerciseName(exercisesById.get(entry.swappedFrom)), onKeep: () => keepSwap.keep(entry) }
+        : null;
   const swapEntryNow = swapping && workout.entries.find((e) => e.id === swapping);
 
   // The bin on an exercise. Healthy extras are optional, so it says so;
@@ -83,6 +95,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
           onRemove={() => removeEntry(entry)}
           onSwap={onOpenSwap && (() => onOpenSwap(entry.id))}
           onOpen={onOpenExercise && canOpen(entry.exerciseId) ? () => onOpenExercise(entry.exerciseId) : null}
+          swapNote={swapNote(entry)}
         />
       ))}
 

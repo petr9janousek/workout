@@ -58,7 +58,9 @@ function HowToPage({ exercise, back, onEdit, onProgress }) {
     <div className="exercise-page">
       <div className="page-top">
         {back}
-        <button className="btn-text small-link" onClick={onEdit}>Edit</button>
+        <button className="btn btn-primary btn-small" onClick={onEdit}>
+          <Icon name="edit" size={16} /> Edit
+        </button>
       </div>
       <h1>{exercise.name}</h1>
 

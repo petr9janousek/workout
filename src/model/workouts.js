@@ -8,6 +8,7 @@
 // An entry is one exercise inside a workout:
 //   { id, exerciseId, sets: [set, …], suggestion? }
 //   suggestion: the "try heavier" hint shown when it was added (see progression.js)
+//   swappedFrom, swapKept: a swapped plan exercise, and whether it was kept in the plan (while it runs)
 
 import { newId } from './ids.js';
 import { isDoneSet, val, estimated1RM, withoutTarget } from './sets.js';
@@ -52,7 +53,7 @@ export const activeWorkout = (workouts) => workouts.find((w) => !w.finishedAt) |
 export function finishWorkout({ movesDone, movesSkipped, ...workout }, finishedAt = new Date().toISOString()) {
   const skipped = workout.entries.filter((e) => !e.extra).flatMap((e) => e.sets).filter((s) => !isDoneSet(s)).length;
   const entries = workout.entries
-    .map(({ suggestion, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet).map(withoutTarget) }))
+    .map(({ suggestion, swappedFrom, swapKept, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet).map(withoutTarget) }))
     .filter((e) => e.sets.length > 0);
   return { workout: entries.length ? { ...workout, entries, finishedAt } : null, skipped };
 }

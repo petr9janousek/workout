@@ -13,6 +13,7 @@ import { finishWorkout, workoutTotals } from '../../model/workouts.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { indexById } from '../../model/exercises.js';
 import { handOver, partnerLibrary } from '../../model/partner.js';
+import { swapInPlan } from '../../model/plans.js';
 import { formatDate, formatClock, formatTotal, keepLastWord } from '../../model/format.js';
 import { countEvent } from '../../analytics.js';
 
@@ -39,7 +40,7 @@ const PARTNER_COLORS = ['var(--person-2)', 'var(--person-3)', 'var(--person-4)']
 // that person's colour down its side, and the names on top show everyone's
 // sets and weight.
 export default function ActiveWorkout({ workout, picking, swapping }) {
-  const { exercises, exercisesById, settings, actions } = useData();
+  const { exercises, exercisesById, plans, settings, actions } = useData();
   useWakeLock(settings.keepAwake);
   const partners = workout.partners || [];
   const [person, setPerson] = useState(() => (shown.workoutId === workout.id ? shown.person : 'me'));
@@ -84,6 +85,18 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
       go('home', 'send', handOvers[0].workout.id);
     }
   }
+
+  // Today's plan day: a swapped exercise can be kept in the plan for next time.
+  const planDay = plans.find((x) => x.id === workout.planId)?.days.find((d) => d.id === workout.dayId);
+  const keepSwap = planDay && {
+    inPlan: (id) => planDay.items.some((item) => item.exerciseId === id),
+    keep(entry) {
+      const plan = plans.find((x) => x.id === workout.planId);
+      actions.savePlan(swapInPlan(plan, planDay.id, entry.swappedFrom, entry.exerciseId));
+      const kept = { ...entry, swappedFrom: undefined, swapKept: true };
+      actions.saveWorkout({ ...workout, entries: workout.entries.map((e) => (e.id === entry.id ? kept : e)) });
+    },
+  };
 
   function discard() {
     if (confirm('Discard this workout? Nothing from it will be saved.')) actions.deleteWorkout(workout.id);
@@ -131,6 +144,7 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
         onCloseSwap={() => back('home')}
         onOpenExercise={(id) => go('home', 'exercise', p.partner ? yourExerciseFor(p, id).id : id)}
         canOpen={(id) => !p.partner || Boolean(yourExerciseFor(p, id))}
+        keepSwap={p.partner ? null : keepSwap}
       >
         {!p.partner && <MovesCard part="stretch" workout={p.workout} onChange={p.onChange} />}
       </WorkoutEditor>

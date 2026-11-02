@@ -30,7 +30,9 @@ const COLUMNS = {
 // earlier: every set of this exercise before this workout (for records).
 // onSwap: offer other exercises for the same muscles (machine taken).
 // onOpen: show how to do the exercise (the name becomes a button).
-export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSwap, onOpen }) {
+// swapNote: after a swap of a plan exercise, { from, onKeep } offers to keep
+// it in the plan, and { kept: true } says it's done.
+export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSwap, onOpen, swapNote }) {
   const { settings } = useData();
   const [dismissed, setDismissed] = useState(null); // id of a too-light set whose hint was closed
   const type = typeOf(exercise);
@@ -110,6 +112,21 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
           </button>
         </span>
       </header>
+
+      {swapNote && (
+        <p className={swapNote.kept ? 'swap-note kept' : 'swap-note'}>
+          {swapNote.kept ? (
+            <>
+              <Icon name="check" size={16} /> In your plan from now on
+            </>
+          ) : (
+            <>
+              <span>Instead of {swapNote.from} today.</span>
+              <button className="btn-text small-link" onClick={swapNote.onKeep}>Keep in plan</button>
+            </>
+          )}
+        </p>
+      )}
 
       {exercise?.notes && <p className="exercise-notes-line">{exercise.notes}</p>}
 

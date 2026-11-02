@@ -3,13 +3,7 @@
 What we've agreed to build next. Done items move to "Features in detail" in [DOCUMENTATION.md](DOCUMENTATION.md).
 
 ## Next
-
-### Czech and English
-- Switch in Settings and on the welcome screen. Default from the phone's language.
-- All UI text, dates and numbers in Czech, with proper Czech plurals (1 cvik, 2 cviky, 5 cviků).
-- Exercise names: separate setting (Czech or English), since many people in Czech gyms use the English names anyway. Exercises you add yourself keep the name you typed.
-- Plan and day names get the language that was active when the plan was created.
-- Also the exercise tips (tips.js) and the weight comparisons.
+- Nothing big: friends start using it, and what they (and we) run into in the gym decides what comes next.
 
 ## Later
 - **"Lose fat" focus:** 2–3 full-body strength days to keep muscle, an activity target (~250 min a week, per ACSM), the body weight trend, and a clear note that food decides most of the result. No calorie counting.
@@ -30,5 +24,6 @@ What we've agreed to build next. Done items move to "Features in detail" in [DOC
 - TypeScript or type-checked JSDoc
 
 ## Dropped
+- Czech: one friend asked, we both prefer English. Back on the list if more people ask (it touches every text: UI, plurals, exercise names, tips, warm-up moves).
 - Period tracking: dedicated apps already do it.
 - A "Tools" tab: not enough in it.

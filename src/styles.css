@@ -113,6 +113,7 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
   font-weight: 600;
 }
 .btn-wide { width: 100%; }
+.btn-small { min-height: 36px; padding: 0 14px; border-radius: 10px; font-size: 0.9rem; }
 .btn-big { width: 100%; min-height: 64px; font-size: 1.15rem; }
 .btn-primary { background: var(--accent); color: var(--accent-text); }
 .btn-primary:active { filter: brightness(0.9); }
@@ -795,6 +796,7 @@ h1, h2, .day-title { text-wrap: balance; }
 /* ---- Swap: suggestions on top of the picker ---- */
 .pick-heading { margin: 12px 16px 4px; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
 .card-header-actions { display: inline-flex; align-items: center; gap: 4px; }
+.exercise-card .card-header-actions { margin-right: -13px; } /* the bin icon lines up with the edge below */
 /* exercise name, ⓘ and "Healthy extra" on one line (wrapping neatly if long) */
 .exercise-card .card-header { min-height: 44px; } /* same height with or without the trash button */
 .exercise-card .card-header h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
@@ -1040,3 +1042,8 @@ h1, h2, .day-title { text-wrap: balance; }
 .moves-title { margin: 22px 0 4px; font-size: 1.05rem; }
 .move-group h3 { margin: 14px 0 0; font-weight: 600; }
 .option-label { min-width: 7.2em; }
+
+/* "Instead of X, today only. Keep in plan" after a swap (ExerciseCard) */
+.swap-note { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 10px; margin: -4px 0 10px; font-size: 0.85rem; color: var(--muted); }
+.swap-note .small-link { margin-left: auto; padding: 4px 0; font-size: 0.85rem; }
+.swap-note.kept { justify-content: flex-start; align-items: center; gap: 6px; color: var(--done); }
