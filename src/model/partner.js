@@ -149,7 +149,7 @@ export const newPartner = (name, now) => partnerFromPass({ name }, now);
 // as many sets each, left empty for their own weights. They pick from your
 // exercises, so the names and how-to tips are the same.
 export function joinYourWorkout(name, workout, now) {
-  const partner = newPartner(name, now);
+  const partner = { ...newPartner(name, now), turns: true }; // same workout: you take turns (nextTurn)
   const entries = workout.entries.map((e) => {
     const entry = createEntry(e.exerciseId, emptySets(e.sets.length));
     return e.extra ? { ...entry, extra: true } : entry;
@@ -220,4 +220,34 @@ export function importHandOver(data, exercises, workouts, plans = []) {
     ...(plan ? { planId, dayId } : {}),
   };
   return { workout, created };
+}
+
+// ---- Taking turns ---------------------------------------------------------
+// Doing the same workout (joinYourWorkout), you share the machine: after you
+// tick a set it's her turn on that exercise, then yours again. workout.turn
+// says whose turn it is: { person, exercise, label, at }
+//   person:   'me' or a partner's id; exercise: the name in lower case (so
+//             it matches across your and her exercises); label: as shown;
+//   at:       when the turn started (the screen switches pages on a new one).
+
+// The exercise of a set that became ticked between two versions of a
+// workout's entries, or null (nothing newly ticked; unticking doesn't count).
+export function newlyTicked(before, after) {
+  const wasDone = new Set(before.flatMap((e) => e.sets.filter((s) => s.done).map((s) => s.id)));
+  return after.find((e) => e.sets.some((s) => s.done && !wasDone.has(s.id)))?.exerciseId ?? null;
+}
+
+// After `personId` ticked a set of `exerciseName`: whose turn is next, going
+// round people in order, among those with an unticked set of it; null when
+// nobody else has one (then it's just a normal rest).
+// people: [{ id, entries, nameOf(exerciseId) }] in order, you first.
+export function nextTurn(people, personId, exerciseName, at = new Date().toISOString()) {
+  const name = exerciseName.toLowerCase();
+  const start = people.findIndex((p) => p.id === personId);
+  for (let k = 1; k <= people.length; k++) {
+    const p = people[(start + k) % people.length];
+    const left = p.entries.some((e) => p.nameOf(e.exerciseId)?.toLowerCase() === name && e.sets.some((s) => !s.done));
+    if (left && p.id !== personId) return { person: p.id, exercise: name, label: exerciseName, at };
+  }
+  return null;
 }

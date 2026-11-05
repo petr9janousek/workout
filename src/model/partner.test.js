@@ -2,7 +2,7 @@
 // your phone and handing the workout over to hers.
 
 import { describe, it, expect } from 'vitest';
-import { makePass, partnerFromPass, newPartner, joinYourWorkout, partnerLibrary, handOver, importHandOver, setToWire } from './partner.js';
+import { makePass, partnerFromPass, newPartner, joinYourWorkout, partnerLibrary, handOver, importHandOver, setToWire, newlyTicked, nextTurn } from './partner.js';
 import { pack, unpack } from '../data/transfer.js';
 import { createExercise, indexById } from './exercises.js';
 import { createDay, createPlan, startPlanDay } from './plans.js';
@@ -143,5 +143,36 @@ describe('Codes', () => {
   it('sets are short lists', () => {
     expect(setToWire({ weight: 60, reps: 8, time: null, rpe: null })).toEqual([60, 8]);
     expect(setToWire({ weight: null, reps: null, time: 45, rpe: 8 })).toEqual([null, null, 45, 8]);
+  });
+});
+
+describe('taking turns', () => {
+  const names = { b: 'Bench press', s: 'Squat', hb: 'bench press' };
+  const nameOf = (id) => names[id];
+  const set = (done, id) => ({ id, done });
+  const me = (sets) => ({ id: 'me', nameOf, entries: [{ exerciseId: 'b', sets }] });
+  const her = (sets, id = 'diana') => ({ id, nameOf, entries: [{ exerciseId: 'hb', sets }] });
+
+  it('notices a newly ticked set, not an untick', () => {
+    const before = [{ exerciseId: 'b', sets: [set(false, 1)] }];
+    expect(newlyTicked(before, [{ exerciseId: 'b', sets: [set(true, 1)] }])).toBe('b');
+    expect(newlyTicked([{ exerciseId: 'b', sets: [set(true, 1)] }], before)).toBe(null);
+  });
+
+  it('passes to the next person with sets left of the same exercise (by name)', () => {
+    const people = [me([set(true, 1), set(false, 2)]), her([set(false, 3)])];
+    expect(nextTurn(people, 'me', 'Bench press', 'now')).toEqual({ person: 'diana', exercise: 'bench press', label: 'Bench press', at: 'now' });
+    expect(nextTurn(people, 'diana', 'bench press').person).toBe('me');
+  });
+
+  it('goes round three people and skips anyone done with it', () => {
+    const people = [me([set(false, 1)]), her([set(true, 2)], 'anna'), her([set(false, 3)], 'tom')];
+    expect(nextTurn(people, 'me', 'Bench press').person).toBe('tom');
+    expect(nextTurn(people, 'tom', 'Bench press').person).toBe('me');
+  });
+
+  it('nobody else has it: no turn', () => {
+    expect(nextTurn([me([set(false, 1)]), her([set(true, 2)])], 'me', 'Bench press')).toBe(null);
+    expect(nextTurn([me([set(false, 1)])], 'me', 'Squat')).toBe(null);
   });
 });

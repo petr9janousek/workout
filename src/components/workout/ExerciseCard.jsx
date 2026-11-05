@@ -91,7 +91,7 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
   }
 
   return (
-    <section className="card exercise-card">
+    <section className="card exercise-card" data-exercise={name.toLowerCase()}>
       <header className="card-header">
         <h3>
           {onOpen ? (

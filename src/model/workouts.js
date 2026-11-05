@@ -48,9 +48,9 @@ export const activeWorkout = (workouts) => workouts.find((w) => !w.finishedAt) |
 // skipped is how many unticked sets were left out.
 // `skipped` counts unticked sets, except those of healthy extras (skipping
 // those is fine, so finishing doesn't ask about them).
-// The warm-up and stretch ticks (movesDone, movesSkipped; see warmup.js)
-// are only for while it runs, so they're not kept.
-export function finishWorkout({ movesDone, movesSkipped, ...workout }, finishedAt = new Date().toISOString()) {
+// The warm-up and stretch ticks (movesDone, movesSkipped; see warmup.js) and
+// whose turn it is (turn; see partner.js) are only for while it runs.
+export function finishWorkout({ movesDone, movesSkipped, turn, ...workout }, finishedAt = new Date().toISOString()) {
   const skipped = workout.entries.filter((e) => !e.extra).flatMap((e) => e.sets).filter((s) => !isDoneSet(s)).length;
   const entries = workout.entries
     .map(({ suggestion, swappedFrom, swapKept, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet).map(withoutTarget) }))

@@ -131,7 +131,7 @@ export default function SettingsScreen() {
 
       <ShowTourAgain />
 
-      <TestingTools />
+      {DEVELOPER && <TestingTools />}
 
       <p className="muted small center">
         Workout v{APP_VERSION} · your workouts stay on this phone
@@ -195,7 +195,9 @@ function Setting({ name, title, label = title, hint, options }) {
 const onOff = (on, off) => [{ value: true, label: on }, { value: false, label: off }];
 
 // Tools for trying the app out. Both replace everything on this phone, so
-// they're tucked away and ask first.
+// they're tucked away, ask first, and only show up for the developer: on
+// `npm run dev` or `npm run preview` (localhost), never on the real site.
+const DEVELOPER = import.meta.env.DEV || location.hostname === 'localhost';
 function TestingTools() {
   const { actions } = useData();
 

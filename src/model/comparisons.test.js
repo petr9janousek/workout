@@ -2,20 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { weightComparison } from './comparisons.js';
 
 describe('weightComparison', () => {
-  it('picks the closest thing', () => {
-    expect(weightComparison(4100)).toBe('about an Asian elephant');
-    expect(weightComparison(1450)).toBe('almost a hippo');
-    expect(weightComparison(1600)).toBe('about a hippo');
+  it('about, almost, or heavier than one thing', () => {
+    expect(weightComparison(5800)).toBe("about Michelangelo's David");
+    expect(weightComparison(8000)).toBe('almost an F-16 fighter jet');
+    expect(weightComparison(1800)).toBe('heavier than a Lamborghini Aventador');
   });
-  it('counts several when far above one thing but not near the next', () => {
-    expect(weightComparison(200)).toBe('about 3 washing machines');
-    expect(weightComparison(100)).toBe('more than a washing machine');
+
+  it('covers big days', () => {
+    expect(weightComparison(60000)).toBe('heavier than an empty Boeing 737');
   });
-  it('works for huge totals', () => {
-    expect(weightComparison(15e6)).toBe('about 2 Eiffel Towers');
-  });
-  it('says nothing for very little', () => {
+
+  it('says nothing under a tonne', () => {
     expect(weightComparison(0)).toBe(null);
-    expect(weightComparison(2)).toBe(null);
+    expect(weightComparison(999)).toBe(null);
+    expect(weightComparison(1000)).toBe('heavier than the Curiosity Mars rover');
   });
 });

@@ -5,10 +5,11 @@ import { go } from '../../hooks/useRoute.js';
 import { plannedMuscleSets } from '../../model/muscles.js';
 import { warmUpFor, stretchesFor, doseOf, minutesFor } from '../../model/warmup.js';
 
-// The "?" texts, also used next to the settings (Settings, Ready-made plans).
+// The "?" texts, also used in Settings (in a workout they also say where Settings is).
 export const WARMUP_HINT =
   "Five minutes of easy cardio, then three moves for the muscles in today's workout. Studies find warming up helps " +
   'strength and power, with hardly any downside. Before a heavy lift, one or two lighter sets of it help too.';
+const SETTINGS_NOTE = 'You can change this in Settings (at the bottom of Home).';
 export const STRETCH_HINT =
   'A few stretches for the muscles you trained, at the end. Quick: 4 stretches, 30 s each (about 5 min). Thorough: ' +
   'each held twice, plus hips and upper back (about 12 min). Done regularly, stretching makes you more flexible, ' +
@@ -19,8 +20,11 @@ export const STRETCH_HINT =
 // the workout's muscles (warmup.js). Tick each one off, or skip it for
 // today; the ticks live on the workout until it's finished. When everything
 // is ticked, the card shrinks to one line.
-export default function MovesCard({ part, workout, onChange }) {
-  const { settings, exercisesById } = useData();
+// settings, exercisesById: whose to use (default: the current page's); a
+// partner taking turns shows your checklist, so both pages line up.
+export default function MovesCard({ part, workout, onChange, ...yours }) {
+  const data = useData();
+  const { settings, exercisesById } = { ...data, ...yours };
   const size = settings.stretching;
   const on = part === 'warmup' ? settings.warmUp : size !== 'off';
   const done = workout.movesDone || [];
@@ -45,7 +49,7 @@ export default function MovesCard({ part, workout, onChange }) {
     <section className={`card moves-card ${part}`}>
       <CardTitle
         title={title}
-        hint={part === 'warmup' ? WARMUP_HINT : STRETCH_HINT}
+        hint={`${part === 'warmup' ? WARMUP_HINT : STRETCH_HINT} ${SETTINGS_NOTE}`}
         after={<span className="fold-count">about {minutesFor(moves, size)} min</span>}
       />
       <ul className="moves">

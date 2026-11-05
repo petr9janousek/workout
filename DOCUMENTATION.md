@@ -117,14 +117,13 @@ src/
     planTemplates.js       The ready-made plans, and the research they're based on (~10 sets per muscle a week)
     extras.js              Healthy extras: the core / grip / upper back / balance finisher
     planFile.js            Plan files: sharing a plan with someone, importing one
-    partner.js             Train together: a partner's code (pass), her part of your workout, handing it over, importing it
+    partner.js             Train together: a partner's code (pass), her part of your workout, handing it over, importing it, taking turns
     bodyWeight.js          Body weight log: one entry per day, the 30-day change
     activities.js          Other activities (run, swim…): types, effort, what counts as an active day, WHO minutes
     muscles.js             Which muscles an exercise works, sets per muscle, map colours
     calendar.js            Days, weeks and months: training days, weekly counts, streaks, weekly goal
     settings.js            Settings and their defaults, weight jumps (weightStepFor), rest time
     records.js             Personal records: which sets beat everything before, records in a workout / this week
-    comparisons.js         "That's about a hippo": weight lifted compared with things you can picture
     tips.js                How to do the built-in exercises: three cues and the common mistake each
     warmup.js              Warm-up moves and stretches (with how-to), and which ones a workout gets from its muscles
     *.test.js              Tests (see below)
@@ -134,7 +133,7 @@ src/
     db.js                  The phone's database (IndexedDB)
     migrations.js          Updates data saved by older versions of the app
     backup.js              Backup files: making, reading, sharing
-    sampleData.js          Sample data for testing (Settings → For testing)
+    sampleData.js          Sample data for testing (Settings → For testing; only on localhost / npm run dev)
     transfer.js            Data ⇄ a few hundred bytes for a QR code (JSON, deflated); the channel can change later
 
   hooks/                   ── small reusable React helpers ──
@@ -153,7 +152,7 @@ src/
     charts/                BodyFigure (the drawing, + bodyShapes.js with the female version) used by BodyMap (heat map) and MusclePicker (tap to pick muscles);
                            MuscleCard, LineChart; WeekStrip, MonthCalendar, WeeksChart, HabitCard (training habit); BodyWeightCard
     workout/               WorkoutEditor → ExerciseCard → CoachLine + SetRow; RestTimer; ExercisePicker; CreateExercise; Totals;
-                           WorkoutSummary (totals, comparison, records); SessionRow (a workout or activity in a list);
+                           WorkoutSummary (totals, change since last time, records); SessionRow (a workout or activity in a list);
                            MovesCard (the warm-up / stretching checklist)
 
   screens/                 ── one folder per tab, plus the screens they share ──
@@ -171,7 +170,7 @@ src/
 
 - Colours, sizes, spacing → `src/styles.css`. The main colours are at the top (`--accent` is the orange, `--heat-*` the muscle map).
 - Wording on a screen → the matching file in `src/screens/`
-- How-to tips for an exercise → `TIPS` in `src/model/tips.js`; the funny weight comparisons → `THINGS` in `src/model/comparisons.js`
+- How-to tips for an exercise → `TIPS` in `src/model/tips.js`
 - How suggestions work → `src/model/progression.js` (and its tests)
 - Which muscles an exercise works → `RULES` in `src/model/muscles.js`
 - Automatic weight jumps → `AUTO_STEPS` in `src/model/settings.js`; automatic rest → `restTarget` in the same file (which exercises count as big lifts → `isBigLift` in `src/model/exercises.js`)
@@ -221,7 +220,6 @@ runs all tests in a second or two and prints what passed. Each test is a short, 
 | `model/muscles.test.js` | Guessing muscles, main and helping muscle names, counting sets per muscle, map colours, searching the exercise library, suggesting a swap for the same muscles |
 | `model/records.test.js` | Which sets are personal records: heavier, more reps, longer holds, assisted; only one trophy for repeating a record; none the first time; records of a workout and of the last days |
 | `model/partner.test.js` | Train together: her code carries her plan day exactly as her app plans it, enough history for "last time" and trophies, fits one QR code; only ticked sets are handed over; on her phone exercises match by name or are created, her plan day counts, the same workout can't be added twice |
-| `model/comparisons.test.js` | "About an Asian elephant", "almost a hippo", "about 3 washing machines"; nothing for tiny totals |
 | `model/tips.test.js` | Every exercise the app creates (starter list, plans, extras) has how-to tips |
 | `model/bodyWeight.test.js` | One body weight per day, removing a day, the change over 30 days |
 | `model/activities.test.js` | Activities of 20+ minutes count as active days (one per day), easy / moderate / hard WHO minutes, calendar day kinds, they survive backup and restore |
@@ -237,8 +235,10 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
 
+- **v0.28, taking turns:** training together on the same workout ("Same workout as you"), you take turns on each exercise. When you tick a set, the card above the tabs says "Diana's turn" in her colour (instead of a rest timer: her set is your rest) and the screen swipes to her page, with that exercise at the same height on screen. When she ticks her set, it says "Your turn" and swipes back to you. Only when the other person has that exercise with sets left (matched by name); three or more people go round in order; otherwise the normal rest timer shows. Her page shows your warm-up and stretching checklist too (the same ticks), so both pages line up. A partner who scanned in with her own plan isn't part of it
+- **v0.27, leaner:** the weigh-in left Home (body weight is logged in Progress, as before). Warm-up and stretching are set only in Settings; in a workout their "?" says so. "For testing" (sample data, reset) only shows on your own computer, so nobody wipes their workouts by accident. The "that's about a …" weight comparison after a workout is gone.
 - **v0.26.1:** Edit on an exercise's page is an orange button. After swapping an exercise of today's plan day, its card says "Instead of X today. Keep in plan" (a link) (changes that day of the plan for next time; sets and healthy-extra marks stay). Not on a training partner's page
-- **v0.26, warm-up and stretching:** a warm-up checklist under the muscle map (on by default): 5 min easy cardio, then 3 moves for the muscles in today's workout, each ticked off with ✓, or "Skip the warm-up today". Optional stretching at the end, after Add exercise and above the notes (Off / Quick: 4 stretches, 30 s, ~5 min / Thorough: held twice, plus hips and upper back, ~12 min). Picked from the workout's planned sets (healthy extras left out), so a leg day gets leg moves. Nothing is logged: the ticks disappear when the workout is finished. Only on your own page when training together. 13 warm-up moves and 17 stretches with how-to pages in Exercises → "Warm-up & stretch" (a search finds them too). Settings, and the options above the ready-made plans, turn them on or off, each with a "?"
+- **v0.26, warm-up and stretching:** a warm-up checklist under the muscle map (on by default): 5 min easy cardio, then 3 moves for the muscles in today's workout, each ticked off with ✓, or "Skip the warm-up today". Optional stretching at the end, after Add exercise and above the notes (Off / Quick: 4 stretches, 30 s, ~5 min / Thorough: held twice, plus hips and upper back, ~12 min). Picked from the workout's planned sets (healthy extras left out), so a leg day gets leg moves. Nothing is logged: the ticks disappear when the workout is finished. Only on your own page when training together. 13 warm-up moves and 17 stretches with how-to pages in Exercises → "Warm-up & stretch" (a search finds them too). Settings turns them on or off, each with a "?"
   - Why: warming up improved performance in 79% of measures in a meta-analysis, with little sign of harm ([Fradkin et al. 2010](https://www.bisp-surf.de/Record/PU201102000946)); dynamic, load-building warm-ups help upper-body strength and power, short static stretching does nothing for power ([McCrary et al. 2015](https://bjsm.bmj.com/content/49/14/935.abstract)); structured warm-ups cut leg injuries in young athletes ([Herman et al. 2012](https://pmc.ncbi.nlm.nih.gov/articles/PMC3408383)); ACSM: 5–10 min light to moderate, dynamic before, static stretches (15–30 s) after. Static stretching under 60 s per muscle barely affects strength ([Behm et al. 2019](https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2019.01468/pdf)); a cool-down doesn't reduce soreness or injuries ([Van Hooren & Peake 2018](https://rd.springer.com/content/pdf/10.1007/s40279-018-0916-2.pdf)), so stretching is off by default and its "?" says what it's for; lifting through a full range improves mobility about as much as stretching (Alizadeh et al. 2023)
 - **v0.25, one walkthrough through the whole app:** it starts on Home (next workout, Start, empty workout and activities, Settings), then asks you to tap Progress (the lit tab pulses and works, everything else waits), goes on there (calendar, muscles, all workouts, exercises), then Plans (your plans, ready-made, make your own), then Exercises (search, muscle filter, how-to pages), and ends with "That's it". Skip ends all of it. Settings → "Show the walkthrough again" is now a button, above For testing
 - **v0.24.1:** the welcome photo is gone again (plain background, larger body drawings)
@@ -262,14 +262,14 @@ Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](RO
 - Sets read shorter everywhere: "42.5 kg × 10, 10, 9 (RPE 8)" instead of "42.5 × 10 · 42.5 × 10 · 42.5 × 9 @8"
 
 - **v0.12, clearer navigation:** four tabs, one job each. **Home** is today: this week, ways to start (the plan's next day is one choice next to an empty workout and logging an activity, never required; long exercise lists fold after five), a quick weigh-in, this week's records, the backup reminder, and Settings at the bottom. While a workout runs, the Home tab *is* the workout and shows its clock. **Progress** took in History: tap a calendar day and what you did shows underneath; "All workouts" (by month) and "Exercises" fold open at the bottom. **Plans** and **Exercises** are tabs of their own; Plans also has recent workouts to repeat. The first start asks only Woman / Man; a plan is offered, not required
-- **Finish summary:** after Finish, the totals, a comparison ("That's about a rhino"), how it compares with the last time you did that day, the new records and the muscles worked. The same summary is at the top of every workout in Progress
+- **Finish summary:** after Finish, the totals, how it compares with the last time you did that day, the new records and the muscles worked. The same summary is at the top of every workout in Progress
 - **Exercise pages:** each exercise has two pages that link to each other. **How to** (opened from Exercises, or by tapping an exercise's name during a workout): main and helping muscles, three cues and the common mistake for all built-in exercises, a YouTube link, **your own notes** (seat height, pin…, shown under the exercise during workouts), Edit at the top right, and a "Your progress" line. **Progress** (opened from Progress): next time, records, chart, sessions, and a "How to do it" line
 - **Plan day on Home:** long days show the first 5 exercises and "Show all 8 exercises"
 - **Body weight** in Progress: the chart is the list; tap a point to see it or remove it
 
 - **Other activities** (Home → Log activity): running, walking, cycling, swimming, dancing, yoga, hiking, team sport, climbing, or other (with its own name), with minutes and how hard (talk test); distance, calories, average heart rate and notes under "More details". Pace is worked out for running, walking and hiking. Shown in Progress and on the calendar as an orange ring (gym days are solid orange). 20+ minutes counts as an active day for the weekly goal and streak. Progress shows active minutes this week against the WHO's 150 (moderate ×1, hard ×2, easy not counted)
 - **Swap** an exercise during a workout when the machine is taken: suggestions that work the same main muscles, most similar first, or search all. Only today's workout changes, not the plan
-- **For testing** (Settings, folded at the bottom): fill the app with ~8 weeks of sample data, or reset it to a fresh install. Both replace everything and ask first
+- **For testing** (Settings, folded at the bottom, only when running on your computer: `npm run dev` / `npm run preview`): fill the app with ~8 weeks of sample data, or reset it to a fresh install. Both replace everything and ask first
 - **Body weight** is on by default: type it, tap Save, and see a chart (points spaced by date)
 - **Healthy extras can be skipped** during a workout (the bin, which says the extra is optional and stays in the plan), and unticked extras don't trigger the "sets not ticked" question
 - **V-taper and Hourglass** both come in 3 and 4 days a week. Woman / Man is asked once (first start, or Settings), not in the plan library

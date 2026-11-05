@@ -12,7 +12,7 @@ import { go, back } from '../../hooks/useRoute.js';
 import { finishWorkout, workoutTotals } from '../../model/workouts.js';
 import { workoutMuscleSets } from '../../model/muscles.js';
 import { indexById } from '../../model/exercises.js';
-import { handOver, partnerLibrary } from '../../model/partner.js';
+import { handOver, partnerLibrary, newlyTicked, nextTurn } from '../../model/partner.js';
 import { swapInPlan } from '../../model/plans.js';
 import { formatDate, formatClock, formatTotal, keepLastWord } from '../../model/format.js';
 import { countEvent } from '../../analytics.js';
@@ -32,6 +32,11 @@ const WORKOUT_TOUR = [
 
 // Colours for training partners' pages (you are orange); see styles.css.
 const PARTNER_COLORS = ['var(--person-2)', 'var(--person-3)', 'var(--person-4)'];
+export const partnerColor = (i) => PARTNER_COLORS[i % PARTNER_COLORS.length];
+
+// The turn (workout.turn) the pages last switched for, so reopening the
+// workout doesn't switch again.
+let switchedFor = null;
 
 // The workout in progress: totals and timers pinned on top, muscle map,
 // the warm-up, the exercises, stretches, notes, and Finish / Discard.
@@ -102,7 +107,44 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
     if (confirm('Discard this workout? Nothing from it will be saved.')) actions.deleteWorkout(workout.id);
   }
 
-  const updatePartner = (p) => actions.saveWorkout({ ...workout, partners: partners.map((x) => (x.id === p.id ? p : x)) });
+  // Saves one person's changed workout. Doing the same workout, you take
+  // turns (nextTurn in partner.js): a newly ticked set makes it the next
+  // person's turn on that exercise.
+  const scopeOf = (id) => scopes[partners.findIndex((x) => x.id === id)];
+  function change(personId, changed) {
+    const mine = personId === 'me';
+    const before = mine ? workout : partners.find((x) => x.id === personId).workout;
+    let next = mine ? changed : { ...workout, partners: partners.map((x) => (x.id === personId ? { ...x, workout: changed } : x)) };
+    const turnTakers = next.partners?.filter((x) => x.turns) || [];
+    const exerciseId = turnTakers.length && (mine || turnTakers.some((x) => x.id === personId)) ? newlyTicked(before.entries, changed.entries) : null;
+    if (exerciseId) {
+      const group = [
+        { id: 'me', entries: next.entries, nameOf: (id) => exercisesById.get(id)?.name },
+        ...turnTakers.map((x) => ({ id: x.id, entries: x.workout.entries, nameOf: (id) => scopeOf(x.id)?.exercisesById.get(id)?.name })),
+      ];
+      const name = group.find((g) => g.id === personId).nameOf(exerciseId);
+      next = { ...next, turn: name ? nextTurn(group, personId, name) : null };
+    }
+    actions.saveWorkout(next);
+  }
+
+  // A new turn: show that person's page, with the exercise at the same
+  // height on screen as it was on the page before.
+  const turn = workout.turn;
+  useEffect(() => {
+    if (!turn || turn.at === switchedFor) return;
+    switchedFor = turn.at;
+    const index = (id) => people.findIndex((p) => p.id === id);
+    if (index(turn.person) < 0) return;
+    const card = (id) => document.querySelectorAll('.person-page')[index(id)]?.querySelector(`[data-exercise="${CSS.escape(turn.exercise)}"]`);
+    const top = card(person)?.getBoundingClientRect().top;
+    choose(turn.person);
+    setTimeout(() => {
+      const to = card(turn.person);
+      if (to && top != null) window.scrollBy({ top: to.getBoundingClientRect().top - top, behavior: 'smooth' });
+    }, 80);
+  }, [turn?.at]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function removePartner(partner) {
     if (!confirm(`Remove ${partner.name} from this workout? Their sets from today will be lost.`)) return;
     actions.saveWorkout({ ...workout, partners: partners.filter((x) => x.id !== partner.id) });
@@ -110,13 +152,13 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
   }
 
   const people = [
-    { id: 'me', name: settings.name || 'You', color: 'var(--accent)', workout, onChange: actions.saveWorkout },
+    { id: 'me', name: settings.name || 'You', color: 'var(--accent)', workout, onChange: (w) => change('me', w) },
     ...partners.map((p, i) => ({
       id: p.id,
       name: p.name,
-      color: PARTNER_COLORS[i % PARTNER_COLORS.length],
+      color: partnerColor(i),
       workout: p.workout,
-      onChange: (w) => updatePartner({ ...p, workout: w }),
+      onChange: (w) => change(p.id, w),
       scope: scopes[i],
       partner: p,
     })),
@@ -127,11 +169,14 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
   const yourExerciseFor = (p, id) => yourByName.get(p.scope.exercisesById.get(id)?.name.toLowerCase());
 
   // One person's page: the same as a workout on your own.
-  // Warm-up and stretches only on your own page.
+  // Your warm-up and stretches: on your page, and the same checklist on the
+  // page of a partner taking turns with you (so the pages line up).
+  const moves = (p, part) =>
+    (!p.partner || p.partner.turns) && <MovesCard part={part} workout={workout} onChange={(w) => change('me', w)} settings={settings} exercisesById={exercisesById} />;
   const page = (p) => (
     <>
       <MuscleCard id="workout" title="Muscles worked" sets={workoutMuscleSets(p.workout, p.scope?.exercisesById || exercisesById)} scale="workout" />
-      {!p.partner && <MovesCard part="warmup" workout={p.workout} onChange={p.onChange} />}
+      {moves(p, 'warmup')}
       {p.partner && <SameAsYou partner={p} you={people[0]} yours={exercisesById} />}
       <WorkoutEditor
         workout={p.workout}
@@ -146,7 +191,7 @@ export default function ActiveWorkout({ workout, picking, swapping }) {
         canOpen={(id) => !p.partner || Boolean(yourExerciseFor(p, id))}
         keepSwap={p.partner ? null : keepSwap}
       >
-        {!p.partner && <MovesCard part="stretch" workout={p.workout} onChange={p.onChange} />}
+        {moves(p, 'stretch')}
       </WorkoutEditor>
       {p.partner && (
         <button className="btn-text small-link center-link remove-partner" onClick={() => removePartner(p.partner)}>

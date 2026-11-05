@@ -5,6 +5,7 @@ import { useNow } from '../../hooks/useNow.js';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight.js';
 import { restTarget } from '../../model/settings.js';
 import { formatClock } from '../../model/format.js';
+import { partnerColor } from '../../screens/workout/ActiveWorkout.jsx';
 
 // After a ticked set: a small card above the tab bar with the rest left,
 // on every screen while the workout runs (it lives in App.jsx). It drains;
@@ -14,6 +15,8 @@ import { formatClock } from '../../model/format.js';
 // partner's), against the rest for that exercise (big lifts rest longer, see
 // restTarget in settings.js). While the keyboard is open, the card sits just
 // above it, so it stays in view while you type.
+// Taking turns with a training partner (workout.turn, see partner.js): the
+// card says whose turn it is ("Diana's turn", "Your turn") instead of a rest.
 const READY_MS = 3000; // how long "Ready" stays before it fades away
 
 export default function RestTimer({ workout }) {
@@ -42,6 +45,35 @@ export default function RestTimer({ workout }) {
       navigator.vibrate?.(200);
     }
   }, [startedAt, over]);
+
+  // Taking turns: whose turn it is instead of a rest (their set is your rest).
+  const turn = workout.turn;
+  const partners = workout.partners || [];
+  const turnIndex = turn ? partners.findIndex((p) => p.id === turn.person) : -1;
+  if (turn && (turn.person === 'me' || turnIndex >= 0)) {
+    const mine = turn.person === 'me';
+    const name = mine ? settings.name || 'You' : partners[turnIndex].name;
+    return (
+      <div className="rest-timer turn" role="status" style={{ '--person': mine ? 'var(--accent)' : partnerColor(turnIndex), ...(keyboard ? { bottom: keyboard + 8 } : {}) }}>
+        {hint && (
+          <p className="hint-text rest-hint">
+            Doing the same workout, you take turns: when you tick a set, it's their turn on that exercise and the screen
+            switches to their page; when they tick theirs, it's yours again. Their set is your rest.
+          </p>
+        )}
+        <div className="rest-row">
+          <span className="rest-main">
+            <span className="turn-mark" aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
+            <span className="rest-text">
+              <strong>{mine ? 'Your turn' : `${name}'s turn`}</strong>
+              <span>{turn.label}</span>
+            </span>
+          </span>
+          <HintButton open={hint} onToggle={() => setHint(!hint)} about="taking turns" />
+        </div>
+      </div>
+    );
+  }
 
   if (!startedAt || hiddenFor === startedAt || over > READY_MS) return null;
   const ready = over >= 0;

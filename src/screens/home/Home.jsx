@@ -6,7 +6,6 @@ import Icon from '../../components/ui/Icon.jsx';
 import LinkCard from '../../components/ui/LinkCard.jsx';
 import TogetherActions from './TogetherActions.jsx';
 import Tour from '../../components/ui/Tour.jsx';
-import { NumberInput } from '../../components/ui/NumberInput.jsx';
 import { useSaveBackup } from '../../hooks/useSaveBackup.js';
 import { backupDue } from '../../data/backup.js';
 import { useData } from '../../data/DataProvider.jsx';
@@ -16,14 +15,12 @@ import { nextDayIndex, lastPlanWorkout, dayMuscleSets, dayLine } from '../../mod
 import { restTarget } from '../../model/settings.js';
 import { exerciseName, typeOf } from '../../model/exercises.js';
 import { recentRecords } from '../../model/records.js';
-import { logBodyWeight } from '../../model/bodyWeight.js';
 import { dayKey, workoutsByDay, thisWeek, dayMarks, weeklyGoal } from '../../model/calendar.js';
 import { formatSet } from '../../model/sets.js';
-import { formatDate, formatNumber, keepLastWord } from '../../model/format.js';
+import { formatDate, keepLastWord } from '../../model/format.js';
 
 // Home: today. Top to bottom: this week, ways to start (your plan's next day
-// is one of them, never the only one), a quick weigh-in, this week's
-// records, a backup reminder when one is due, and Settings. While a workout
+// is one of them, never the only one), this week's records, a backup reminder when one is due, and Settings. While a workout
 // runs, the workout replaces this screen (see HomeScreen.jsx).
 export default function Home() {
   const { workouts, activePlan, settings, actions } = useData();
@@ -71,7 +68,6 @@ export default function Home() {
         </section>
       )}
 
-      {settings.trackBodyWeight && <WeighIn />}
       <RecentRecords />
       {backupDue(settings.lastBackup, finished.length) && <BackupReminder lastBackup={settings.lastBackup} />}
 
@@ -207,42 +203,6 @@ function DayList({ items }) {
         </button>
       )}
     </div>
-  );
-}
-
-// Today's body weight in one line, until it's saved for today.
-function WeighIn() {
-  const { settings, actions } = useData();
-  const list = settings.bodyWeights || [];
-  const today = dayKey(new Date());
-  const [value, setValue] = useState(null);
-  const [saved, setSaved] = useState(null);
-  const todays = list.find((e) => e.date === today);
-  if (todays && saved == null) return null; // weighed already, nothing to do
-
-  function save() {
-    if (value == null) return;
-    actions.setSetting('bodyWeights', logBodyWeight(list, today, value));
-    setSaved(value);
-  }
-
-  return (
-    <section className="card weigh-in">
-      {saved != null ? (
-        <p className="weigh-in-done">
-          <Icon name="check" size={18} /> Saved {formatNumber(saved)} kg for today
-        </p>
-      ) : (
-        <div className="weigh-in-row">
-          <span className="weigh-in-label">
-            <strong>Weigh in?</strong>
-            <span className="muted small">Body weight today</span>
-          </span>
-          <NumberInput value={value} onChange={setValue} decimal placeholder={list.length ? formatNumber(list.at(-1).weight) : 'kg'} label="Today's body weight" />
-          <button className="btn btn-primary" onClick={save} disabled={value == null}>Save</button>
-        </div>
-      )}
-    </section>
   );
 }
 

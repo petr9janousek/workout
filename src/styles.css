@@ -151,10 +151,6 @@ h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .link-card-main > svg { color: var(--muted); flex-shrink: 0; }
 .goal-note { margin: -6px 2px 0; color: var(--done); }
 .get-plan strong { font-size: 1rem; }
-.weigh-in-row { display: grid; grid-template-columns: 1fr 84px auto; align-items: center; gap: 10px; }
-.weigh-in-label strong { white-space: nowrap; }
-.weigh-in-label { display: flex; flex-direction: column; min-width: 0; }
-.weigh-in-done { margin: 0; display: flex; align-items: center; gap: 8px; color: var(--done); }
 .records-card h3 { margin: 0 0 6px; font-size: 1rem; }
 .records-list { list-style: none; margin: 0; padding: 0; }
 .records-item {
@@ -873,7 +869,6 @@ h1, h2, .day-title { text-wrap: balance; }
   width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: var(--accent-text);
 }
 .summary-card .totals { margin-bottom: 0; }
-.comparison { margin: 12px 0 0; font-size: 1.05rem; font-weight: 600; }
 .summary-change { margin: 4px 0 0; }
 .summary-records { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
 .summary-records h4 { margin: 0 0 4px; font-size: 0.95rem; }
@@ -1041,9 +1036,13 @@ h1, h2, .day-title { text-wrap: balance; }
 .moves-card.stretch { margin: 16px 0 0; }
 .moves-title { margin: 22px 0 4px; font-size: 1.05rem; }
 .move-group h3 { margin: 14px 0 0; font-weight: 600; }
-.option-label { min-width: 7.2em; }
 
 /* "Instead of X, today only. Keep in plan" after a swap (ExerciseCard) */
 .swap-note { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 10px; margin: -4px 0 10px; font-size: 0.85rem; color: var(--muted); }
 .swap-note .small-link { margin-left: auto; padding: 4px 0; font-size: 0.85rem; }
 .swap-note.kept { justify-content: flex-start; align-items: center; gap: 6px; color: var(--done); }
+
+/* Taking turns: "Diana's turn" / "Your turn" in that person's colour (RestTimer) */
+.rest-timer.turn { background: color-mix(in srgb, var(--person) 14%, var(--surface)); border-color: color-mix(in srgb, var(--person) 60%, transparent); }
+.turn-mark { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--person); color: #111315; font-weight: 800; font-size: 1.1rem; }
+.rest-timer.turn .rest-text span { white-space: normal; }
