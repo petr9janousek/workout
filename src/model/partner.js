@@ -183,6 +183,7 @@ export function handOver(partner, yourExercisesById, finishedAt = new Date().toI
       entries: workout.entries.map((e) => ({
         exercise: ids.indexOf(e.exerciseId),
         sets: e.sets.map((s) => setToWire(s)),
+        ...(e.note ? { note: e.note } : {}),
         ...(e.extra ? { extra: true } : {}),
       })),
     },
@@ -215,7 +216,7 @@ export function importHandOver(data, exercises, workouts, plans = []) {
     id, startedAt, finishedAt, notes,
     entries: data.workout.entries
       .filter((e) => ids[e.exercise])
-      .map((e) => ({ id: newId(), exerciseId: ids[e.exercise], sets: e.sets.map(doneSet), ...(e.extra ? { extra: true } : {}) })),
+      .map((e) => ({ id: newId(), exerciseId: ids[e.exercise], sets: e.sets.map(doneSet), ...(e.extra ? { extra: true } : {}), ...(e.note ? { note: String(e.note) } : {}) })),
     ...(name ? { name } : {}),
     ...(plan ? { planId, dayId } : {}),
   };

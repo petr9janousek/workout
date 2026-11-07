@@ -3,7 +3,7 @@ import ExerciseCard from './ExerciseCard.jsx';
 import Icon from '../ui/Icon.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { planEntry } from '../../model/progression.js';
-import { lastSession } from '../../model/workouts.js';
+import { lastSession, lastNoteOf } from '../../model/workouts.js';
 import { setsBefore } from '../../model/records.js';
 import { similarExercises } from '../../model/muscles.js';
 import { exerciseName } from '../../model/exercises.js';
@@ -89,6 +89,7 @@ export default function WorkoutEditor({ workout, onChange, picking, onOpenPicker
           entry={entry}
           exercise={exercisesById.get(entry.exerciseId)}
           last={lastSession(workouts, entry.exerciseId, workout.startedAt)}
+          lastNote={lastNoteOf(workouts, entry.exerciseId, workout.startedAt)}
           earlier={setsBefore(workouts, entry.exerciseId, workout.startedAt)}
           finished={finished}
           onChange={(change) => updateEntry(entry.id, change)}

@@ -132,7 +132,7 @@ src/
     DataProvider.jsx       The store: loads, keeps and saves all data; useData()
     db.js                  The phone's database (IndexedDB)
     migrations.js          Updates data saved by older versions of the app
-    backup.js              Backup files: making, reading, sharing
+    backup.js              Backup files: making, reading, sharing (the format: BACKUP-FORMAT.md)
     sampleData.js          Sample data for testing (Settings → For testing; only on localhost / npm run dev)
     transfer.js            Data ⇄ a few hundred bytes for a QR code (JSON, deflated); the channel can change later
 
@@ -235,6 +235,7 @@ Run them before pushing a change to the rules in `model/`. When a test fails, it
 
 Everything the app does, roughly newest first. Planned next: see [ROADMAP.md](ROADMAP.md).
 
+- **v0.29, notes per exercise per workout:** a note icon on each exercise card in a workout (a dot on it when there's a note). It opens last time's note ("Last time (Nov 3): seat on 4, felt heavy") and a field for today's. Notes are saved as you type and stay with the workout, also on an exercise you skipped (it's kept in the finished workout with no sets, shown as "Skipped" with its note). They go along when a partner's workout is handed over, and are kept in backups. The exercise's page lists all of them ("Notes from workouts"), each deletable. "Your notes" on the exercise's page stay for permanent things (seat height, pin). The backup format is described in [BACKUP-FORMAT.md](BACKUP-FORMAT.md), as a guide for converting other data into it
 - **v0.28, taking turns:** training together on the same workout ("Same workout as you"), you take turns on each exercise. When you tick a set, the card above the tabs says "Diana's turn" in her colour (instead of a rest timer: her set is your rest) and the screen swipes to her page, with that exercise at the same height on screen. When she ticks her set, it says "Your turn" and swipes back to you. Only when the other person has that exercise with sets left (matched by name); three or more people go round in order; otherwise the normal rest timer shows. Her page shows your warm-up and stretching checklist too (the same ticks), so both pages line up. A partner who scanned in with her own plan isn't part of it
 - **v0.27, leaner:** the weigh-in left Home (body weight is logged in Progress, as before). Warm-up and stretching are set only in Settings; in a workout their "?" says so. "For testing" (sample data, reset) only shows on your own computer, so nobody wipes their workouts by accident. The "that's about a …" weight comparison after a workout is gone.
 - **v0.26.1:** Edit on an exercise's page is an orange button. After swapping an exercise of today's plan day, its card says "Instead of X today. Keep in plan" (a link) (changes that day of the plan for next time; sets and healthy-extra marks stay). Not on a training partner's page

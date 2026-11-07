@@ -108,6 +108,11 @@ describe('Backup files', () => {
     expect(backupDue('2026-10-01T12:00:00Z', 10, now)).toBe(true);
   });
 
+  it('keeps the notes on exercises in workouts', () => {
+    const backup = createBackup({ exercises: [{ id: 'b', name: 'Bench press', type: 'weight' }], workouts: [{ id: 'w', startedAt: '2026-11-07T10:00:00Z', finishedAt: '2026-11-07T11:00:00Z', notes: '', entries: [{ id: 'e', exerciseId: 'b', note: 'seat 4', sets: [] }] }], settings: {} });
+    expect(readBackup(JSON.stringify(backup)).workouts[0].entries[0].note).toBe('seat 4');
+  });
+
   it('refuses files that are not backups', () => {
     expect(() => readBackup('not json')).toThrow(/not a Workout backup/);
     expect(() => readBackup('{"hello": 1}')).toThrow(/not a Workout backup/);

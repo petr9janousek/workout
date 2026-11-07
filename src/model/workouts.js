@@ -9,6 +9,8 @@
 //   { id, exerciseId, sets: [set, …], suggestion? }
 //   suggestion: the "try heavier" hint shown when it was added (see progression.js)
 //   swappedFrom, swapKept: a swapped plan exercise, and whether it was kept in the plan (while it runs)
+//   note: your note on this exercise today (shown next time, see lastNoteOf; an
+//         exercise with a note but no sets done is kept when finishing)
 
 import { newId } from './ids.js';
 import { isDoneSet, val, estimated1RM, withoutTarget } from './sets.js';
@@ -53,9 +55,13 @@ export const activeWorkout = (workouts) => workouts.find((w) => !w.finishedAt) |
 export function finishWorkout({ movesDone, movesSkipped, turn, ...workout }, finishedAt = new Date().toISOString()) {
   const skipped = workout.entries.filter((e) => !e.extra).flatMap((e) => e.sets).filter((s) => !isDoneSet(s)).length;
   const entries = workout.entries
-    .map(({ suggestion, swappedFrom, swapKept, ...entry }) => ({ ...entry, sets: entry.sets.filter(isDoneSet).map(withoutTarget) }))
-    .filter((e) => e.sets.length > 0);
-  return { workout: entries.length ? { ...workout, entries, finishedAt } : null, skipped };
+    .map(({ suggestion, swappedFrom, swapKept, note, ...entry }) => ({
+      ...entry,
+      ...(note?.trim() ? { note: note.trim() } : {}),
+      sets: entry.sets.filter(isDoneSet).map(withoutTarget),
+    }))
+    .filter((e) => e.sets.length > 0 || e.note); // a skipped exercise stays for its note
+  return { workout: entries.some((e) => e.sets.length) ? { ...workout, entries, finishedAt } : null, skipped };
 }
 
 // Totals for a workout: sets done (out of planned), weight lifted, reps, time held.
@@ -91,6 +97,25 @@ export function recentSessions(workouts, exerciseId, beforeIso = null, limit = 1
 }
 
 export const lastSession = (workouts, exerciseId, beforeIso) => recentSessions(workouts, exerciseId, beforeIso, 1)[0] || null;
+
+// The note from the last finished workout that had this exercise (done or
+// skipped), started before `beforeIso`: { date, note }, or null when that
+// time had no note. Shown on the exercise's card next time.
+export function lastNoteOf(workouts, exerciseId, beforeIso = null) {
+  for (const w of finishedWorkouts(workouts)) {
+    if (beforeIso && w.startedAt >= beforeIso) continue;
+    const entry = w.entries.find((e) => e.exerciseId === exerciseId);
+    if (entry) return entry.note ? { date: w.startedAt, note: entry.note } : null;
+  }
+  return null;
+}
+
+// Every note written on one exercise in finished workouts, newest first:
+// [{ workoutId, entryId, date, note }] (the exercise's page lists them).
+export const notesOf = (workouts, exerciseId) =>
+  finishedWorkouts(workouts).flatMap((w) =>
+    w.entries.filter((e) => e.exerciseId === exerciseId && e.note).map((e) => ({ workoutId: w.id, entryId: e.id, date: w.startedAt, note: e.note })),
+  );
 
 // Every session of one exercise, oldest first, with the numbers the Progress
 // screen charts and the personal records.

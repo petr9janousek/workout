@@ -32,9 +32,14 @@ const COLUMNS = {
 // onOpen: show how to do the exercise (the name becomes a button).
 // swapNote: after a swap of a plan exercise, { from, onKeep } offers to keep
 // it in the plan, and { kept: true } says it's done.
-export default function ExerciseCard({ entry, exercise, last, earlier = [], finished, onChange, onRemove, onSwap, onOpen, swapNote }) {
+// lastNote: { date, note } from last time (lastNoteOf). The note icon opens
+// it and today's (entry.note); a dot on it
+// means there's one. All notes are on the exercise's page (notesOf).
+export default function ExerciseCard({ entry, exercise, last, lastNote, earlier = [], finished, onChange, onRemove, onSwap, onOpen, swapNote }) {
   const { settings } = useData();
   const [dismissed, setDismissed] = useState(null); // id of a too-light set whose hint was closed
+  const [noteOpen, setNoteOpen] = useState(false);
+  const hasNote = Boolean(entry.note?.trim() || lastNote);
   const type = typeOf(exercise);
   const name = exerciseName(exercise);
   const columns = COLUMNS[type];
@@ -104,8 +109,18 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
           {entry.extra && <span className="badge extra-badge">Healthy extra</span>}
         </h3>
         <span className="card-header-actions">
+          <button
+            className={hasNote ? 'icon-btn subtle note-btn has-note' : 'icon-btn subtle note-btn'}
+            onClick={() => setNoteOpen(!noteOpen)}
+            aria-expanded={noteOpen}
+            aria-label={`Notes for ${name}`}
+          >
+            <Icon name="note" size={18} />
+          </button>
           {onSwap && !finished && !entry.sets.some((s) => s.done) && (
-            <button className="btn-text small-link" onClick={onSwap}>Swap</button>
+            <button className="icon-btn subtle swap-btn" onClick={onSwap} aria-label={`Swap ${name} for another exercise`} title="Swap">
+              <Icon name="swap" size={19} />
+            </button>
           )}
           <button className="icon-btn subtle" onClick={onRemove} aria-label={`Remove ${name}`}>
             <Icon name="trash" size={18} />
@@ -126,6 +141,23 @@ export default function ExerciseCard({ entry, exercise, last, earlier = [], fini
             </>
           )}
         </p>
+      )}
+
+      {noteOpen && (
+        <div className="entry-note">
+          {lastNote && (
+            <p className="small">
+              <span className="muted">Last time ({formatDate(lastNote.date)}):</span> {lastNote.note}
+            </p>
+          )}
+          <textarea
+            rows={2}
+            value={entry.note || ''}
+            placeholder="Note for next time: seat, grip, how it felt…"
+            aria-label={`Today's note for ${name}`}
+            onChange={(e) => onChange((en) => ({ ...en, note: e.target.value }))}
+          />
+        </div>
       )}
 
       {exercise?.notes && <p className="exercise-notes-line">{exercise.notes}</p>}

@@ -1,7 +1,7 @@
 // Tests for workouts.js: finishing a workout, totals and history.
 
 import { describe, it, expect } from 'vitest';
-import { finishWorkout, workoutTotals, recentSessions, exerciseHistory, countWorkoutsWith, previousLike, finishedWorkouts } from './workouts.js';
+import { finishWorkout, workoutTotals, recentSessions, exerciseHistory, countWorkoutsWith, previousLike, finishedWorkouts, lastNoteOf, notesOf } from './workouts.js';
 
 const set = (weight, reps, done = true, extra = {}) => ({ id: Math.random() + '', weight, reps, time: null, rpe: null, done, ...extra });
 const workout = (id, startedAt, entries, finishedAt = startedAt) => ({ id, startedAt, finishedAt, notes: '', entries });
@@ -126,5 +126,39 @@ describe('finishWorkout and swaps', () => {
     const entry = finishWorkout(w).workout.entries[0];
     expect(entry).not.toHaveProperty('swappedFrom');
     expect(entry).not.toHaveProperty('swapKept');
+  });
+});
+
+describe('notes per exercise', () => {
+  const w = (id, day, note) => ({
+    id, startedAt: `2026-11-0${day}T10:00:00Z`, finishedAt: `2026-11-0${day}T11:00:00Z`,
+    entries: [{ id: `e${id}`, exerciseId: 'bench', note, sets: [{ id: `s${id}`, weight: 40, reps: 10, done: true }] }],
+  });
+
+  it('last time brings its note, notesOf lists them newest first', () => {
+    const workouts = [w('a', 1, 'seat 4'), w('b', 3, 'felt heavy'), w('c', 5)];
+    expect(lastNoteOf(workouts, 'bench', '2026-11-04T00:00:00Z')).toEqual({ date: '2026-11-03T10:00:00Z', note: 'felt heavy' });
+    expect(lastNoteOf(workouts, 'bench')).toBe(null); // the last time (Nov 5) had no note
+    expect(notesOf(workouts, 'bench').map((n) => n.note)).toEqual(['felt heavy', 'seat 4']);
+  });
+
+  it('finishing keeps a trimmed note and drops an empty one', () => {
+    const active = (note) => ({ id: 'x', startedAt: '2026-11-07T10:00:00Z', entries: [{ id: 'e', exerciseId: 'bench', note, sets: [{ id: 's', weight: 40, reps: 10, done: true }] }] });
+    expect(finishWorkout(active('  grip wider ')).workout.entries[0].note).toBe('grip wider');
+    expect(finishWorkout(active('   ')).workout.entries[0]).not.toHaveProperty('note');
+  });
+
+  it('a skipped exercise stays for its note, but a workout of only notes is not kept', () => {
+    const set = (done) => ({ id: done ? 'd' : 'u', weight: 40, reps: 10, done });
+    const workout = { id: 'x', startedAt: '2026-11-07T10:00:00Z', entries: [
+      { id: 'a', exerciseId: 'bench', sets: [set(true)] },
+      { id: 'b', exerciseId: 'fly', note: 'machine broken', sets: [set(false)] },
+      { id: 'c', exerciseId: 'curl', sets: [set(false)] },
+    ] };
+    const done = finishWorkout(workout).workout;
+    expect(done.entries.map((e) => e.id)).toEqual(['a', 'b']);
+    expect(done.entries[1].sets).toEqual([]);
+    expect(lastNoteOf([done], 'fly').note).toBe('machine broken');
+    expect(finishWorkout({ ...workout, entries: workout.entries.slice(1) }).workout).toBe(null);
   });
 });

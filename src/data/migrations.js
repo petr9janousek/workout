@@ -67,6 +67,7 @@ function migrateWorkout(workout) {
       sets: (entry.sets || []).map(migrateSet),
       suggestion: migrateSuggestion(entry.suggestion),
       ...(entry.extra ? { extra: true } : {}),
+      ...(entry.note ? { note: String(entry.note) } : {}),
     })),
   };
 }

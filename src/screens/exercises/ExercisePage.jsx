@@ -10,13 +10,14 @@ import { useData } from '../../data/DataProvider.jsx';
 import { go } from '../../hooks/useRoute.js';
 import { EXERCISE_TYPES, typeOf } from '../../model/exercises.js';
 import { musclesOf, musclesByRole } from '../../model/muscles.js';
-import { exerciseHistory } from '../../model/workouts.js';
+import { exerciseHistory, notesOf } from '../../model/workouts.js';
 import { plansUsing } from '../../model/plans.js';
 import { tipsFor, videoSearchUrl } from '../../model/tips.js';
 import { formatDate } from '../../model/format.js';
 
 // One exercise, two pages that link to each other:
 //   How to:   the muscles, three cues and the common mistake, your notes,
+//             the notes from workouts (deletable),
 //             Edit, and a line with your best that opens…
 //   Progress: what to do next time, records, chart, sessions, and a line
 //             back to How to.
@@ -90,6 +91,7 @@ function HowToPage({ exercise, back, onEdit, onProgress }) {
 
       <HowTo exercise={exercise} />
       <Notes key={exercise.id} exercise={exercise} />
+      <WorkoutNotes exercise={exercise} />
 
       {history.length > 0 ? (
         <LinkCard title="Your progress" sub={bestLine(exercise, history)} onClick={onProgress} />
@@ -183,6 +185,38 @@ function Notes({ exercise }) {
         onBlur={save}
         aria-label="Your notes"
       />
+    </section>
+  );
+}
+
+// The notes written on this exercise during workouts, newest first; each can
+// be deleted (it's taken off that workout).
+function WorkoutNotes({ exercise }) {
+  const { workouts, actions } = useData();
+  const notes = notesOf(workouts, exercise.id);
+  if (!notes.length) return null;
+
+  function remove(n) {
+    const workout = workouts.find((w) => w.id === n.workoutId);
+    actions.saveWorkout({ ...workout, entries: workout.entries.map((e) => (e.id === n.entryId ? { ...e, note: undefined } : e)) });
+  }
+
+  return (
+    <section className="card workout-notes">
+      <h3>Notes from workouts</h3>
+      <ul>
+        {notes.map((n) => (
+          <li key={n.entryId}>
+            <span className="workout-note-text">
+              <span className="muted small">{formatDate(n.date)}</span>
+              {n.note}
+            </span>
+            <button className="icon-btn subtle" onClick={() => remove(n)} aria-label={`Delete the note from ${formatDate(n.date)}`}>
+              <Icon name="close" size={16} />
+            </button>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

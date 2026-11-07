@@ -62,6 +62,8 @@ export default function WorkoutDetail({ workoutId, editing, picking }) {
             return (
               <section key={e.id} className="card">
                 <h3>{exerciseName(exercise)}</h3>
+                {e.note && <p className="small workout-detail-note">{e.note}</p>}
+                {!e.sets.length && <p className="muted small">Skipped</p>}
                 <ol className="set-list">
                   {e.sets.filter(isDoneSet).map((s) => (
                     <li key={s.id}>

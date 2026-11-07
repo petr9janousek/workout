@@ -24,6 +24,8 @@ const PATHS = {
   play: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM10 8.5v7l6-3.5z',
   exercises: 'M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12',
   plans: 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4',
+  swap: 'M4 8h13l-3.5-3.5M20 16H7l3.5 3.5',
+  note: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5',
   edit: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
   people: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.5a6.5 6.5 0 0 1 3.5 5.5',
   qr: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2',
