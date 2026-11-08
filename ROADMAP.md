@@ -4,7 +4,11 @@ The backlog, easiest first. Done items move to "Features in detail" in [DOCUMENT
 Size: S = an evening, M = a few evenings, L = a week or more.
 
 ## Now
-1. **Backups that are hard to lose** (no server): restore from the welcome screen on a new phone; a reminder when 5 workouts aren't backed up or a week has passed, also right after Finish; a warning when the app isn't installed to the home screen (Safari deletes site data after 7 days without a visit); daily copies kept on the phone to undo mistakes
+1. **Backups, remote bonus: "Move to a new phone"** (optional, nothing kept) · M
+   - The old phone encrypts everything with a new random key and uploads it; the new phone scans a QR (or types a code) and downloads it. The key is only in the QR/code, never sent to the server
+   - The server deletes it after the first download, or after 24 hours. No accounts, no lasting storage
+   - A Cloudflare Worker in `relay/` (~100 lines), deployed with `npx wrangler deploy`; the app stays on GitHub Pages. Its address is a build setting: without it the button is hidden, so forks and self-hosters work with or without their own relay
+   - Limits: a few MB per upload, a few uploads per hour per address
 2. **Smarter progression:** analyse Petr's own history first (a backup file), then propose changes before building
 
 ## Backlog
@@ -33,6 +37,7 @@ Size: S = an evening, M = a few evenings, L = a week or more.
 
 ## Open decisions
 - **Own domain, then hosting on Cloudflare:** do it before sending the link around widely. Moving people later means export on the old site, import on the new one.
-- **A small relay server, no accounts** (Cloudflare Worker, free at our size): handing over by code or link instead of QR, automatic encrypted backups, two phones in one workout with taking turns, the partner's week, "gym tonight?" notifications, licence keys. The app must keep working fully offline.
+- **More on the relay later** (it exists after "Move to a new phone"): handing over a workout by code or link instead of QR, two phones in one workout with taking turns, the partner's week, "gym tonight?" notifications. Same rules: no accounts, short-lived messages, the app works fully offline without it.
+- **Lasting cloud backup** (automatic, encrypted, possibly paid): not for now; during the trial the data stays the user's responsibility.
 - **App Store and Google Play** via Capacitor (same code): rest timer alerts on a locked phone, the phone's own backups, Health sync. Needs a Mac (or a cloud build) for iPhone, $99 a year (Apple), $25 once (Google).
 - **Other activities** (runs, swims): keep only if someone actually logs them.

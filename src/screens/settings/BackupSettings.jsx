@@ -40,11 +40,17 @@ export default function BackupSettings() {
     <section className="card">
       <h3>Backup</h3>
       <p className="muted small">
-        Your workouts are stored only on this phone. Updates never touch them, but deleting the app from the home
-        screen or getting a new phone does. Save a backup now and then: to Files, iCloud Drive or Google Drive, or
-        send it to yourself.
+        Your workouts live only on this phone. Now and then, save a backup to <strong>iCloud Drive or Google Drive</strong>.
       </p>
-      <p className="small">Last backup: {settings.lastBackup ? formatDate(settings.lastBackup) : 'never'}</p>
+      <p className="small backup-status">
+        Last backup: {settings.lastBackup ? formatDate(settings.lastBackup) : 'never'}
+        {persisted != null && (
+          <>
+            <br />
+            Storage: {persisted ? 'protected ✓' : 'not protected (install the app)'}
+          </>
+        )}
+      </p>
       <div className="actions">
         <button className="btn btn-primary btn-wide" onClick={save}>Save backup</button>
         <button className="btn btn-secondary btn-wide" onClick={() => fileInput.current.click()}>Restore from backup</button>
@@ -52,11 +58,6 @@ export default function BackupSettings() {
       <input ref={fileInput} type="file" accept="application/json,.json,text/plain,.txt" hidden onChange={restore} />
       {message && <p className="message">{message}</p>}
 
-      {persisted != null && (
-        <p className="muted small">
-          Storage: {persisted ? 'protected from automatic clean-up ✓' : 'not protected yet (install the app to the home screen)'}
-        </p>
-      )}
     </section>
   );
 }

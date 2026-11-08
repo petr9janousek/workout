@@ -6,8 +6,7 @@ import Icon from '../../components/ui/Icon.jsx';
 import LinkCard from '../../components/ui/LinkCard.jsx';
 import TogetherActions from './TogetherActions.jsx';
 import Tour from '../../components/ui/Tour.jsx';
-import { useSaveBackup } from '../../hooks/useSaveBackup.js';
-import { backupDue } from '../../data/backup.js';
+import DataSafety from './DataSafety.jsx';
 import { useData } from '../../data/DataProvider.jsx';
 import { go, openTab } from '../../hooks/useRoute.js';
 import { finishedWorkouts } from '../../model/workouts.js';
@@ -34,6 +33,7 @@ export default function Home() {
 
       <WeekStrip onOpen={() => openTab('progress')} />
       <GoalNote />
+      <DataSafety />
 
       {hasPlan && <NextDay plan={activePlan} />}
 
@@ -69,7 +69,6 @@ export default function Home() {
       )}
 
       <RecentRecords />
-      {backupDue(settings.lastBackup, finished.length) && <BackupReminder lastBackup={settings.lastBackup} />}
 
       <LinkCard className="settings-link" icon="settings" title="Settings" sub="Backup, rest time, progression and more" onClick={() => go('home', 'settings')} />
 
@@ -237,21 +236,3 @@ function RecentRecords() {
   );
 }
 
-// A nudge to save a backup: everything lives only on this phone.
-function BackupReminder({ lastBackup }) {
-  const saveBackup = useSaveBackup();
-  const [message, setMessage] = useState('');
-  return (
-    <section className="reminder" role="status">
-      <p>
-        <strong>Save a backup.</strong>{' '}
-        {lastBackup ? `The last one was on ${formatDate(lastBackup)}.` : "You haven't saved one yet."} Your workouts are
-        only on this phone.
-      </p>
-      <button className="btn btn-secondary" onClick={async () => setMessage((await saveBackup()) || '')}>
-        Save backup
-      </button>
-      {message && <p className="message">{message}</p>}
-    </section>
-  );
-}

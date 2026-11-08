@@ -1058,3 +1058,7 @@ h1, h2, .day-title { text-wrap: balance; }
 .workout-notes li:first-child { border-top: 0; }
 .workout-note-text { display: grid; gap: 2px; white-space: pre-wrap; }
 .workout-detail-note { margin: -4px 0 6px; white-space: pre-wrap; color: var(--muted); }
+
+/* "Install the app" / "Save a backup" on Home (DataSafety) */
+.nudge-actions { display: flex; align-items: center; gap: 16px; }
+.nudge-actions .small-link { padding-left: 0; padding-right: 0; }

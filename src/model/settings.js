@@ -8,6 +8,8 @@ export const DEFAULT_SETTINGS = {
   weightStep: 'auto', // how much heavier a "try heavier" suggestion is: 'auto' or a number, see weightStepFor()
   progression: 'double', // suggestion style, see PROGRESSION_MODES in progression.js
   lastBackup: null, // when a backup was last saved (ISO date text)
+  installHintHidden: null, // when "Install the app" on Home was put off (DataSafety)
+  backupReminderHidden: null, // when "Save a backup" on Home was put off (DataSafety)
   activePlanId: null, // the plan shown on the start screen, see plans.js
   weeklyGoal: null, // training days a week to aim for; null = from the plan (see calendar.js)
   body: null, // 'female' | 'male' | null: the body drawing and recommended plans
